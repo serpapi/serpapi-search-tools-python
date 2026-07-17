@@ -1,0 +1,71 @@
+---
+title: OpenAI Agents SDK
+description: Give an OpenAI agent fresh SerpApi search results.
+---
+
+# OpenAI Agents SDK
+
+`web_search(...)` returns an OpenAI Agents function tool that can be passed
+directly to `Agent`.
+
+## Install
+
+On a clean machine, install the search tool with the OpenAI Agents SDK:
+
+```bash
+pip install "serpapi-search-tools[openai-agents]"
+```
+
+If the OpenAI Agents SDK is already installed, install only the search tool:
+
+```bash
+pip install serpapi-search-tools
+```
+
+Set both keys:
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+import asyncio
+
+from agents import Agent, Runner
+from serpapi_search_tools import news_search, web_search
+
+
+async def main():
+    agent = Agent(
+        name="search-agent",
+        model="gpt-5.4-mini",
+        instructions="Use SerpApi when the answer needs current information.",
+        tools=[web_search(), news_search()],
+    )
+    result = await Runner.run(agent, "Find three recent Python packaging releases.")
+    print(result.final_output)
+
+
+asyncio.run(main())
+```
+
+The agent decides when to call the tool, receives the SerpApi JSON, and writes a
+final answer.
+
+## Try it
+
+Ask: “Search for three recent Python packaging releases and tell me why each
+one matters.”
+
+## Customize the search
+
+```python
+current_news = news_search(
+    default_params={"num": 3, "hl": "en", "gl": "us"},
+)
+```
+
+Replace the news tool in the example with `current_news`.

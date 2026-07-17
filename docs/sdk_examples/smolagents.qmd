@@ -1,0 +1,60 @@
+---
+title: smolagents
+description: Give a smolagents ToolCallingAgent live SerpApi search.
+---
+
+# smolagents
+
+Call a search constructor and add the resulting `Tool` to a smolagents
+`ToolCallingAgent`.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[smolagents]"
+```
+
+If smolagents is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+import os
+
+from smolagents import OpenAIServerModel, ToolCallingAgent
+from serpapi_search_tools import videos_search
+
+model = OpenAIServerModel(
+    model_id="gpt-5.4-mini",
+    api_key=os.environ["OPENAI_API_KEY"],
+)
+agent = ToolCallingAgent(
+    model=model,
+    tools=[videos_search()],
+    max_steps=3,
+)
+print(agent.run("Find a good beginner pour-over coffee tutorial on YouTube."))
+```
+
+## Try it
+
+Ask: “Find a beginner pour-over coffee tutorial on YouTube and explain why it
+is a useful starting point.”
+
+## Customize the search
+
+```python
+video_search = videos_search(
+    default_params={"hl": "en", "gl": "us"},
+    include_examples=False,
+)
+```
+
+Use `videos_search` when you want the agent to search YouTube rather than the
+general web.

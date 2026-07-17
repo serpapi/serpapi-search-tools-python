@@ -1,0 +1,93 @@
+---
+title: Introduction
+guide-section: Start Here
+---
+
+# Understand where the package fits
+
+`serpapi-search-tools` connects [SerpApi](https://serpapi.com) search results
+to Python agent SDKs. It saves you from writing a separate custom-tool wrapper
+for every kind of search and every SDK.
+
+## What it adds to your agent
+
+The package gives you focused tools for general web pages, news, maps, images,
+shopping, videos, hotels, flights, and destination discovery. Each tool asks
+for the information needed for that search. For example, web search uses a
+query, hotel search asks for stay dates, and flight search asks for airports
+and an outbound date.
+
+Inputs are checked before a request is sent to SerpApi. This helps your agent
+correct mistakes early and avoids unnecessary failed searches.
+
+## How the pieces work together
+
+- **SerpApi** retrieves current search results and returns structured data.
+- **`serpapi-search-tools`** turns each search capability into a ready-to-use
+  Python or agent-SDK tool.
+- **Your agent SDK and model** decide when to call a tool and how to use the
+  returned results in the final response.
+
+The package does not include a language model or create the agent loop. You
+continue to configure those through the SDK you already use.
+
+## When it is a good fit
+
+Use this package when your agent needs current public information, specialized
+results such as places or travel options, or ready-made search tools for a
+supported Python SDK. It is also useful when you want the same search setup to
+work as a plain Python function in scripts and tests.
+
+You may not need it when your application never searches outside its own data,
+when your agent already has the exact search integration it needs, or when a
+single direct API request is simpler than adding an agent tool.
+
+You need a [SerpApi account and API key](https://serpapi.com/users/sign_up) for
+live searches. Agent examples may also need a separate key for the model
+provider used by that example.
+
+## One constructor for each kind of search
+
+Start with only the tools your agent needs:
+
+```python
+from serpapi_search_tools import maps_search, news_search, web_search
+
+tools = [web_search(), news_search(), maps_search()]
+```
+
+Separate tools make their purpose and inputs clear. They also let you configure
+web, news, local, shopping, or travel searches independently as your
+application grows.
+
+See [Choose a search tool](search_tools.html) for all nine capabilities and
+their required inputs.
+
+## Use an agent SDK or plain Python
+
+When one supported agent SDK is installed, the package detects it and returns
+tools that can be added to that SDK's normal tool list. If several supported
+SDKs are installed, pass `provider=` to choose one explicitly.
+
+For scripts, tests, or a framework that is not listed, request a callable:
+
+```python
+import json
+
+from serpapi_search_tools import web_search
+
+search = web_search(provider="function")
+response = json.loads(search(query="Python packaging"))
+print(response.get("organic_results", []))
+```
+
+Every tool returns the complete SerpApi response as JSON text. Your
+application can keep the full response, select a few fields, or summarize a
+small set of results before passing them to a model.
+
+## Next steps
+
+- [Build your first search agent](quickstart.html)
+- [Choose a search tool](search_tools.html)
+- [Configure a search tool](configuration.html)
+- [Open an SDK example](../sdk-examples/index.html)

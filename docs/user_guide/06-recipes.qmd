@@ -1,0 +1,235 @@
+---
+title: Recipes
+guide-section: Start Here
+---
+
+# Start from your application's goal
+
+You rarely need every search capability. Give the agent the smallest useful
+set, name specialized configurations clearly, and keep policy choices such as
+locale, currency, safe search, and result count in `default_params`.
+
+The examples below use automatic SDK detection. They work as written when one
+supported agent SDK is installed. If multiple SDKs share the environment, add
+the same explicit `provider=` to each constructor.
+
+## General web research
+
+Use [`web_search`](web_search.html) for public websites and background sources:
+
+```python
+from serpapi_search_tools import web_search
+
+tools = [
+    web_search(
+        allowed_engines=["google_light", "bing"],
+        default_engine="google_light",
+        default_params={"num": 5},
+    )
+]
+```
+
+Good first prompt: “Research three independent sources about Python package
+signing and summarize where they agree.”
+
+## Current reporting
+
+Combine [`news_search`](news_search.html) with web search when the agent needs
+both recent coverage and durable background information:
+
+```python
+from serpapi_search_tools import news_search, web_search
+
+tools = [web_search(), news_search(default_params={"hl": "en", "gl": "us"})]
+```
+
+Good first prompt: “Find today's reporting about battery recycling, then use
+background sources to explain the context.”
+
+## Local discovery
+
+Use [`maps_search`](maps_search.html) for businesses and places. Location,
+zoom, and nearby intent are typed model inputs:
+
+```python
+from serpapi_search_tools import maps_search
+
+tools = [maps_search(default_params={"hl": "en", "gl": "us"})]
+```
+
+Good first prompt: “Find three independent coffee roasters near Portland,
+Oregon, and compare ratings, hours, and location.”
+
+## Image discovery
+
+Use [`images_search`](images_search.html) for image URLs and visual metadata.
+Safe search can be an application policy rather than a model choice:
+
+```python
+from serpapi_search_tools import images_search
+
+tools = [images_search(default_params={"safe": "active"})]
+```
+
+Good first prompt: “Find visual references for compact balcony gardens and
+summarize recurring layout ideas.”
+
+## Marketplace comparison
+
+Use [`shopping_search`](shopping_search.html) for product listings. Separate
+instances are easiest when marketplaces need different defaults:
+
+```python
+from serpapi_search_tools import shopping_search
+
+tools = [
+    shopping_search(
+        allowed_engines=["google_shopping"],
+        default_params={"num": 5, "gl": "us", "hl": "en"},
+        name="google_products",
+    ),
+    shopping_search(
+        allowed_engines=["amazon"],
+        default_params={"num": 5},
+        name="amazon_products",
+    ),
+]
+```
+
+Good first prompt: “Compare noise-cancelling headphones from both marketplaces
+and call out price or availability differences.”
+
+## Video discovery
+
+Use [`videos_search`](videos_search.html) for YouTube videos, channels, and
+playlists:
+
+```python
+from serpapi_search_tools import videos_search
+
+tools = [videos_search(default_params={"hl": "en", "gl": "us"})]
+```
+
+Good first prompt: “Find a beginner pour-over coffee tutorial and explain why
+it is a suitable first lesson.”
+
+## Hotel availability
+
+Use [`hotels_search`](hotels_search.html) when the destination and stay dates
+are known:
+
+```python
+from serpapi_search_tools import hotels_search
+
+tools = [hotels_search(default_params={"currency": "USD", "gl": "us"})]
+```
+
+The prompt should include future dates and occupancy, for example: “Find hotels
+in Kyoto from 2030-08-01 through 2030-08-04 for two adults and one child age 8.”
+
+## Known-route flights
+
+Use [`flights_search`](flights_search.html) when origin and destination are
+known:
+
+```python
+from serpapi_search_tools import flights_search
+
+tools = [flights_search(default_params={"currency": "USD", "hl": "en"})]
+```
+
+Good first prompt: “Compare round-trip business-class flights from LAX to AUS,
+departing 2030-08-01 and returning 2030-08-04.”
+
+## Destination ideas
+
+Use [`travel_explore_search`](travel_explore_search.html) when the departure is
+known but the destination is open:
+
+```python
+from serpapi_search_tools import travel_explore_search
+
+tools = [travel_explore_search(default_params={"currency": "USD", "gl": "us"})]
+```
+
+Good first prompt: “Starting from JFK, suggest three destinations for a
+four-day trip and compare indicative fares.”
+
+## Monitor a product launch
+
+This combination separates background pages, current reporting, and live
+product listings:
+
+```python
+from serpapi_search_tools import news_search, shopping_search, web_search
+
+tools = [web_search(), news_search(), shopping_search()]
+```
+
+Ask the agent to use web search for official specifications, news search for
+recent announcements and reviews, and shopping search for current listings.
+This is more reliable than expecting one result type to answer every question.
+
+## Research a move or neighborhood
+
+Use the web for city information, maps for specific places, and images for a
+visual sense of the area:
+
+```python
+from serpapi_search_tools import images_search, maps_search, web_search
+
+tools = [web_search(), maps_search(), images_search()]
+```
+
+Good first prompt: “Research living near the Seattle Convention Center. Find
+grocery stores and parks, then gather visual references of the surrounding
+neighborhood.”
+
+## Compare a purchase visually
+
+Combine listings, product imagery, and video demonstrations:
+
+```python
+from serpapi_search_tools import images_search, shopping_search, videos_search
+
+tools = [shopping_search(), images_search(), videos_search()]
+```
+
+Good first prompt: “Compare three compact espresso machines by price, physical
+design, and the availability of useful setup tutorials.”
+
+## Plan a trip from an open brief
+
+Give each stage of the planning process its own typed tool:
+
+```python
+from serpapi_search_tools import (
+    flights_search,
+    hotels_search,
+    maps_search,
+    travel_explore_search,
+)
+
+tools = [
+    travel_explore_search(),
+    flights_search(),
+    hotels_search(),
+    maps_search(),
+]
+```
+
+The agent can explore destinations first, search an exact route after choosing
+one, find properties for explicit dates, and finally find nearby places. A good
+prompt includes origin, date flexibility, passenger count, budget, and travel
+preferences.
+
+## Keep agent payloads manageable
+
+Every tool returns the complete SerpApi response. For agent applications,
+consider a custom `client=` that keeps metadata plus a small number of primary
+results before the JSON reaches the model. The repository's multi-tool OpenAI
+Agents examples demonstrate this pattern.
+
+Continue with [Runnable examples](examples.html),
+[Common configuration](configuration.html), or
+[Choose a search tool](search_tools.html).

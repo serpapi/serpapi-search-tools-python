@@ -1,0 +1,72 @@
+---
+title: Usage and composition
+guide-section: Start Here
+---
+
+## Call a tool directly
+
+```python
+import json
+
+from serpapi_search_tools import web_search
+
+search = web_search(provider="function")
+response = json.loads(search(query="Python packaging"))
+```
+
+The returned callable has a narrow signature and returns compact JSON text.
+
+## Add a specialized capability
+
+```python
+from serpapi_search_tools import maps_search, news_search, web_search
+
+tools = [
+    web_search(provider="openai-agents"),
+    news_search(provider="openai-agents"),
+    maps_search(provider="openai-agents"),
+]
+```
+
+Each constructor creates one tool for your selected SDK. Add them with the same
+list syntax you use for your own tools.
+
+## Engine choices
+
+Only web and shopping expose engine selection:
+
+```python
+from serpapi_search_tools import shopping_search, web_search
+
+web = web_search(
+    provider="langchain",
+    allowed_engines=["google_light", "bing"],
+    default_engine="google_light",
+)
+shopping = shopping_search(
+    provider="langchain",
+    allowed_engines=["google_shopping", "amazon"],
+)
+```
+
+The generated schema enum contains only the allowed values. Fixed-engine tools
+have no `engine` field.
+
+## Structured travel calls
+
+```python
+from serpapi_search_tools import flights_search
+
+flights = flights_search(provider="function")
+response = flights(
+    departure_id="LAX",
+    arrival_id="AUS",
+    outbound_date="2026-08-01",
+)
+```
+
+The route and date are passed as clear, named fields. You do not need to build
+a text query for a flight search.
+
+See [Choose a search tool](search_tools.html), [Recipes](recipes.html), and
+[Configuration](configuration.html) next.

@@ -1,0 +1,88 @@
+---
+title: Video search
+guide-section: Search tools
+---
+
+# Video search with `videos_search`
+
+`videos_search` searches YouTube for videos, channels, and playlists. It gives
+an agent a simple `query` field while the package sends YouTube's native
+`search_query` parameter.
+
+## When to use it
+
+Use it for tutorials, demonstrations, talks, reviews, interviews, channels, and
+playlists. Choose [`web_search`](web_search.html) when a text source is more
+appropriate.
+
+This tool searches YouTube results. It does not fetch a video's transcript or
+the separate video-detail API.
+
+## Quick example
+
+```python
+from serpapi_search_tools import videos_search
+
+tutorial_search = videos_search()
+agent_tools = [tutorial_search]
+```
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `query` | string | yes | The topic, tutorial, creator, or video to find |
+
+Use the consistent `query` field shown above. The package translates it to
+YouTube's `search_query` parameter.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
+| `default_params` | `None` | Fix locale or supported YouTube search filters |
+| `api_key` | `None` | Override environment key lookup |
+| `timeout` | `None` | Set the built-in client timeout |
+| `client` | `None` | Add caching, logging, tests, or response reduction |
+| `include_examples` | `True` | Add a sample video query to the description |
+| `name` | `"videos_search"` | Rename a focused video-search capability |
+
+## Useful SerpApi parameters
+
+This example fixes language and country preferences:
+
+```python
+from serpapi_search_tools import videos_search
+
+english_videos = videos_search(
+    default_params={"hl": "en", "gl": "us"},
+    name="english_video_search",
+)
+```
+
+YouTube search also accepts a filter token for narrowing result type, date,
+duration, and other search choices. Use the official reference to obtain a
+valid token rather than inventing filter fields.
+
+## What comes back
+
+Responses can contain `video_results`, `channel_results`, and
+`playlist_results`. Video entries commonly include title, link, thumbnail,
+channel, duration, views, and publication information. Fields vary by result
+type.
+
+## Common mistakes
+
+- Calling the tool with `search_query`; use `query`.
+- Expecting transcript text from a search response.
+- Treating channel and playlist entries as if they have video-only fields.
+- Passing the complete result list to a model when a small selection of titles,
+  channels, links, and snippets is enough.
+
+## Official SerpApi documentation
+
+- [YouTube Search API](https://serpapi.com/youtube-search-api)
+
+See the [video discovery recipe](recipes.html) and the
+[smolagents example](../sdk-examples/smolagents.html).

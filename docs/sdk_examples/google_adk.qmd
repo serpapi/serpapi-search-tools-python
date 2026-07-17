@@ -1,0 +1,87 @@
+---
+title: Google ADK
+description: Add live SerpApi search to a Google ADK agent.
+---
+
+# Google ADK
+
+Call a search constructor and add the resulting `FunctionTool` to a Google ADK
+`Agent`. Install this integration in its own environment; see the compatibility
+note below.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[google-adk]"
+```
+
+If Google ADK is already installed in that environment, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export GOOGLE_API_KEY="your-gemini-key"
+```
+
+## Run it
+
+```python
+import asyncio
+
+from google.adk.agents import Agent
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
+from serpapi_search_tools import shopping_search, web_search
+
+
+async def main():
+    agent = Agent(
+        name="shopping_agent",
+        model="gemini-3.5-flash",
+        instruction="Use SerpApi for current product research.",
+        tools=[
+            web_search(),
+            shopping_search(),
+        ],
+    )
+    sessions = InMemorySessionService()
+    await sessions.create_session(app_name="demo", user_id="user", session_id="session")
+    runner = Runner(agent=agent, app_name="demo", session_service=sessions)
+    message = types.Content(
+        role="user",
+        parts=[types.Part(text="Find three travel backpacks and compare them.")],
+    )
+    async for event in runner.run_async(
+        user_id="user",
+        session_id="session",
+        new_message=message,
+    ):
+        if event.is_final_response() and event.content:
+            for part in event.content.parts or []:
+                if part.text:
+                    print(part.text)
+
+
+asyncio.run(main())
+```
+
+## Try it
+
+Ask: “Search Google Shopping for three travel backpacks and compare their most
+useful features.”
+
+## Customize the search
+
+```python
+products = shopping_search(
+    allowed_engines=["google_shopping", "walmart"],
+    default_engine="google_shopping",
+    default_params={"num": 3, "hl": "en", "gl": "us"},
+    include_examples=False,
+)
+```
+
+Google ADK's extension dependencies conflict with the supported LangChain and
+LangGraph branches. Use a clean environment containing the `google-adk` extra
+rather than combining those extras.

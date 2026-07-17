@@ -1,0 +1,117 @@
+---
+title: Run an example
+guide-section: Start Here
+---
+
+# Run an example
+
+The repository contains direct Python examples and runnable agent examples for
+every supported SDK.
+
+## Start without an LLM
+
+Use the direct examples to verify credentials and request construction:
+
+```bash
+uv run python examples/direct_search.py
+uv run python examples/direct_travel.py
+```
+
+They demonstrate general web, news, hotels, flights, and travel exploration
+without installing an agent framework.
+
+## Pick a scenario
+
+| Scenario | Script | Credentials | What to look for |
+| --- | --- | --- | --- |
+| Multi-vertical research | `direct_multi_search.py` | SerpApi | Four result families reduced to short title lists |
+| Marketplace comparison | `direct_marketplace_comparison.py` | SerpApi | Product payloads normalized into `title`, `price`, and `link` |
+| Regional configuration | `direct_regioned_search.py` | SerpApi | Two named tools with separate US and German defaults |
+| Cached requests | `direct_cached_search.py` | SerpApi | First call is a cache miss; the identical second call is a cache hit |
+| Agent travel planning | `openai_agents_travel_planner.py` | SerpApi and OpenAI | Explore, round-trip flights, and hotel occupancy in one prompt |
+
+Run the direct scenarios from the project root:
+
+```bash
+uv run python examples/direct_multi_search.py
+uv run python examples/direct_marketplace_comparison.py
+uv run python examples/direct_regioned_search.py
+uv run python examples/direct_cached_search.py
+```
+
+The direct scripts parse the complete JSON response and print bounded summaries
+instead of sending a full response to another system.
+
+## Structured travel defaults
+
+Applications can configure localization and currency when each tool is created:
+
+```python
+from serpapi_search_tools import flights_search, hotels_search, travel_explore_search
+
+hotels = hotels_search(
+    provider="function",
+    default_params={"currency": "USD", "gl": "us"},
+)
+flights = flights_search(
+    provider="function",
+    default_params={"currency": "USD", "hl": "en"},
+)
+explore = travel_explore_search(
+    provider="function",
+    default_params={"currency": "USD", "gl": "us"},
+)
+```
+
+## Run an agent example
+
+Install the matching optional extra if the agent SDK is not already present,
+set `SERPAPI_API_KEY` plus the model provider key used by the script, and run it
+from the project root:
+
+```bash
+uv sync --dev --extra openai-agents
+uv run --extra openai-agents python examples/openai_agents_openai.py
+uv run --extra openai-agents python examples/openai_agents_travel_planner.py
+```
+
+The `examples/` directory includes OpenAI Agents, Pydantic AI, LangChain,
+LangGraph, CrewAI, LlamaIndex, Claude Agent SDK, AutoGen, Haystack, Agno,
+smolagents, Google ADK, and Semantic Kernel examples.
+
+The multi-tool OpenAI Agents scripts use a custom logging client that keeps
+metadata and the first three primary results before returning JSON to the
+model. This is an application choice for controlling tokens; tools return the
+complete SerpApi response when no compacting client is supplied.
+
+In an application with one supported SDK installed, pass a list of
+capability-specific tools and rely on automatic detection:
+
+```python
+from serpapi_search_tools import maps_search, news_search, web_search
+
+tools = [
+    web_search(),
+    news_search(),
+    maps_search(),
+]
+```
+
+The repository's runnable agent scripts select their provider explicitly
+because the development and test environments may contain multiple SDK extras.
+
+Open [SDK examples](../sdk-examples/index.html) for installation and complete
+copy-friendly code for each framework. See
+[Choose a search tool](search_tools.html) to choose the right constructors
+before assembling the list, or start from a [recipe](recipes.html).
+
+## Useful first prompts
+
+- “Search current news for three Python packaging releases and summarize why
+  they matter.”
+- “Find well-reviewed coffee shops near the Seattle Convention Center.”
+- “Compare one-way flights from LAX to AUS on 2030-08-01.”
+- “Find hotels in Kyoto from 2030-08-01 to 2030-08-04 for two adults.”
+
+Structured prompts are especially useful for a first travel run because they
+provide the dates and identifiers required by the tool schema.

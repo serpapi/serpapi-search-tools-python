@@ -1,0 +1,115 @@
+---
+title: Flight search
+guide-section: Search tools
+---
+
+# Flight search with `flights_search`
+
+`flights_search` searches Google Flights for a known origin, destination, and
+outbound date. It supports one-way and round-trip itineraries with semantic
+cabin and passenger fields.
+
+## When to use it
+
+Use it when the route is known and the agent needs itineraries, prices,
+airlines, stops, or duration. Choose
+[`travel_explore_search`](travel_explore_search.html) when the destination is
+not decided.
+
+This tool supports one-way and round-trip searches. Multi-city itineraries are
+not currently supported.
+
+## Quick example
+
+```python
+from serpapi_search_tools import flights_search
+
+flight_tool = flights_search(
+    default_params={"currency": "USD", "hl": "en"},
+)
+agent_tools = [flight_tool]
+```
+
+Example invocation:
+
+```json
+{
+  "departure_id": "LAX",
+  "arrival_id": "AUS",
+  "outbound_date": "2030-08-01",
+  "return_date": "2030-08-04",
+  "travel_class": "business",
+  "adults": 1
+}
+```
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Default and constraints |
+| --- | --- | --- | --- |
+| `departure_id` | string | yes | Airport code or supported SerpApi location identifier |
+| `arrival_id` | string | yes | Airport code or supported SerpApi location identifier |
+| `outbound_date` | date string | yes | `YYYY-MM-DD` |
+| `return_date` | date string | no | Omit for one way; otherwise not before outbound |
+| `travel_class` | enum | no | `economy`; also `premium_economy`, `business`, or `first` |
+| `adults` | integer | no | `1`; at least `1` |
+| `children` | integer | no | `0`; cannot be negative |
+| `infants_in_seat` | integer | no | `0`; cannot be negative |
+| `infants_on_lap` | integer | no | `0`; cannot be negative |
+
+Three-letter alphabetic airport codes are normalized to uppercase. Omitting
+`return_date` makes the request one way; supplying it makes the request a round
+trip.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
+| `default_params` | `None` | Fix currency, locale, stops, airline, bag, or time filters supported by SerpApi |
+| `api_key` | `None` | Override environment key lookup |
+| `timeout` | `None` | Set the built-in client timeout |
+| `client` | `None` | Add caching, logging, testing, or response compaction |
+| `include_examples` | `True` | Add a route-search hint to the description |
+| `name` | `"flights_search"` | Rename a configured route capability |
+
+## Useful SerpApi parameters
+
+This tool keeps price display predictable:
+
+```python
+from serpapi_search_tools import flights_search
+
+us_flights = flights_search(
+    default_params={"currency": "USD", "hl": "en", "gl": "us"},
+    name="us_flights",
+)
+```
+
+SerpApi also supports airline, stops, baggage, maximum price, departure time,
+arrival time, and other filters. The package validates common conflicts: for
+example, include and exclude airline lists cannot both be set, return-time
+filters need a round trip, and bag counts cannot exceed eligible passengers.
+
+## What comes back
+
+Responses commonly include `best_flights`, `other_flights`, `price_insights`,
+`airports`, and search metadata. Itinerary objects can contain one or more
+flight legs, layovers, total duration, carbon emissions, price, airline, and
+booking tokens.
+
+## Common mistakes
+
+- Sending a text `q`; flight tools never use one.
+- Omitting the route or outbound date.
+- Supplying a return date before outbound.
+- Asking for multi-city itineraries through this one-route schema.
+- Combining both `include_airlines` and `exclude_airlines` defaults.
+- Using stale dates copied from documentation.
+
+## Official SerpApi documentation
+
+- [Google Flights API](https://serpapi.com/google-flights-api)
+
+See the [direct travel example](examples.html) and the
+[OpenAI Agents travel planner](../sdk-examples/openai_agents.html).

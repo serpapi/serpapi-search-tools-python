@@ -1,0 +1,121 @@
+---
+title: Web search
+guide-section: Search tools
+---
+
+# Web search with `web_search`
+
+`web_search` gives an agent general webpages from Google, Google Light, Bing,
+Yahoo, or DuckDuckGo. It is the best default for research that does not require
+a specialized result type.
+
+## When to use it
+
+Use it for background research, documentation, company websites, public facts,
+and cross-checking sources. Start with `google_light` when you want fast,
+compact organic results for an agent.
+
+Choose [`news_search`](news_search.html) for current articles,
+[`maps_search`](maps_search.html) for places, or
+[`shopping_search`](shopping_search.html) for products. Those tools return
+result structures designed for their verticals.
+
+## Quick example
+
+```python
+from serpapi_search_tools import web_search
+
+tool = web_search()
+agent_tools = [tool]
+```
+
+With one supported SDK installed, `tool` is native to that SDK. For a direct
+Python callable, use `web_search(provider="function")`.
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `query` | string | yes | The words or question to search for |
+| `engine` | enum | no | One of the engines allowed by your constructor; defaults to `google_light` when allowed |
+
+The package maps the friendly `query` field to each engine's native parameter:
+Google, Google Light, Bing, and DuckDuckGo use `q`; Yahoo uses `p`.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect the installed SDK; use `"function"` for a callable or an explicit SDK name in multi-SDK environments |
+| `allowed_engines` | all five engines | Restrict the enum visible to the model |
+| `default_engine` | `google_light` when allowed | Choose the engine used when the model omits `engine` |
+| `default_params` | `None` | Fix engine parameters such as locale or result count in application code |
+| `api_key` | `None` | Override the environment-based SerpApi key |
+| `timeout` | `None` | Set the built-in client's request timeout |
+| `client` | `None` | Supply a testing, caching, logging, or custom HTTP client |
+| `include_examples` | `True` | Include a short invocation hint in the tool description |
+| `name` | `"web_search"` | Give this configured tool a distinct name |
+
+For predictable results, expose only the engines your application actually
+needs:
+
+```python
+from serpapi_search_tools import web_search
+
+tool = web_search(
+    allowed_engines=["google_light", "bing"],
+    default_engine="google_light",
+)
+```
+
+## Useful SerpApi parameters
+
+`default_params` is forwarded to the selected engine and is not editable by
+the model. This Google Light-only tool fixes country, language, and result
+count:
+
+```python
+from serpapi_search_tools import web_search
+
+us_web = web_search(
+    allowed_engines=["google_light"],
+    default_params={"gl": "us", "hl": "en", "num": 5},
+    name="us_web_search",
+)
+```
+
+Common needs include locale, geographic targeting, pagination, safe search,
+and date filters. Parameter names and accepted values differ by engine. If you
+need engine-specific defaults, create separate tool instances instead of
+sending one `default_params` dictionary to several incompatible engines.
+
+## What comes back
+
+The tool returns the complete SerpApi response as compact JSON text. The most
+common section is `organic_results`. Depending on the engine and query, the
+response may also include an answer box, knowledge graph, related searches,
+pagination, and `search_metadata`.
+
+Treat sections as optional: a valid search may not contain every result family.
+
+## Common mistakes
+
+- Adding a vertical engine such as `google_news` to `allowed_engines`. Use its
+  dedicated constructor instead.
+- Applying Google-only `default_params` while Bing, Yahoo, or DuckDuckGo is
+  still allowed.
+- Setting `engine` inside `default_params`. Choose available engines with
+  `allowed_engines` and `default_engine`.
+- Combining incompatible location fields. The package catches common conflicts,
+  but each engine's official reference remains the source of truth.
+
+## Official SerpApi documentation
+
+- [Google Search API](https://serpapi.com/search-api)
+- [Google Light Search API](https://serpapi.com/google-light-api)
+- [Bing Search API](https://serpapi.com/bing-search-api)
+- [Yahoo Search API](https://serpapi.com/yahoo-search-api)
+- [DuckDuckGo Search API](https://serpapi.com/duckduckgo-search-api)
+
+See [regional tool instances](examples.html) and the
+[general research recipe](recipes.html) for larger examples.

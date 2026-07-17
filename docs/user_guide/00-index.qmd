@@ -1,0 +1,94 @@
+---
+title: Add live search to your Python agent
+guide-section: Start Here
+---
+
+# Add live search to your Python agent
+
+`serpapi-search-tools` gives Python agents current web and specialized search
+through [SerpApi](https://serpapi.com). Add only the capabilities your agent
+needs—such as web, news, maps, shopping, hotels, or flights—and use them with
+your existing agent SDK or as normal Python functions.
+
+## Supported agent SDKs
+
+The package works with OpenAI Agents SDK, Pydantic AI, LangChain, LangGraph,
+CrewAI, LlamaIndex, Claude Agent SDK, AutoGen, Haystack, Semantic Kernel, Agno,
+smolagents, and Google ADK. When one supported SDK is installed, the package
+detects it automatically. See [Agent SDKs](user-guide/frameworks.html) for
+version details and a complete example for each SDK.
+
+You can also use every search tool without an agent SDK by choosing
+`provider="function"`.
+
+## Install
+
+If your agent SDK is already installed, add the base package:
+
+```bash
+pip install serpapi-search-tools
+```
+
+If you want the package to install an agent SDK too, use its extra. For
+OpenAI Agents SDK:
+
+```bash
+pip install "serpapi-search-tools[openai-agents]"
+```
+
+Set your SerpApi key before running a search:
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+```
+
+## Try it with OpenAI Agents SDK
+
+This example gives one agent both general web search and current-news search:
+
+```python
+from agents import Agent, Runner
+from serpapi_search_tools import news_search, web_search
+
+agent = Agent(
+    name="research-assistant",
+    instructions="Use search when the answer needs current information.",
+    tools=[web_search(), news_search()],
+)
+
+result = Runner.run_sync(
+    agent,
+    "Find three recent Python packaging changes and explain why they matter.",
+)
+print(result.final_output)
+```
+
+With only OpenAI Agents SDK installed, `web_search()` and `news_search()` are
+detected and created in the right format automatically. If your environment
+contains several supported SDKs, select one explicitly—for example,
+`web_search(provider="openai-agents")`.
+
+## Choose the right search capability
+
+| Your agent needs | Start with |
+| --- | --- |
+| General websites and background research | [`web_search`](user-guide/web_search.html) |
+| Current reporting | [`news_search`](user-guide/news_search.html) |
+| Places and local businesses | [`maps_search`](user-guide/maps_search.html) |
+| Images and source pages | [`images_search`](user-guide/images_search.html) |
+| Products and marketplace listings | [`shopping_search`](user-guide/shopping_search.html) |
+| YouTube videos, channels, and playlists | [`videos_search`](user-guide/videos_search.html) |
+| Hotel availability for known dates | [`hotels_search`](user-guide/hotels_search.html) |
+| Flights for a known route and date | [`flights_search`](user-guide/flights_search.html) |
+| Destination ideas from a departure point | [`travel_explore_search`](user-guide/travel_explore_search.html) |
+
+## Continue from here
+
+- Follow the [Quickstart](user-guide/quickstart.html) for setup, keys, a first
+  agent, customization, and troubleshooting.
+- Read the [Introduction](user-guide/introduction.html) to understand what the
+  package handles and when it is a good fit.
+- Open [Agent SDK examples](sdk-examples/index.html) for copy-ready code for
+  your framework.
+- Browse [Recipes](user-guide/recipes.html) for research, local discovery,
+  shopping, and travel combinations.

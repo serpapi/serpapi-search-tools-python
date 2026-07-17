@@ -1,0 +1,76 @@
+---
+title: Semantic Kernel
+description: Register SerpApi search as a Semantic Kernel function.
+---
+
+# Semantic Kernel
+
+Call a search constructor, register the resulting `kernel_function` as a plugin
+function, and let your kernel or agent invoke it.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[semantic-kernel]"
+```
+
+If Semantic Kernel is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+This direct function example only needs a SerpApi key:
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+```
+
+## Run it
+
+```python
+import asyncio
+
+from semantic_kernel import Kernel
+from serpapi_search_tools import web_search
+
+
+async def main():
+    kernel = Kernel()
+    kernel.add_function(
+        plugin_name="search",
+        function=web_search(
+            allowed_engines=["google", "bing", "duckduckgo"],
+        ),
+    )
+    result = await kernel.invoke(
+        plugin_name="search",
+        function_name="web_search",
+        query="recent Python packaging releases",
+        engine="google",
+    )
+    print(result)
+
+
+asyncio.run(main())
+```
+
+Add the same `search` plugin to your Semantic Kernel agent when you want the
+model to choose the function.
+
+## Try it
+
+Invoke the function with `recent Python packaging releases` and inspect the
+first three Google results.
+
+## Customize the search
+
+```python
+privacy_search = web_search(
+    allowed_engines=["duckduckgo", "bing"],
+    default_engine="duckduckgo",
+    default_params={"hl": "en"},
+    include_examples=False,
+    name="privacy_search",
+)
+```
+
+When you change `name`, use that value as `function_name` during direct kernel
+invocation.

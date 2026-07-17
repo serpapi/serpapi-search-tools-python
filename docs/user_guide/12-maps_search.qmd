@@ -1,0 +1,99 @@
+---
+title: Maps search
+guide-section: Search tools
+---
+
+# Maps search with `maps_search`
+
+`maps_search` finds places, businesses, and local services through Google Maps.
+The agent can provide a search query and, when useful, a separate location,
+zoom level, and nearby preference.
+
+## When to use it
+
+Use it for nearby recommendations, stores, restaurants, repair services,
+venues, and local discovery. Choose [`web_search`](web_search.html) when the
+answer is about webpages rather than physical places.
+
+This tool searches for places. It is not a place-details, reviews, directions,
+or photos tool; those SerpApi APIs require different identifiers and schemas.
+
+## Quick example
+
+```python
+from serpapi_search_tools import maps_search
+
+local_places = maps_search()
+agent_tools = [local_places]
+```
+
+An agent can then call the tool with values such as:
+
+```json
+{"query": "coffee roasters", "location": "Portland, Oregon", "zoom": 12}
+```
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Default and constraints |
+| --- | --- | --- | --- |
+| `query` | string | yes | Non-empty place, category, or business query |
+| `location` | string | no | A geographic name such as `Austin, Texas` |
+| `zoom` | integer | no | `14`; must be from `3` through `30`; used when `location` is present |
+| `nearby` | boolean | no | `False`; `True` requires `location` |
+
+The package sends Google Maps `type="search"` and maps `zoom` to SerpApi's `z`
+field.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or choose an SDK explicitly |
+| `default_params` | `None` | Fix Google Maps locale or supported search filters |
+| `api_key` | `None` | Override environment key lookup |
+| `timeout` | `None` | Set the built-in client timeout |
+| `client` | `None` | Add deterministic tests, caching, or request logging |
+| `include_examples` | `True` | Add a local-search example to the description |
+| `name` | `"maps_search"` | Distinguish multiple configured maps tools |
+
+## Useful SerpApi parameters
+
+The model already controls `location`, `zoom`, and `nearby` through typed
+fields. Use `default_params` for application policy such as locale:
+
+```python
+from serpapi_search_tools import maps_search
+
+us_places = maps_search(
+    default_params={"hl": "en", "gl": "us"},
+    name="us_places",
+)
+```
+
+Google Maps also supports more search filters and pagination. Check the
+official reference before adding them; do not put place-detail identifiers in
+this search-mode tool.
+
+## What comes back
+
+Search responses commonly contain `local_results`. Place entries may include a
+title, address, rating, review count, category, phone, website, hours,
+coordinates, thumbnail, and identifiers. Availability varies by place and
+query.
+
+## Common mistakes
+
+- Setting `nearby=True` without `location`.
+- Passing a `zoom` outside `3` through `30`.
+- Combining the typed `location` with `ll`, `lat`, or `lon` defaults.
+- Passing `place_id` or `data_cid`; this tool supports place search rather than
+  the separate place-details API.
+- Expecting directions or reviews from a search-only contract.
+
+## Official SerpApi documentation
+
+- [Google Maps API](https://serpapi.com/google-maps-api)
+
+See the [local discovery recipe](recipes.html) and
+[`direct_multi_search.py`](examples.html) for working usage.

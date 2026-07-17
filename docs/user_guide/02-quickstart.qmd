@@ -1,0 +1,197 @@
+---
+title: Quickstart
+guide-section: Start Here
+---
+
+# Build your first search agent
+
+This quickstart uses the OpenAI Agents SDK because its tool setup is compact.
+The search constructors work the same way with every supported SDK: install the
+integration, create one or more tools, and place them in the SDK's normal tools
+collection.
+
+You will build an agent that can search the live web and explain why its
+sources matter.
+
+## Before you begin
+
+You need:
+
+- Python 3.10 or newer;
+- a [SerpApi account](https://serpapi.com/users/sign_up) and API key;
+- an OpenAI API key for this example;
+- a new or existing Python environment.
+
+SerpApi performs the search. OpenAI runs the agent. The keys are separate and
+each service bills according to its own account.
+
+## 1. Install the packages
+
+Choose one of these paths.
+
+If OpenAI Agents SDK is **already installed**, install only the search tools:
+
+```bash
+pip install serpapi-search-tools
+```
+
+If you want this package to install a compatible OpenAI Agents SDK too, use the
+extra:
+
+```bash
+pip install "serpapi-search-tools[openai-agents]"
+```
+
+Extras are available for every [supported agent SDK](frameworks.html). You do
+not need a package extra for SDKs already present in your environment.
+
+## 2. Set the API keys
+
+On macOS or Linux:
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+Set environment variables through your shell, deployment platform, or secret
+manager. Do not paste real keys into Python files or commit them to source
+control.
+
+## 3. Create the agent
+
+Save this as `search_agent.py`:
+
+```python
+import asyncio
+
+from agents import Agent, Runner
+from serpapi_search_tools import web_search
+
+
+async def main():
+    agent = Agent(
+        name="research-assistant",
+        model="gpt-5.4-mini",
+        instructions=(
+            "Use web search for current facts. Explain which sources support "
+            "your answer and say when the results are inconclusive."
+        ),
+        tools=[web_search()],
+    )
+    result = await Runner.run(
+        agent,
+        "Find three recent Python packaging changes and explain why they matter.",
+    )
+    print(result.final_output)
+
+
+asyncio.run(main())
+```
+
+Run it:
+
+```bash
+python search_agent.py
+```
+
+## What just happened?
+
+1. `web_search()` noticed that OpenAI Agents SDK is installed and returned an
+   OpenAI `FunctionTool`.
+2. The agent decided whether it needed the tool and supplied a text query plus
+   a supported web engine.
+3. The package validated the arguments, called SerpApi, and returned the
+   structured search response to the agent as JSON text.
+4. The model used those results to write the final response.
+
+The default web engine is `google_light`, which is a good fast starting point
+for agent research. The model may choose another allowed web engine unless you
+narrow the list.
+
+## Automatic detection and multiple SDKs
+
+Automatic detection is convenient when one supported agent SDK is installed.
+If your environment contains multiple supported SDKs, make the choice explicit
+so every machine creates the tool for the same SDK:
+
+```python
+from serpapi_search_tools import web_search
+
+tool = web_search(provider="openai-agents")
+```
+
+An explicit provider is also useful in shared notebooks, repository test
+environments, and deployments that install several optional extras.
+
+## 4. Customize the first tool
+
+Application-controlled settings belong in `default_params`. This example keeps
+results small and asks for US English results:
+
+```python
+from serpapi_search_tools import web_search
+
+tool = web_search(
+    allowed_engines=["google_light"],
+    default_params={"num": 5, "hl": "en", "gl": "us"},
+    name="current_web_research",
+)
+```
+
+Replace `web_search()` in the agent's `tools` list with `tool`. The agent still
+chooses the query, while your application controls the engine and locale.
+
+Read [Web search](web_search.html) for all supported web engines and safe
+configuration patterns.
+
+## 5. Add another capability
+
+Use a dedicated tool when the intent changes. For recent stories, add news:
+
+```python
+from serpapi_search_tools import news_search, web_search
+
+tools = [web_search(), news_search()]
+```
+
+The agent can now distinguish general web research from current-news search.
+The same pattern works for maps, images, shopping, videos, hotels, flights, and
+destination exploration. See [Choose a search tool](search_tools.html).
+
+## Common first-run problems
+
+### No SerpApi key
+
+If the tool says to set `SERPAPI_API_KEY`, confirm the variable is available in
+the same terminal that runs Python. `SERPAPI_KEY` is also accepted.
+
+### The wrong SDK was detected
+
+This usually means several supported SDKs are installed. Pass
+`provider="openai-agents"` or move the application into an environment with
+only the dependencies it needs.
+
+### A framework dependency is missing
+
+Install the matching extra, for example:
+
+```bash
+pip install "serpapi-search-tools[openai-agents]"
+```
+
+### The search request fails
+
+Check your [SerpApi dashboard](https://serpapi.com/dashboard) for key and usage
+status. The package raises `SerpApiSearchError` for sanitized built-in client
+failures, so API keys are not included in the displayed exception.
+
+For more diagnosis paths, see [Debugging](debugging.html).
+
+## Where to go next
+
+- [Choose a search tool](search_tools.html)
+- [Common configuration](configuration.html)
+- [OpenAI Agents SDK example](../sdk-examples/openai_agents.html)
+- [Recipes](recipes.html)
+- [Runnable examples](examples.html)

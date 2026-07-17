@@ -1,0 +1,60 @@
+---
+title: LangChain
+description: Add a SerpApi structured tool to a LangChain agent.
+---
+
+# LangChain
+
+Call a search constructor and pass the resulting `StructuredTool` to
+`create_agent`.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[langchain]"
+```
+
+If LangChain is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+from langchain.agents import create_agent
+from langchain_openai import ChatOpenAI
+from serpapi_search_tools import maps_search, news_search, web_search
+
+agent = create_agent(
+    model=ChatOpenAI(model="gpt-5.4-mini", temperature=0),
+    tools=[
+        web_search(),
+        news_search(),
+    ],
+)
+
+result = agent.invoke(
+    {"messages": [{"role": "user", "content": "Find today's Python release news."}]}
+)
+print(result)
+```
+
+## Try it
+
+Ask: “Find today's Python release news and give me three changes worth knowing.”
+
+## Customize the search
+
+```python
+local_search = maps_search(
+    default_params={"hl": "en", "gl": "us"},
+    include_examples=False,
+)
+```
+
+Use this version for local recommendations such as coffee shops or repair
+services.

@@ -1,0 +1,106 @@
+---
+title: Travel Explore search
+guide-section: Search tools
+---
+
+# Destination discovery with `travel_explore_search`
+
+`travel_explore_search` uses Google Travel Explore to find possible
+destinations and fares from a departure location. Only `departure_id` is
+required, so an agent can start broad and add region, date, cabin, or passenger
+constraints when the user supplies them.
+
+## When to use it
+
+Use it for questions such as "Where can I fly from JFK for a long weekend?" or
+"Which European cities fit this budget?" Choose
+[`flights_search`](flights_search.html) once both origin and destination are
+known, and [`hotels_search`](hotels_search.html) after a destination and stay
+window are selected.
+
+## Quick example
+
+```python
+from serpapi_search_tools import travel_explore_search
+
+destination_tool = travel_explore_search(
+    default_params={"currency": "USD", "gl": "us"},
+)
+agent_tools = [destination_tool]
+```
+
+Example broad invocation:
+
+```json
+{"departure_id": "JFK", "adults": 1, "travel_class": "economy"}
+```
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Default and constraints |
+| --- | --- | --- | --- |
+| `departure_id` | string | yes | Departure airport or supported location identifier |
+| `arrival_id` | string | no | Arrival airport, city, or supported location identifier |
+| `arrival_area_id` | string | no | Google Knowledge Graph area or country identifier |
+| `outbound_date` | date string | no | `YYYY-MM-DD` |
+| `return_date` | date string | no | Requires outbound; cannot be earlier |
+| `travel_class` | enum | no | `economy`; also `premium_economy`, `business`, or `first` |
+| `adults` | integer | no | `1`; at least `1` |
+| `children` | integer | no | `0`; cannot be negative |
+| `infants_in_seat` | integer | no | `0`; cannot be negative |
+| `infants_on_lap` | integer | no | `0`; cannot be negative |
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
+| `default_params` | `None` | Fix currency, locale, price, stops, duration, or supported interest filters |
+| `api_key` | `None` | Override environment key lookup |
+| `timeout` | `None` | Set the built-in client timeout |
+| `client` | `None` | Add caching, logging, testing, or response reduction |
+| `include_examples` | `True` | Add a destination-discovery hint to the description |
+| `name` | `"travel_explore_search"` | Rename a configured discovery capability |
+
+## Useful SerpApi parameters
+
+Currency and market are common application defaults:
+
+```python
+from serpapi_search_tools import travel_explore_search
+
+us_destination_ideas = travel_explore_search(
+    default_params={"currency": "USD", "gl": "us", "hl": "en"},
+    name="us_destination_ideas",
+)
+```
+
+SerpApi supports more discovery constraints, including price, stops, duration,
+travel mode, and interest settings. Use the official reference for exact
+values. The package rejects `travel_mode` combined with `interest` because
+those modes are incompatible.
+
+## What comes back
+
+Look for `destinations`. Destination entries may include city or place names,
+country, airport information, flight price, duration, stops, dates, image, and
+location data. Broad searches and constrained date searches can return
+different supporting sections.
+
+## Common mistakes
+
+- Sending a text `query` or `q`; this tool starts from `departure_id`.
+- Supplying `return_date` without `outbound_date`.
+- Treating `arrival_area_id` as ordinary text; it is a Google Knowledge Graph
+  identifier.
+- Combining `travel_mode` and `interest` in `default_params`.
+- Using Explore for a route that is already known; use `flights_search` for a
+  tighter schema.
+
+## Official SerpApi documentation
+
+- [Google Travel Explore API](https://serpapi.com/google-travel-explore-api)
+
+See the [destination ideas recipe](recipes.html), the
+[direct travel example](examples.html), and the
+[OpenAI Agents travel planner](../sdk-examples/openai_agents.html).

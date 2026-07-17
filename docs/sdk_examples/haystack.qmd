@@ -1,0 +1,67 @@
+---
+title: Haystack
+description: Add live SerpApi search to a Haystack Agent.
+---
+
+# Haystack
+
+Call a search constructor and add the resulting tool to a Haystack `Agent`.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[haystack]"
+```
+
+If Haystack is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+import os
+
+from haystack.components.agents import Agent
+from haystack.components.generators.chat import OpenAIChatGenerator
+from haystack.dataclasses import ChatMessage
+from haystack.utils.auth import Secret
+from serpapi_search_tools import maps_search, web_search
+
+generator = OpenAIChatGenerator(
+    model="gpt-5.4-mini",
+    api_key=Secret.from_token(os.environ["OPENAI_API_KEY"]),
+)
+agent = Agent(
+    chat_generator=generator,
+    tools=[
+        web_search(),
+        maps_search(),
+    ],
+    max_agent_steps=3,
+)
+result = agent.run(
+    messages=[ChatMessage.from_user("Find three coffee roasters near Portland.")]
+)
+print(result)
+```
+
+## Try it
+
+Ask: “Find three coffee roasters near Portland and explain what makes each one
+distinct.”
+
+## Customize the search
+
+```python
+local_search = maps_search(
+    default_params={"hl": "en", "gl": "us"},
+    include_examples=False,
+)
+```
+
+Replace the example tool with `local_search` when every request is local.

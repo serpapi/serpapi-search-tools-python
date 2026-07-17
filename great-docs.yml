@@ -1,0 +1,143 @@
+# Great Docs Configuration
+# See https://posit-dev.github.io/great-docs/user-guide/configuration.html
+
+# Module Name (optional)
+# ----------------------
+# Set this if your importable module name differs from the project name.
+# Example: project 'py-yaml12' with module name 'yaml12'
+module: serpapi_search_tools
+display_name: serpapi-search-tools
+
+# Docstring Parser
+# ----------------
+# The docstring format used in your package (numpy, google, or sphinx)
+parser: numpy
+
+# Dynamic Introspection
+# ---------------------
+# Use runtime introspection for accurate signatures and source links (default: true).
+
+# API Discovery Settings
+# ----------------------
+# Exclude items from auto-documentation
+# exclude:
+#   - InternalClass
+#   - helper_function
+
+# Logo & Favicon
+# ---------------
+# Point to a single logo file (replaces the text title in the navbar):
+# logo: assets/logo.svg
+#
+# For light/dark variants:
+# logo:
+#   light: assets/logo-light.svg
+#   dark: assets/logo-dark.svg
+#
+# To show the text title alongside the logo, add: show_title: true
+
+# Author Information
+# ------------------
+# Author metadata for display in the landing page sidebar
+# You can add additional fields: github, orcid, affiliation, homepage
+authors:
+  - name: SerpApi
+    role: Developer
+    email: contact@serpapi.com
+    homepage: https://serpapi.com
+
+# Funding / Copyright Holder
+# --------------------------
+# Credit the organization that funds or holds copyright for this package.
+# Displays in sidebar and footer. Homepage and ROR provide links.
+# funding:
+#   name: "Posit Software, PBC"
+#   roles:
+#     - Copyright holder
+#     - funder
+#   homepage: https://posit.co
+#   ror: https://ror.org/03wc8by49
+
+# API Reference Structure
+# -----------------------
+# Customize the sections below to organize your API documentation.
+# - Reorder items within a section to change their display order
+# - Move items between sections or create new sections
+# - Use 'members: false' to exclude methods from documentation
+# - Add 'desc:' to sections for descriptions
+
+reference:
+  - title: Enumerations and errors
+    desc: Supported engines, semantic travel values, and search failures
+    contents:
+      - WebSearchEngine
+      - ShoppingSearchEngine
+      - TravelClass
+      - SerpApiSearchError
+
+  - title: Functions
+    desc: Create capability-specific search tools for Python and agent SDKs
+    contents:
+      - web_search
+      - news_search
+      - maps_search
+      - images_search
+      - shopping_search
+      - videos_search
+      - hotels_search
+      - flights_search
+      - travel_explore_search
+
+# Site URL
+# --------
+# Canonical address of the deployed documentation site.
+# Required for subdirectory deployments, skills page install commands,
+# .well-known/ discovery, and sitemaps.
+# site_url: "https://your-org.github.io/your-package/"
+repo: https://github.com/serpapi/serpapi-search-tools-python
+site_url: "https://serpapi.github.io/serpapi-search-tools-python/"
+source:
+  path: src/serpapi_search_tools
+dark_mode_toggle: true
+homepage: user_guide
+sections:
+  - title: Examples
+    dir: sdk_examples
+    index: true
+    index_columns: 2
+user_guide: docs/user_guide
+
+# Site Settings
+# -------------
+# site:
+#   theme: flatly              # Quarto theme (default: flatly)
+#   toc: true                  # Show table of contents (default: true)
+#   toc-depth: 2               # TOC heading depth (default: 2)
+#   toc-title: On this page    # TOC title (default: "On this page")
+site:
+  theme: flatly
+  toc: true
+  toc-depth: 2
+
+# Project-owned responsive fixes. The inline loaders use Quarto's page offset,
+# so the same assets work from the homepage and nested documentation pages.
+include_in_header:
+  - text: >-
+      <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'assets/docs-mobile.css'}));</script>
+  - text: >-
+      <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'assets/docs-mobile.js';s.defer=true;document.head.appendChild(s);})();</script>
+
+# Jupyter Kernel
+# --------------
+# Jupyter kernel to use for executing code cells in .qmd files.
+# This is set at the project level so it applies to all pages, including
+# auto-generated API reference pages. Can be overridden in individual .qmd
+# file frontmatter if needed for special cases.
+jupyter: python3
+
+# CLI Documentation
+# -----------------
+# cli:
+#   enabled: true              # Enable CLI documentation
+#   module: my_package.cli     # Module containing Click commands
+#   name: cli                  # Name of the Click command object

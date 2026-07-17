@@ -1,0 +1,59 @@
+---
+title: Agno
+description: Add live SerpApi search to an Agno agent.
+---
+
+# Agno
+
+Call a search constructor and add the resulting `agno.tools.Function` to your
+Agno agent's `tools` list.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[agno]"
+```
+
+If Agno is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from serpapi_search_tools import shopping_search, web_search
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-5.4-mini"),
+    instructions="Use SerpApi when current information helps.",
+    tools=[
+        web_search(),
+        shopping_search(),
+    ],
+    telemetry=False,
+)
+agent.print_response("Find three well-reviewed espresso grinders for beginners.")
+```
+
+## Try it
+
+Ask: “Find three well-reviewed espresso grinders for beginners and compare the
+main trade-offs.”
+
+## Customize the search
+
+```python
+products = shopping_search(
+    allowed_engines=["google_shopping", "amazon"],
+    default_engine="google_shopping",
+    default_params={"num": 3, "hl": "en", "gl": "us"},
+)
+```
+
+Add `products` to the agent when product comparison is the main task.

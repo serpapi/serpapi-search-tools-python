@@ -1,0 +1,85 @@
+---
+title: LlamaIndex
+description: Add a SerpApi FunctionTool to a LlamaIndex agent.
+---
+
+# LlamaIndex
+
+Call a search constructor and add the resulting `FunctionTool` to a LlamaIndex
+agent.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[llamaindex]"
+```
+
+If LlamaIndex is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+import asyncio
+from typing import Any
+
+from llama_index.core.agent.workflow import FunctionAgent
+from llama_index.core.llms import LLMMetadata, MessageRole
+from llama_index.llms.openai import OpenAI
+from serpapi_search_tools import travel_explore_search, web_search
+
+
+class OpenAICompatible(OpenAI):
+    @property
+    def _tokenizer(self) -> Any | None:
+        return None
+
+    @property
+    def metadata(self) -> LLMMetadata:
+        return LLMMetadata(
+            context_window=400_000,
+            num_output=-1,
+            is_chat_model=True,
+            is_function_calling_model=True,
+            model_name=self.model,
+            system_role=MessageRole.SYSTEM,
+        )
+
+
+async def main():
+    agent = FunctionAgent(
+        llm=OpenAICompatible(model="gpt-5.4-mini", temperature=0),
+        tools=[
+            web_search(),
+            travel_explore_search(),
+        ],
+    )
+    result = await agent.run(
+        "Starting from JFK, find a good city for a one-month remote-work stay."
+    )
+    print(result)
+
+
+asyncio.run(main())
+```
+
+## Try it
+
+Ask: “Compare three cities for a one-month remote-work stay using current web
+results.”
+
+## Customize the search
+
+```python
+travel_search = travel_explore_search(
+    default_params={"hl": "en", "gl": "us"},
+    include_examples=False,
+)
+```
+
+Replace the tool in the agent when travel discovery is the main task.

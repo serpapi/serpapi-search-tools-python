@@ -1,0 +1,148 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test release source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.13"
+
+      - run: uv sync --dev --locked
+      - run: uv run ruff format --check
+      - run: uv run ruff check
+      - run: uv run ty check
+      - run: uv run pytest -q -m "not live and not integration and not openai_compat_llm"
+
+  build:
+    name: Build release distributions
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.13"
+
+      - name: Verify release tag matches package version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          PACKAGE_VERSION="$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          test "$RELEASE_TAG" = "v$PACKAGE_VERSION"
+      - run: uv build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-distributions
+          path: dist/
+          if-no-files-found: error
+
+  verify-distributions:
+    name: Verify built wheel and live SerpApi responses
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.14"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-distributions
+          path: dist/
+
+      - run: uv venv --python 3.14 .release-venv
+      - name: Install and smoke-test the exact release wheel
+        run: |
+          uv pip install --python .release-venv/bin/python dist/*.whl
+          .release-venv/bin/python tests/clean_install_smoke.py
+      - name: Require the live-test API key
+        run: test -n "$SERPAPI_API_KEY"
+      - name: Run live search suite with the exact release wheel
+        run: |
+          uv pip install --python .release-venv/bin/python "pytest>=8.4,<9"
+          .release-venv/bin/python -m pytest -q -m live tests/test_live.py
+
+  framework-tests:
+    name: Verify ${{ matrix.provider }} adapter
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - provider: agno
+            python-version: "3.14"
+            tox-environment: integration-py314-agno
+          - provider: autogen
+            python-version: "3.14"
+            tox-environment: integration-py314-autogen
+          - provider: claude-agent-sdk
+            python-version: "3.14"
+            tox-environment: integration-py314-claude-agent-sdk
+          - provider: crewai
+            python-version: "3.13"
+            tox-environment: integration-py313-crewai
+          - provider: google-adk
+            python-version: "3.14"
+            tox-environment: integration-py314-google-adk
+          - provider: haystack
+            python-version: "3.14"
+            tox-environment: integration-py314-haystack
+          - provider: langchain
+            python-version: "3.14"
+            tox-environment: integration-py314-langchain
+          - provider: langgraph
+            python-version: "3.13"
+            tox-environment: integration-py313-langgraph
+          - provider: llamaindex
+            python-version: "3.14"
+            tox-environment: integration-py314-llamaindex
+          - provider: openai-agents
+            python-version: "3.14"
+            tox-environment: integration-py314-openai-agents
+          - provider: pydantic-ai
+            python-version: "3.14"
+            tox-environment: integration-py314-pydantic-ai
+          - provider: semantic-kernel
+            python-version: "3.14"
+            tox-environment: integration-py314-semantic-kernel
+          - provider: smolagents
+            python-version: "3.14"
+            tox-environment: integration-py314-smolagents
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --dev --locked
+      - run: uv run tox -e ${{ matrix.tox-environment }}
+
+  publish:
+    name: Publish release to PyPI
+    needs: [verify-distributions, framework-tests]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-distributions
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1

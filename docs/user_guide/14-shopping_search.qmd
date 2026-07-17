@@ -1,0 +1,115 @@
+---
+title: Shopping search
+guide-section: Search tools
+---
+
+# Shopping search with `shopping_search`
+
+`shopping_search` gives an agent product results from Google Shopping, Amazon,
+Walmart, or eBay through one consistent `query` input and a constrained engine
+choice.
+
+## When to use it
+
+Use it for product discovery, price comparison, merchant research, availability
+checks, and finding listings across marketplaces. Choose
+[`web_search`](web_search.html) when the goal is reviews, buying guides, or
+manufacturer documentation rather than product listings.
+
+This is a search-results tool. It does not complete purchases, monitor a product
+continuously, or fetch the separate product-detail APIs.
+
+## Quick example
+
+```python
+from serpapi_search_tools import shopping_search
+
+products = shopping_search(
+    allowed_engines=["google_shopping", "amazon"],
+    default_engine="google_shopping",
+)
+agent_tools = [products]
+```
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `query` | string | yes | Product, brand, model, or category to find |
+| `engine` | enum | no | One of the marketplaces allowed by the constructor |
+
+The package translates `query` to the marketplace's native parameter: `q` for
+Google Shopping, `k` for Amazon, `query` for Walmart, and `_nkw` for eBay.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
+| `allowed_engines` | all four engines | Limit the marketplaces visible to the model |
+| `default_engine` | `google_shopping` when allowed | Select the marketplace used when `engine` is omitted |
+| `default_params` | `None` | Fix result count or engine-specific marketplace filters |
+| `api_key` | `None` | Override environment key lookup |
+| `timeout` | `None` | Set the built-in client timeout |
+| `client` | `None` | Add result normalization, caching, logging, or tests |
+| `include_examples` | `True` | Include a product-query hint in the description |
+| `name` | `"shopping_search"` | Distinguish a configured marketplace capability |
+
+Use separate instances when each marketplace needs different defaults:
+
+```python
+from serpapi_search_tools import shopping_search
+
+google_products = shopping_search(
+    allowed_engines=["google_shopping"],
+    default_params={"gl": "us", "hl": "en", "num": 5},
+    name="google_products",
+)
+amazon_products = shopping_search(
+    allowed_engines=["amazon"],
+    default_params={"num": 5},
+    name="amazon_products",
+)
+```
+
+## Useful SerpApi parameters
+
+`num` is useful for bounding a first result page. Locale, sorting, category,
+condition, delivery, and price-filter parameters are marketplace-specific.
+Follow the matching official reference rather than assuming a Google Shopping
+parameter will work on Amazon, Walmart, or eBay.
+
+For a multi-engine tool, the same `default_params` dictionary is sent to every
+allowed engine. Restrict `allowed_engines` or use separate named tools before
+adding engine-specific values.
+
+## What comes back
+
+Result families differ by marketplace. Google Shopping commonly returns
+`shopping_results`; Amazon, Walmart, and eBay commonly expose product listings
+under `organic_results`. Titles, prices, links, ratings, delivery details, and
+seller fields also vary.
+
+Normalize only fields your application needs and keep the original engine in
+the normalized record.
+
+## Common mistakes
+
+- Assuming every engine returns `shopping_results`.
+- Reusing marketplace-specific `default_params` across all four engines.
+- Combining Amazon keyword mode with `node`; the package rejects that input
+  shape.
+- Expecting one price format. Some engines return strings, extracted numbers,
+  or nested offer objects.
+- Sending dozens of complete product objects to a model when a bounded summary
+  is sufficient.
+
+## Official SerpApi documentation
+
+- [Google Shopping API](https://serpapi.com/google-shopping-api)
+- [Amazon Search API](https://serpapi.com/amazon-search-api)
+- [Walmart Search API](https://serpapi.com/walmart-search-api)
+- [eBay Search API](https://serpapi.com/ebay-search-api)
+
+Run the [marketplace comparison example](examples.html) to see four response
+shapes normalized into common title, price, and link fields.

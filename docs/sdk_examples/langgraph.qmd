@@ -1,0 +1,71 @@
+---
+title: LangGraph
+description: Add SerpApi search to a LangGraph ReAct agent.
+---
+
+# LangGraph
+
+LangGraph's `ToolNode` accepts the tools returned by these search constructors.
+If you restrict the available web or shopping engines, the agent is offered
+only those choices.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[langgraph]"
+```
+
+If LangGraph is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+from langchain_openai import ChatOpenAI
+from langgraph.graph import MessagesState, START, StateGraph
+from langgraph.prebuilt import ToolNode, tools_condition
+from serpapi_search_tools import web_search
+
+search_tool = web_search()
+model = ChatOpenAI(model="gpt-5.4-mini", temperature=0).bind_tools([search_tool])
+
+def call_model(state: MessagesState):
+    return {"messages": [model.invoke(state["messages"])]}
+
+builder = StateGraph(MessagesState)
+builder.add_node("model", call_model)
+builder.add_node("tools", ToolNode([search_tool]))
+builder.add_edge(START, "model")
+builder.add_conditional_edges("model", tools_condition)
+builder.add_edge("tools", "model")
+agent = builder.compile()
+
+result = agent.invoke(
+    {"messages": [{"role": "user", "content": "Find recent Python packaging guidance."}]}
+)
+print(result)
+```
+
+## Try it
+
+Ask: “Find recent Python packaging guidance and turn it into a five-item
+checklist.”
+
+## Customize the search
+
+```python
+multi_source_search = web_search(
+    allowed_engines=["google", "bing", "duckduckgo"],
+    default_engine="google",
+    default_params={"num": 5, "hl": "en"},
+)
+```
+
+The `langgraph` extra installs LangGraph 1.x and the LangChain tool and OpenAI
+integration packages used above. Install it separately from the Google ADK
+extra; their supported transitive dependency branches are incompatible.

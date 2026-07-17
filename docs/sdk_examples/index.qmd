@@ -1,0 +1,53 @@
+# Examples
+
+Choose the SDK you already use. Each page gives you the install command,
+required keys, a complete first run, a prompt to try, and a customization
+example.
+
+## Start here
+
+- New to agent SDKs? Try [OpenAI Agents SDK](openai_agents.html) or
+  [Pydantic AI](pydantic_ai.html).
+- Already use a framework? Open its page below and copy the working path.
+- Need a search setup first? Choose a [usage recipe](../user-guide/recipes.html).
+
+| SDK | Example |
+| --- | --- |
+| OpenAI Agents SDK | [OpenAI Agents SDK](openai_agents.html) |
+| Pydantic AI | [Pydantic AI](pydantic_ai.html) |
+| LangChain | [LangChain](langchain.html) |
+| LangGraph | [LangGraph](langgraph.html) |
+| CrewAI | [CrewAI](crewai.html) |
+| LlamaIndex | [LlamaIndex](llamaindex.html) |
+| Claude Agent SDK | [Claude Agent SDK](claude_agent_sdk.html) |
+| AutoGen | [AutoGen](autogen.html) |
+| Haystack | [Haystack](haystack.html) |
+| Agno | [Agno](agno.html) |
+| smolagents | [smolagents](smolagents.html) |
+| Google ADK | [Google ADK](google_adk.html) |
+| Semantic Kernel | [Semantic Kernel](semantic_kernel.html) |
+
+## Automatic SDK detection
+
+Each SDK page shows both installation choices: the base package when your SDK
+is already installed, or a matching extra when you want both dependencies at
+once. The examples then use automatic detection:
+
+```python
+from serpapi_search_tools import web_search
+
+tool = web_search()
+```
+
+If multiple supported SDKs are installed in one environment, choose the target
+explicitly to avoid auto-detection confusion:
+
+```python
+from serpapi_search_tools import web_search
+
+tool = web_search(provider="openai-agents")
+```
+
+If your SDK is not listed, request a normal Python callable and follow
+[Use another agent SDK](../user-guide/configuration.html#support-another-agent-sdk)
+for the next steps.

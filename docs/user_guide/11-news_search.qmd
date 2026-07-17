@@ -1,0 +1,92 @@
+---
+title: News search
+guide-section: Search tools
+---
+
+# News search with `news_search`
+
+`news_search` searches Google News in keyword-query mode. It gives an agent a
+clear way to ask for recent reporting without mixing news intent into a general
+web tool.
+
+## When to use it
+
+Use it for news monitoring, recent announcements, current events, product
+launches, and finding reporting from several publishers. Pair it with
+[`web_search`](web_search.html) when the agent also needs durable background
+sources.
+
+Do not use it for Google News topic, publication, section, or story-token
+workflows. Those have a different parameter shape from keyword query mode.
+
+## Quick example
+
+```python
+from serpapi_search_tools import news_search
+
+tool = news_search()
+agent_tools = [tool]
+```
+
+The default `provider="auto"` creates the right tool when one supported SDK is
+installed in the environment.
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `query` | string | yes | The event, organization, person, or topic to find in current news |
+
+The engine is fixed to `google_news`, so the model does not see an `engine`
+field or SerpApi's native `q` name.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Auto-detect one installed SDK or select one explicitly |
+| `default_params` | `None` | Fix locale, country, or bounded result settings |
+| `api_key` | `None` | Override `SERPAPI_API_KEY` / `SERPAPI_KEY` |
+| `timeout` | `None` | Set the built-in client timeout |
+| `client` | `None` | Provide a custom search client |
+| `include_examples` | `True` | Add a short query example to the tool description |
+| `name` | `"news_search"` | Rename a configured news capability |
+
+## Useful SerpApi parameters
+
+Keep locale and country decisions in the application:
+
+```python
+from serpapi_search_tools import news_search
+
+us_news = news_search(
+    default_params={"hl": "en", "gl": "us", "num": 5},
+    name="us_news",
+)
+```
+
+Use the official reference for more Google News query parameters. Advanced
+token fields such as `topic_token`, `publication_token`, `section_token`, and
+`story_token` do not belong in this keyword-query tool.
+
+## What comes back
+
+Look first for `news_results`. Items commonly include a title, source, date,
+snippet, thumbnail, and link. The complete response also includes
+`search_metadata` and `search_parameters`.
+
+## Common mistakes
+
+- Using `news_search` for general websites rather than news reporting.
+- Passing advanced Google News token modes through `default_params`; the
+  package rejects combinations that cannot coexist with `query`.
+- Assuming every article has a thumbnail or snippet. Treat optional fields as
+  optional when normalizing results.
+- Asking for "latest" without giving the agent permission to call live search.
+
+## Official SerpApi documentation
+
+- [Google News API](https://serpapi.com/google-news-api)
+
+Try the [current reporting recipe](recipes.html) or the
+[multi-vertical research example](examples.html).

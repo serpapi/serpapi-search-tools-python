@@ -1,0 +1,108 @@
+---
+title: Hotel search
+guide-section: Search tools
+---
+
+# Hotel search with `hotels_search`
+
+`hotels_search` searches Google Hotels for a destination and stay window. It
+asks for check-in and check-out dates so the results can include relevant
+availability and prices.
+
+## When to use it
+
+Use it when the agent needs properties, rates, availability, amenities, or
+hotel comparisons for a known destination and stay window.
+
+Choose [`travel_explore_search`](travel_explore_search.html) when the destination
+is still open, and [`maps_search`](maps_search.html) when the goal is local
+place discovery rather than date-specific lodging results.
+
+## Quick example
+
+```python
+from serpapi_search_tools import hotels_search
+
+hotel_tool = hotels_search(
+    default_params={"currency": "USD", "gl": "us"},
+)
+agent_tools = [hotel_tool]
+```
+
+An agent invocation has a structured shape:
+
+```json
+{
+  "query": "hotels in Kyoto",
+  "check_in_date": "2030-08-01",
+  "check_out_date": "2030-08-04",
+  "adults": 2,
+  "children": 1,
+  "children_ages": [8]
+}
+```
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Default and constraints |
+| --- | --- | --- | --- |
+| `query` | string | yes | Hotel name, city, region, or destination |
+| `check_in_date` | date string | yes | `YYYY-MM-DD` |
+| `check_out_date` | date string | yes | `YYYY-MM-DD`, strictly after check-in |
+| `adults` | integer | no | `2`; at least `1` |
+| `children` | integer | no | `0`; cannot be negative |
+| `children_ages` | list of integers | no | Exactly one age from `1` through `17` for each child |
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
+| `default_params` | `None` | Fix currency, locale, country, or supported property filters |
+| `api_key` | `None` | Override environment key lookup |
+| `timeout` | `None` | Set the built-in client timeout |
+| `client` | `None` | Add caching, request logging, or deterministic tests |
+| `include_examples` | `True` | Add a stay-search hint to the model description |
+| `name` | `"hotels_search"` | Distinguish region- or policy-specific hotel tools |
+
+## Useful SerpApi parameters
+
+Keep currency and locale under application control:
+
+```python
+from serpapi_search_tools import hotels_search
+
+us_hotel_prices = hotels_search(
+    default_params={"currency": "USD", "gl": "us", "hl": "en"},
+    name="us_hotel_prices",
+)
+```
+
+Google Hotels supports additional property type, rating, hotel class,
+amenities, offers, and sorting filters. Check the official reference for exact
+names and values. Dates and occupancy should use the typed model inputs above,
+not duplicate values in `default_params`.
+
+## What comes back
+
+Look for `properties`. Entries may include property names, links, GPS
+coordinates, ratings, amenities, images, extracted prices, rate-per-night
+details, and nearby places. The response can also include brands, filters,
+search metadata, and pagination.
+
+## Common mistakes
+
+- Omitting check-in or check-out dates.
+- Using a checkout date equal to or before check-in.
+- Providing `children=1` without one `children_ages` value.
+- Using a child age outside `1` through `17`.
+- Leaving old example dates in production code. Send real future stay dates.
+- Assuming a displayed rate includes every fee; inspect the returned price
+  fields and source information.
+
+## Official SerpApi documentation
+
+- [Google Hotels API](https://serpapi.com/google-hotels-api)
+
+See [structured travel examples](examples.html) and the
+[trip-planning agent recipe](recipes.html).

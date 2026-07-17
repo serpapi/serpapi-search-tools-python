@@ -1,0 +1,84 @@
+---
+title: Contributing
+guide-section: Contribute
+---
+
+# Contributing
+
+The package separates search capabilities from agent-SDK adapters. Keep that
+boundary intact: engine-specific request construction belongs in a tool module,
+while framework imports and tool-object conversion belong in the adapter
+module.
+
+## Project structure
+
+| Path | Purpose |
+| --- | --- |
+| `src/serpapi_search_tools/_shared.py` | Provider-neutral tool definitions, client runtime, schemas, and validation helpers |
+| `src/serpapi_search_tools/_query_tools.py` | General web, news, maps, images, shopping, and video tools |
+| `src/serpapi_search_tools/_travel_tools.py` | Hotels, flights, and travel-explore tools |
+| `src/serpapi_search_tools/_providers.py` | Provider registry, aliases, dependency metadata, and auto-detection |
+| `src/serpapi_search_tools/_adapters.py` | Lazy conversion into native SDK tools |
+| `tests/` | Unit, schema, metadata, documentation, live, and integration tests |
+| `examples/` | Direct and SDK-specific runnable examples |
+
+## Add a search capability
+
+1. Read the engine's official documentation from
+   [SerpApi's LLM index](https://serpapi.com/llms.txt).
+2. Define a public constructor with an explicit typed input shape. Required
+   SerpApi inputs must be required model inputs.
+3. Translate semantic values to native SerpApi parameters inside the callable.
+4. Build a closed JSON Schema with `additionalProperties: false`.
+5. Add request-construction and validation unit tests, every-adapter schema
+   tests, live coverage, docs, and an example.
+6. Export the constructor from `serpapi_search_tools.__init__` and add it to the
+   Great Docs API reference.
+
+Do not add an arbitrary model-facing parameters dictionary. Developer-only
+advanced filters belong in `default_params` until they deserve explicit typed
+fields or a separate tool.
+
+## Add an agent SDK
+
+1. Add a `ProviderSpec` in `_providers.py` with one canonical provider name,
+   intentional aliases, its distribution name, and optional-extra name.
+2. Implement one lazy adapter in `_adapters.py` that consumes `ToolDefinition`.
+3. Add the optional dependency range and an isolated tox factor.
+4. Test missing-dependency behavior, native construction, exact schema
+   preservation, and actual tool invocation against the fake OpenAI-compatible
+   server when the SDK supports it.
+5. Add a runnable example and an SDK documentation page.
+
+The adapter must work for every public constructor. Do not special-case search
+engines inside provider dispatch.
+
+## Verification
+
+Run the focused tests while editing, then follow the complete matrix in
+[Testing](testing.html). Do not use live SerpApi or model calls in the default
+unit suite.
+
+## Test a release on TestPyPI
+
+The **Publish main to TestPyPI** workflow is a manual release rehearsal. It
+always checks out `main`, then runs source quality checks, builds the
+distributions, smoke-tests and live-tests the exact wheel, and verifies all 13
+supported SDK adapters before publishing.
+
+Configure a protected GitHub environment named `testpypi`, restrict it to
+`main`, and create a TestPyPI Trusted Publisher for workflow `testpypi.yml` and
+environment `testpypi`. The live wheel gate also requires the repository's
+`SERPAPI_API_KEY` secret. No TestPyPI password or API token is stored in GitHub.
+
+Run the workflow from the Actions page with `main` selected. Duplicate versions
+fail intentionally because TestPyPI does not allow a project version to be
+uploaded twice. Bump `project.version` before another rehearsal.
+
+## Publish documentation
+
+Documentation builds and deploys only when a GitHub Release is published. The
+release-triggered workflow renders Great Docs, repairs and verifies internal
+links, and deploys the verified artifact to GitHub Pages. During ordinary pull
+requests and branch development, use the local documentation commands in
+[Testing](testing.html).

@@ -1,0 +1,75 @@
+---
+title: Claude Agent SDK
+description: Expose SerpApi search to Claude through an in-process SDK MCP server.
+---
+
+# Claude Agent SDK
+
+Claude Agent SDK accepts custom tools through an SDK MCP server. Everything in
+this example runs in one Python process; you do not need a separate MCP service.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[claude-agent-sdk]"
+```
+
+If Claude Agent SDK is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export ANTHROPIC_API_KEY="your-anthropic-key"
+```
+
+## Run it
+
+```python
+import asyncio
+
+from claude_agent_sdk import ClaudeAgentOptions, create_sdk_mcp_server, query
+from serpapi_search_tools import news_search, web_search
+
+
+async def main():
+    server = create_sdk_mcp_server(
+        name="serpapi",
+        version="1.0.0",
+        tools=[
+            web_search(),
+            news_search(),
+        ],
+    )
+    options = ClaudeAgentOptions(
+        model="claude-sonnet-5",
+        mcp_servers={"serpapi": server},
+        allowed_tools=["mcp__serpapi__web_search", "mcp__serpapi__news_search"],
+        max_turns=6,
+    )
+    async for message in query(
+        prompt="Find three recent portable solar generator stories.",
+        options=options,
+    ):
+        if getattr(message, "result", None):
+            print(message.result)
+
+
+asyncio.run(main())
+```
+
+## Try it
+
+Ask Claude to find three recent portable solar generator stories and summarize
+what changed.
+
+## Customize the search
+
+```python
+current_news = news_search(
+    default_params={"num": 3, "hl": "en", "gl": "us"},
+    name="current_news",
+)
+```
+
+When you change the name, add the corresponding MCP id to `allowed_tools`.
+`current_news` becomes `mcp__serpapi__current_news`.

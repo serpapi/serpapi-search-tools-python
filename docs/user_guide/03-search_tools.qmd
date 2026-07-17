@@ -1,0 +1,57 @@
+---
+title: Choose a search tool
+guide-section: Start Here
+---
+
+# Choose by what the user is trying to do
+
+Start with the smallest set of tools that covers your agent's job. Separate
+names and inputs make it easier for the agent to choose the right search and
+provide the required information.
+
+| If your agent needs to... | Use | SerpApi engine(s) | Required inputs |
+| --- | --- | --- | --- |
+| Research general websites | [`web_search`](web_search.html) | `google`, `google_light`, `bing`, `yahoo`, `duckduckgo` | `query` |
+| Find current reporting | [`news_search`](news_search.html) | `google_news` | `query` |
+| Discover places or businesses | [`maps_search`](maps_search.html) | `google_maps` | `query` |
+| Find image URLs and metadata | [`images_search`](images_search.html) | `google_images` | `query` |
+| Compare products and sellers | [`shopping_search`](shopping_search.html) | `google_shopping`, `amazon`, `walmart`, `ebay` | `query` |
+| Find YouTube content | [`videos_search`](videos_search.html) | `youtube` | `query` |
+| Search properties and rates | [`hotels_search`](hotels_search.html) | `google_hotels` | `query`, `check_in_date`, `check_out_date` |
+| Search a known flight route | [`flights_search`](flights_search.html) | `google_flights` | `departure_id`, `arrival_id`, `outbound_date` |
+| Explore possible destinations | [`travel_explore_search`](travel_explore_search.html) | `google_travel_explore` | `departure_id` |
+
+## A simple decision rule
+
+- Start with [`web_search`](web_search.html) for broad research.
+- Add [`news_search`](news_search.html) when freshness and news sources matter.
+- Use [`maps_search`](maps_search.html), [`images_search`](images_search.html),
+  [`shopping_search`](shopping_search.html), or
+  [`videos_search`](videos_search.html) when the desired result is a place,
+  image, product, or video rather than a webpage.
+- Use the three travel tools only when the prompt supplies or can infer their
+  structured route, date, occupancy, or destination fields.
+
+## Compose capabilities with a list
+
+Every constructor creates one tool ready for your selected SDK. Combine
+capabilities with the same list you already use for your other tools:
+
+```python
+from serpapi_search_tools import maps_search, news_search, web_search
+
+tools = [web_search(), news_search(), maps_search()]
+```
+
+If only one supported agent SDK is installed, automatic detection creates the
+right tools for it. If several are installed, use the same explicit
+`provider=` on every constructor.
+
+## Search inputs versus application settings
+
+The final column lists the information a tool needs when it runs. Your Python
+application separately controls settings such as engines, locale, result
+count, currency, API key, timeout, and tool name when it creates the tool.
+
+Open a dedicated page above for both sets of options, then read
+[Common configuration](configuration.html) for settings shared by all tools.

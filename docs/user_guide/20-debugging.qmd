@@ -1,0 +1,113 @@
+---
+title: Debug search responses
+guide-section: Advanced Usage
+---
+
+# Debug search responses
+
+When an agent gives an unexpected result, call the same tool as a plain Python
+function first. This separates SerpApi request problems from model and SDK
+behavior.
+
+## Inspect a request and response
+
+```python
+import json
+
+from serpapi_search_tools import web_search
+
+search = web_search(
+    provider="function",
+    allowed_engines=["google_light"],
+    default_params={"num": 3, "hl": "en", "gl": "us"},
+)
+response = json.loads(search(query="Python packaging tutorials"))
+
+print(response.get("search_parameters"))
+for result in response.get("organic_results", []):
+    print(result.get("title"), result.get("link"))
+```
+
+Plain callables and SDK tools use the same search logic. If the direct call
+succeeds, inspect the arguments produced by the agent next.
+
+## Know the result section
+
+SerpApi returns the full engine response as compact JSON. Common sections are:
+
+| Tool | Common result section |
+| --- | --- |
+| `web_search` | `organic_results` |
+| `news_search` | `news_results` |
+| `maps_search` | `local_results` |
+| `images_search` | `images_results` |
+| `shopping_search` | `shopping_results` or engine-specific product results |
+| `videos_search` | `video_results` |
+| `hotels_search` | `properties` |
+| `flights_search` | `best_flights`, `other_flights` |
+| `travel_explore_search` | destination and flight result sections |
+
+Print `response.keys()`, `response.get("error")`,
+`response.get("search_metadata")`, and `response.get("search_parameters")`
+when the expected section is absent.
+
+## Inspect travel request construction
+
+Travel tools do not accept a free-text `q` substitute. Their structured fields
+are sent directly to SerpApi:
+
+```python
+from serpapi_search_tools import flights_search
+
+search = flights_search(provider="function")
+raw = search(
+    departure_id="LAX",
+    arrival_id="AUS",
+    outbound_date="2026-08-01",
+    return_date="2026-08-05",
+    adults=2,
+)
+```
+
+The package infers SerpApi's trip `type` from the presence of `return_date` and
+maps semantic cabin names such as `business` to the numeric API value.
+
+## Common failures
+
+- **No SerpApi key:** set `SERPAPI_API_KEY`, pass `api_key=`, or verify your
+  secret manager returned a non-empty value.
+- **Wrong constructor:** use `news_search`, `maps_search`, or another dedicated
+  tool instead of passing a vertical engine to `web_search`.
+- **Invalid travel dates:** use `YYYY-MM-DD`; checkout must follow check-in and
+  a return date cannot precede departure.
+- **Invalid child data:** `hotels_search.children_ages` must contain exactly one
+  age from 1 through 17 for each child.
+- **Incompatible defaults:** remove mutually exclusive engine parameters named
+  by the validation error.
+- **Direct call works but the agent fails:** compare the SDK's tool name and
+  the arguments emitted by the agent with the fields documented for that tool.
+- **Direct call also fails:** keep the model out of the test until the SerpApi
+  request and response are correct.
+
+## Catch provider and transport failures
+
+Invalid local inputs raise `ValueError` before a SerpApi request. Failures returned
+by the built-in SerpApi client raise `SerpApiSearchError`:
+
+```python
+from serpapi_search_tools import SerpApiSearchError, web_search
+
+search = web_search(provider="function")
+try:
+    encoded = search(query="Python packaging")
+except ValueError as exc:
+    print(f"Fix the tool arguments: {exc}")
+except SerpApiSearchError as exc:
+    print(f"SerpApi could not complete the request: {exc}")
+```
+
+The error message replaces any API key found in the upstream request URL with
+`[REDACTED]`, making it safer to retain ordinary application and CI logs.
+
+Return to [Usage and composition](usage.html) after the direct call works, or
+open the complete example under [Choose an agent SDK](frameworks.html).

@@ -1,0 +1,88 @@
+---
+title: Image search
+guide-section: Search tools
+---
+
+# Image search with `images_search`
+
+`images_search` searches Google Images for image URLs and structured metadata.
+It is useful when the agent needs visual references rather than ordinary web
+pages.
+
+## When to use it
+
+Use it for visual research, inspiration gathering, product imagery discovery,
+identifying visual themes, or locating source pages for images.
+
+Choose [`web_search`](web_search.html) for text sources. This tool returns image
+metadata; it does not download, edit, license, or verify permission to reuse an
+image.
+
+## Quick example
+
+```python
+from serpapi_search_tools import images_search
+
+visual_search = images_search()
+agent_tools = [visual_search]
+```
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `query` | string | yes | The subject, object, style, or scene to search for |
+
+The engine is fixed to `google_images`, so the agent only needs to provide the
+image query.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect the installed agent SDK |
+| `default_params` | `None` | Fix safe search, locale, or other supported image filters |
+| `api_key` | `None` | Override environment key lookup |
+| `timeout` | `None` | Set the built-in client timeout |
+| `client` | `None` | Provide a custom client for logging, caching, or tests |
+| `include_examples` | `True` | Add a sample image query to the description |
+| `name` | `"images_search"` | Rename a specialized visual-search tool |
+
+## Useful SerpApi parameters
+
+Safe search is a common application-controlled policy:
+
+```python
+from serpapi_search_tools import images_search
+
+safe_images = images_search(
+    default_params={"safe": "active", "hl": "en", "gl": "us"},
+    name="safe_image_search",
+)
+```
+
+Google Images supports additional size, color, type, rights, time, and page
+filters. Use the official reference for accepted values. The package rejects
+known conflicts such as `location` with `uule`, and relative-period filters
+with explicit start/end dates.
+
+## What comes back
+
+Look for `images_results`. Items can include title, original image URL,
+thumbnail, source page, dimensions, source name, and position. Your application
+should not assume every result contains every optional field.
+
+## Common mistakes
+
+- Treating a returned image URL as a reuse license. Check the source and rights.
+- Sending both `location` and `uule`.
+- Mixing relative-period and explicit date filters.
+- Sending full image responses to a model when a small list of title, source,
+  and URL fields would be enough.
+
+## Official SerpApi documentation
+
+- [Google Images API](https://serpapi.com/google-images-api)
+
+See the [image discovery recipe](recipes.html) and the
+[Pydantic AI image example](../sdk-examples/pydantic_ai.html).

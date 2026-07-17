@@ -1,0 +1,224 @@
+[project]
+name = "serpapi-search-tools"
+version = "0.1.0"
+description = "Add live SerpApi search to Python agents and agent SDKs."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "SerpApi" },
+]
+keywords = ["agents", "ai", "search", "serpapi", "tools"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+dependencies = ["serpapi>=1.0.0,<2"]
+
+[project.urls]
+Documentation = "https://serpapi.github.io/serpapi-search-tools-python/"
+Repository = "https://github.com/serpapi/serpapi-search-tools-python"
+Issues = "https://github.com/serpapi/serpapi-search-tools-python/issues"
+
+[project.optional-dependencies]
+agno = ["agno>=2.6.19,<3", "openai>=1.0.0,<3"]
+autogen = [
+    "autogen-agentchat>=0.7.5,<0.8",
+    "autogen-core>=0.7.5,<0.8",
+    "autogen-ext[openai]>=0.7.5,<0.8",
+    "pydantic>=2.10.4,<3",
+]
+claude-agent-sdk = ["claude-agent-sdk>=0.2.108,<1"]
+crewai = ["crewai>=1.6.1,<2; python_version < '3.14'", "pydantic>=2.10.4,<3"]
+frameworks = [
+    "agno>=2.6.19,<3",
+    "autogen-core>=0.7.5,<0.8",
+    "autogen-agentchat>=0.7.5,<0.8",
+    "autogen-ext[openai]>=0.7.5,<0.8",
+    "claude-agent-sdk>=0.2.108,<1",
+    "crewai>=1.6.1,<2; python_version < '3.14'",
+    "haystack-ai>=2.30.2,<3",
+    "langchain>=1.3.11,<2",
+    "langchain-core>=1.4.8,<2",
+    "langchain-openai>=1.1.9,<2",
+    "langgraph>=1.2.6,<2",
+    "llama-index-core>=0.14.22,<0.15",
+    "llama-index-llms-openai>=0.6.26,<0.7",
+    "openai>=1.0.0,<3",
+    "openai-agents>=0.3.3,<1",
+    "pydantic-ai>=1.30.1,<3",
+    "pydantic>=2.10.4,<3",
+    "semantic-kernel>=1.36.0,<2",
+    "smolagents>=1.26.0,<2",
+]
+google-adk = ["google-adk>=2.3.0,<3"]
+haystack = ["haystack-ai>=2.30.2,<3"]
+langchain = [
+    "langchain>=1.3.11,<2",
+    "langchain-core>=1.4.8,<2",
+    "langchain-openai>=1.1.9,<2",
+    "pydantic>=2.10.4,<3",
+]
+langgraph = [
+    "langchain>=1.3.11,<2",
+    "langchain-core>=1.4.8,<2",
+    "langchain-openai>=1.1.9,<2",
+    "langgraph>=1.2.6,<2",
+    "pydantic>=2.10.4,<3",
+]
+llamaindex = [
+    "llama-index-core>=0.14.22,<0.15",
+    "llama-index-llms-openai>=0.6.26,<0.7",
+    "pydantic>=2.10.4,<3",
+]
+openai-agents = ["openai-agents>=0.3.3,<1"]
+pydantic-ai = ["pydantic-ai>=1.30.1,<3", "pydantic>=2.10.4,<3"]
+semantic-kernel = ["openai>=1.0.0,<3", "semantic-kernel>=1.36.0,<2"]
+smolagents = ["openai>=1.0.0,<3", "smolagents>=1.26.0,<2"]
+
+[dependency-groups]
+dev = [
+    "fastapi>=0.115.0,<1",
+    "httpx>=0.28.0,<1",
+    "pytest>=8.4.0,<9",
+    "python-dotenv>=1.0.0,<2",
+    "ruff>=0.14.0,<0.15",
+    "tomli>=2.0.0,<3; python_version < '3.11'",
+    "tox>=4.22,<5",
+    "ty>=0.0.1",
+    "uvicorn>=0.34.0,<1",
+]
+docs = [
+    "great-docs>=0.14.0,<0.15; python_version >= '3.11'",
+    "griffe>=0.35.0,<1; python_version >= '3.11'",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.24,<0.12"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+addopts = '-ra -m "not live and not integration and not openai_compat_llm"'
+testpaths = ["tests"]
+markers = [
+    "integration: runs optional framework integration tests against a fake OpenAI-compatible server",
+    "live: requires SERPAPI_API_KEY or SERPAPI_KEY and calls SerpApi",
+    "weekly_live: probes upstream contracts only on the scheduled weekly live run",
+    "openai_compat_llm: opt-in tests against a user-configured OpenAI-compatible API",
+]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]
+
+[tool.uv]
+conflicts = [
+    [
+        { extra = "frameworks" },
+        { extra = "google-adk" },
+        { extra = "semantic-kernel" },
+    ],
+    [
+        { extra = "google-adk" },
+        { extra = "langchain" },
+    ],
+    [
+        { extra = "google-adk" },
+        { extra = "langgraph" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "frameworks" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "openai-agents" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "agno" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "autogen" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "claude-agent-sdk" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "crewai" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "google-adk" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "haystack" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "langchain" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "langgraph" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "llamaindex" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "pydantic-ai" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "semantic-kernel" },
+    ],
+    [
+        { group = "docs" },
+        { extra = "smolagents" },
+    ],
+]
+
+[tool.uv.build-backend]
+source-exclude = ["/examples/**", "/great-docs/**", "/.idea/**"]
+
+[tool.ty.analysis]
+allowed-unresolved-imports = [
+    "agents",
+    "agno.tools",
+    "autogen_core.tools",
+    "claude_agent_sdk",
+    "crewai.tools",
+    "google.adk.tools",
+    "haystack.tools",
+    "langchain_core.tools",
+    "llama_index.core.tools",
+    "pydantic_ai.tools",
+    "semantic_kernel.functions",
+    "smolagents",
+]
+
+[tool.ty.src]
+include = ["src"]

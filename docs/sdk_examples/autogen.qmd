@@ -1,0 +1,78 @@
+---
+title: AutoGen
+description: Add a SerpApi FunctionTool to an AutoGen AssistantAgent.
+---
+
+# AutoGen
+
+Call a search constructor and pass the resulting function tool to an AutoGen
+`AssistantAgent`.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[autogen]"
+```
+
+If AutoGen is already installed in your project, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+import asyncio
+import os
+
+from autogen_agentchat.agents import AssistantAgent
+from autogen_ext.models.openai import OpenAIChatCompletionClient
+from serpapi_search_tools import news_search
+
+
+async def main():
+    model_client = OpenAIChatCompletionClient(
+        model="gpt-5.4-mini",
+        api_key=os.environ["OPENAI_API_KEY"],
+        model_info={
+            "vision": True,
+            "function_calling": True,
+            "json_output": True,
+            "family": "unknown",
+            "structured_output": True,
+        },
+    )
+    try:
+        agent = AssistantAgent(
+            "search_agent",
+            model_client=model_client,
+            tools=[news_search()],
+            reflect_on_tool_use=True,
+        )
+        print(await agent.run(task="Find recent battery-recycling news."))
+    finally:
+        await model_client.close()
+
+
+asyncio.run(main())
+```
+
+## Try it
+
+Ask: “Find three recent battery-recycling stories and summarize the overall
+trend.”
+
+## Customize the search
+
+```python
+current_news = news_search(
+    default_params={"num": 3, "hl": "en", "gl": "us"},
+    include_examples=False,
+)
+```
+
+Pair `current_news` with `web_search()` when the agent also
+needs general-web fallback.
