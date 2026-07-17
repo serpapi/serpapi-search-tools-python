@@ -55,6 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
+      SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -74,7 +75,7 @@ jobs:
           uv pip install --python .testpypi-venv/bin/python dist/*.whl
           .testpypi-venv/bin/python tests/clean_install_smoke.py
       - name: Require the live-test API key
-        run: test -n "$SERPAPI_API_KEY"
+        run: test -n "$SERPAPI_API_KEY" || test -n "$SERPAPI_KEY"
       - name: Run live search suite with the exact TestPyPI wheel
         run: |
           uv pip install --python .testpypi-venv/bin/python "pytest>=8.4,<9"

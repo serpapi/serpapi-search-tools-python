@@ -287,6 +287,9 @@ def test_testpypi_workflow_is_manual_main_only_and_matches_release_gates() -> No
     assert "testpypi-distributions" in verify
     assert "tests/clean_install_smoke.py" in verify
     assert "tests/test_live.py" in verify
+    assert "SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}" in verify
+    assert "SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}" in verify
+    assert 'test -n "$SERPAPI_API_KEY" || test -n "$SERPAPI_KEY"' in verify
 
     frameworks = _workflow_job_text(workflow, "framework-tests")
     assert "needs: test" in frameworks
@@ -315,7 +318,10 @@ def test_ci_separates_quality_basic_framework_and_live_checks() -> None:
     live_adapters = _workflow_job_text(ci, "live-adapters")
 
     assert "SERPAPI_API_KEY" not in frameworks
+    assert "SERPAPI_KEY" not in frameworks
     assert "SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}" in live
+    assert "SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}" in live
+    assert 'test -n "$SERPAPI_API_KEY" || test -n "$SERPAPI_KEY"' in live
     assert "needs: quality" in live
     assert "github.event_name == 'push' && github.ref == 'refs/heads/main'" in live
     assert "github.event_name == 'schedule'" in live
@@ -325,6 +331,8 @@ def test_ci_separates_quality_basic_framework_and_live_checks() -> None:
 
     assert "needs: quality" in live_adapters
     assert "SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}" in live_adapters
+    assert "SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}" in live_adapters
+    assert 'test -n "$SERPAPI_API_KEY" || test -n "$SERPAPI_KEY"' in live_adapters
     assert "tests/test_live_adapters.py" in live_adapters
 
 
@@ -344,6 +352,9 @@ def test_release_workflow_uses_pypi_trusted_publishing() -> None:
     assert "\n  verify-distributions:\n" in release
     assert "tests/clean_install_smoke.py" in release
     assert "tests/test_live.py" in release
+    assert "SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}" in verify_distributions
+    assert "SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}" in verify_distributions
+    assert 'test -n "$SERPAPI_API_KEY" || test -n "$SERPAPI_KEY"' in verify_distributions
     assert 'python-version: "3.14"' in verify_distributions
     assert "\n  framework-tests:\n" in release
     assert "tox-environment:" in _workflow_job_text(release, "framework-tests")
