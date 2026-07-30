@@ -5,6 +5,9 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/serpapi-search-tools.svg)](https://pypi.org/project/serpapi-search-tools/)
 [![License: MIT](https://img.shields.io/pypi/l/serpapi-search-tools.svg)](https://github.com/serpapi/serpapi-search-tools-python/blob/main/LICENSE)
 
+[Read the full documentation](https://serpapi.github.io/serpapi-search-tools-python/)
+for guides, SDK examples, recipes, and the API reference.
+
 Give Python agents live web, news, maps, image, shopping, video, hotel, and
 flight search through small typed tools.
 
@@ -74,71 +77,86 @@ export SERPAPI_API_KEY="your-key"
 `SERPAPI_KEY` is also supported. A directly supplied `api_key=` takes
 precedence over environment variables.
 
-## Quickstart: direct Python
+## Quickstart: automatic SDK detection
 
-Use `provider="function"` when you do not need an agent framework:
+This quickstart uses OpenAI Agents SDK to demonstrate automatic detection. It
+assumes the SDK is already installed in your environment (install it with
+`pip install openai-agents` if needed). Then add the base package:
 
-```python
-import json
-
-from serpapi_search_tools import web_search
-
-search = web_search(
-    provider="function",
-    allowed_engines=["google_light", "bing"],
-    default_params={"num": 3, "hl": "en", "gl": "us"},
-)
-
-result = json.loads(search(query="Python packaging"))
-print(result["organic_results"])
+```bash
+pip install serpapi-search-tools
 ```
 
-The callable returns compact JSON text containing only the result families an
-agent normally needs. Google search keeps answer boxes, knowledge graphs, AI
-overviews, and up to five organic results. Google Light also keeps its related
-questions, related searches, and top stories. Specialized tools keep up to five
-primary results for their vertical. A successful response without a recognized
-result family returns a bounded `no_results` status instead of `{}`.
-
-Request the untouched SerpApi response when application code needs metadata,
-pagination, filters, or another auxiliary section:
-
-```python
-from serpapi_search_tools import SearchResultMode, web_search
-
-full_search = web_search(mode=SearchResultMode.FULL)
-```
-
-## Quickstart: an agent with several search capabilities
-
-This example assumes the `openai-agents` extra is the only supported SDK in the
-environment, so automatic detection needs no `provider=` argument:
+With one supported SDK installed, create the tool without any configuration.
+The package detects OpenAI Agents SDK and returns its native `FunctionTool`.
+This example also expects the `OPENAI_API_KEY` used by your agent.
 
 ```python
 from agents import Agent, Runner
 
-from serpapi_search_tools import maps_search, news_search, web_search
+from serpapi_search_tools import web_search
 
 agent = Agent(
     name="research-agent",
-    instructions="Use the most specific search tool for the request.",
-    tools=[
-        web_search(),
-        news_search(),
-        maps_search(),
-    ],
+    instructions="Use web search when the answer needs current information.",
+    tools=[web_search()],
 )
 
-result = Runner.run_sync(agent, "Find recent reporting and local events about coffee in Austin")
+result = Runner.run_sync(
+    agent,
+    "Find three recent Python packaging changes and explain why they matter.",
+)
 print(result.final_output)
 ```
 
-Automatic detection is the normal path when one supported SDK is installed. If
-multiple supported SDK families share an environment, automatic detection
-raises an actionable error; choose one explicitly, for example
-`web_search(provider="openai-agents")`. LangGraph and LangChain count as one
-adapter family. When no supported SDK is installed, automatic detection falls
-back to a plain callable.
+## Quickstart: explicit LangChain provider
+
+Install the LangChain extra and the model backend used by this example:
+
+```bash
+pip install "serpapi-search-tools[langchain]" langchain-openai
+```
+
+The `langchain` extra installs a compatible LangChain version.
+`langchain-openai` provides this example's model integration; replace it with
+the backend your LangChain application uses. With `langchain-openai`, set
+`OPENAI_API_KEY` before running the agent.
+
+```python
+from langchain.agents import create_agent
+from langchain_openai import ChatOpenAI
+
+from serpapi_search_tools import maps_search, news_search, web_search
+
+agent = create_agent(
+    model=ChatOpenAI(model="gpt-5.4-mini", temperature=0),
+    tools=[
+        web_search(provider="langchain"),
+        news_search(provider="langchain"),
+        maps_search(provider="langchain"),
+    ],
+)
+
+result = agent.invoke(
+    {
+        "messages": [
+            {
+                "role": "user",
+                "content": (
+                    "Research coffee culture in Austin using current reporting, "
+                    "local places, and general web sources."
+                ),
+            }
+        ]
+    }
+)
+print(result["messages"][-1].content)
+```
+
+When LangChain is the only supported SDK installed, these constructors are
+also auto-detected, so `web_search()` is enough. Supplying
+`provider="langchain"` explicitly is useful when several supported SDKs share
+an environment or when you want the integration choice to be visible in code.
 
 For a step-by-step explanation, keys, customization, and troubleshooting, read
 the [detailed quickstart](https://serpapi.github.io/serpapi-search-tools-python/user-guide/quickstart.html).
@@ -368,4 +386,4 @@ SerpApi's complete documentation index is available in
 - [Recipes](https://serpapi.github.io/serpapi-search-tools-python/user-guide/recipes.html)
 - [Agent SDKs](https://serpapi.github.io/serpapi-search-tools-python/user-guide/frameworks.html)
 - [Agent cookbook](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/)
-- [Runnable examples](https://serpapi.github.io/serpapi-search-tools-python/sdk-examples/)
+- [Runnable examples](https://serpapi.github.io/serpapi-search-tools-python/docs/sdk-examples/)

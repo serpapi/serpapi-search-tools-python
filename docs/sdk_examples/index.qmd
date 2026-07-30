@@ -9,7 +9,7 @@ example.
 - New to agent SDKs? Try [OpenAI Agents SDK](openai_agents.html) or
   [Pydantic AI](pydantic_ai.html).
 - Already use a framework? Open its page below and copy the working path.
-- Need a search setup first? Choose a [usage recipe](../user-guide/recipes.html).
+- Need a search setup first? Choose a [usage recipe](../../user-guide/recipes.html).
 
 | SDK | Example |
 | --- | --- |
@@ -50,5 +50,5 @@ tool = web_search(provider="openai-agents")
 ```
 
 If your SDK is not listed, request a normal Python callable and follow
-[Use another agent SDK](../user-guide/configuration.html#support-another-agent-sdk)
+[Use another agent SDK](../../user-guide/configuration.html#support-another-agent-sdk)
 for the next steps.

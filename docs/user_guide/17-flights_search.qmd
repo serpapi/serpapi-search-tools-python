@@ -113,4 +113,4 @@ insights, airports, or metadata.
 - [Google Flights API](https://serpapi.com/google-flights-api)
 
 See the [direct travel example](examples.html) and the
-[OpenAI Agents travel planner](../sdk-examples/openai_agents.html).
+[OpenAI Agents travel planner](../docs/sdk-examples/openai_agents.html).

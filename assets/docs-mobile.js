@@ -12,7 +12,7 @@
     var path = window.location.pathname;
     if (path.endsWith("/")) return true;
     if (!path.endsWith("/index.html")) return false;
-    return !/(?:\/docs\/cookbook|\/user-guide|\/sdk-examples|\/reference)\/index\.html$/.test(
+    return !/(?:\/docs\/cookbook|\/user-guide|\/docs\/sdk-examples|\/reference)\/index\.html$/.test(
       path,
     );
   }
@@ -20,7 +20,7 @@
   function currentArea() {
     var path = window.location.pathname;
     if (path.indexOf("/docs/cookbook/") !== -1) return "cookbook";
-    if (path.indexOf("/sdk-examples/") !== -1) return "examples";
+    if (path.indexOf("/docs/sdk-examples/") !== -1) return "examples";
     if (path.indexOf("/reference/") !== -1) return "reference";
     return "guide";
   }
@@ -75,7 +75,7 @@
       {
         area: "examples",
         label: "SDK Examples",
-        path: "sdk-examples/index.html",
+        path: "docs/sdk-examples/index.html",
       },
       {
         area: "reference",

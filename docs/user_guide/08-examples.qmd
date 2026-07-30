@@ -91,7 +91,7 @@ tools = [
 ]
 ```
 
-Open [SDK examples](../sdk-examples/index.html) for installation and complete
+Open [SDK examples](../docs/sdk-examples/index.html) for installation and complete
 copy-friendly code for each framework. See
 [Choose a search tool](search_tools.html) to choose the right constructors
 before assembling the list, or start from a [recipe](recipes.html).

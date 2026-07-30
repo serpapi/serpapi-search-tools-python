@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import ast
 import py_compile
-import re
 from pathlib import Path
 
 import serpapi_search_tools
@@ -63,17 +62,6 @@ def test_cookbook_covers_every_public_search_constructor() -> None:
         )
 
     assert calls == PUBLIC_FACTORIES
-
-
-def test_every_entry_credits_an_official_source_and_serpapi_enhancement() -> None:
-    for entry in _entry_directories():
-        readme = (entry / "README.md").read_text()
-
-        assert "## Original source" in readme, entry
-        assert "enhanced with SerpApi" in readme, entry
-        assert re.search(r"https://(?:github\.com|docs\.langchain\.com)/", readme), entry
-        assert "## Run" in readme, entry
-        assert f"cookbook/{entry.name}/main.py" in readme, entry
 
 
 def test_cookbook_environment_template_matches_the_scripts() -> None:

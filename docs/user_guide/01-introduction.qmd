@@ -80,4 +80,4 @@ code can opt into the untouched response with
 - [Build your first search agent](quickstart.html)
 - [Choose a search tool](search_tools.html)
 - [Configure a search tool](configuration.html)
-- [Open an SDK example](../sdk-examples/index.html)
+- [Open an SDK example](../docs/sdk-examples/index.html)

@@ -107,7 +107,7 @@ sections:
     index: true
     index_columns: 2
   - title: Examples
-    dir: sdk_examples
+    dir: docs/sdk_examples
     index: true
     index_columns: 2
 user_guide: docs/user_guide

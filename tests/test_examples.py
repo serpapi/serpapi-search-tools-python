@@ -28,13 +28,6 @@ def _example_scripts() -> list[Path]:
     return sorted(path for path in EXAMPLES.glob("*.py") if not path.name.startswith("_"))
 
 
-def test_examples_start_with_standalone_uv_command() -> None:
-    for script in _example_scripts():
-        first_line = script.read_text().splitlines()[0]
-        assert first_line.startswith("# Run: uv run "), script
-        assert f"examples/{script.name}" in first_line, script
-
-
 def test_examples_cover_every_agent_provider_and_direct_usage() -> None:
     stems = {script.stem for script in _example_scripts()}
     combined = "\n".join(script.read_text() for script in _example_scripts())

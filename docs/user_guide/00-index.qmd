@@ -89,7 +89,7 @@ contains several supported SDKs, select one explicitly—for example,
   agent, customization, and troubleshooting.
 - Read the [Introduction](user-guide/introduction.html) to understand what the
   package handles and how it fits into an agent application.
-- Open [Agent SDK examples](sdk-examples/index.html) for copy-ready code for
+- Open [Agent SDK examples](docs/sdk-examples/index.html) for copy-ready code for
   your framework.
 - Browse [Recipes](user-guide/recipes.html) for research, local discovery,
   shopping, and travel combinations.

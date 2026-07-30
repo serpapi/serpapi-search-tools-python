@@ -39,20 +39,20 @@ Replace `openai-agents` with the extra in the table below.
 
 | SDK | Extra / explicit provider | Supported range | Complete example |
 | --- | --- | --- | --- |
-| OpenAI Agents SDK | `openai-agents` | `openai-agents >=0.18.3,<1` | [OpenAI Agents](../sdk-examples/openai_agents.html) |
-| Pydantic AI | `pydantic-ai` | `pydantic-ai >=1.30.1,<3` | [Pydantic AI](../sdk-examples/pydantic_ai.html) |
-| LangChain | `langchain` | `langchain >=1.3.11,<2` | [LangChain](../sdk-examples/langchain.html) |
-| LangGraph | `langgraph` | `langgraph >=1.2.6,<2` | [LangGraph](../sdk-examples/langgraph.html) |
-| CrewAI | `crewai` | `crewai >=1.6.1,<2` | [CrewAI](../sdk-examples/crewai.html) |
-| LlamaIndex | `llamaindex` | core `>=0.14.22,<0.15` | [LlamaIndex](../sdk-examples/llamaindex.html) |
-| Claude Agent SDK | `claude-agent-sdk` | `claude-agent-sdk >=0.2.108,<1` | [Claude Agent SDK](../sdk-examples/claude_agent_sdk.html) |
-| Microsoft Agent Framework | `microsoft-agent-framework` | `agent-framework-openai >=1.10.1,<2` | [Microsoft Agent Framework](../sdk-examples/microsoft_agent_framework.html) |
-| AutoGen | `autogen` | AgentChat `>=0.7.5,<0.8` | [AutoGen](../sdk-examples/autogen.html) |
-| Haystack | `haystack` | `haystack-ai >=2.30.2,<4` | [Haystack](../sdk-examples/haystack.html) |
-| Agno | `agno` | `agno >=2.6.19,<3` | [Agno](../sdk-examples/agno.html) |
-| smolagents | `smolagents` | `smolagents >=1.26,<2` | [smolagents](../sdk-examples/smolagents.html) |
-| Google ADK | `google-adk` | `google-adk >=2.3,<3` | [Google ADK](../sdk-examples/google_adk.html) |
-| Semantic Kernel | `semantic-kernel` | `semantic-kernel >=1.36,<2` | [Semantic Kernel](../sdk-examples/semantic_kernel.html) |
+| OpenAI Agents SDK | `openai-agents` | `openai-agents >=0.18.3,<1` | [OpenAI Agents](../docs/sdk-examples/openai_agents.html) |
+| Pydantic AI | `pydantic-ai` | `pydantic-ai >=1.30.1,<3` | [Pydantic AI](../docs/sdk-examples/pydantic_ai.html) |
+| LangChain | `langchain` | `langchain >=1.3.11,<2` | [LangChain](../docs/sdk-examples/langchain.html) |
+| LangGraph | `langgraph` | `langgraph >=1.2.6,<2` | [LangGraph](../docs/sdk-examples/langgraph.html) |
+| CrewAI | `crewai` | `crewai >=1.6.1,<2` | [CrewAI](../docs/sdk-examples/crewai.html) |
+| LlamaIndex | `llamaindex` | core `>=0.14.22,<0.15` | [LlamaIndex](../docs/sdk-examples/llamaindex.html) |
+| Claude Agent SDK | `claude-agent-sdk` | `claude-agent-sdk >=0.2.108,<1` | [Claude Agent SDK](../docs/sdk-examples/claude_agent_sdk.html) |
+| Microsoft Agent Framework | `microsoft-agent-framework` | `agent-framework-openai >=1.10.1,<2` | [Microsoft Agent Framework](../docs/sdk-examples/microsoft_agent_framework.html) |
+| AutoGen | `autogen` | AgentChat `>=0.7.5,<0.8` | [AutoGen](../docs/sdk-examples/autogen.html) |
+| Haystack | `haystack` | `haystack-ai >=2.30.2,<4` | [Haystack](../docs/sdk-examples/haystack.html) |
+| Agno | `agno` | `agno >=2.6.19,<3` | [Agno](../docs/sdk-examples/agno.html) |
+| smolagents | `smolagents` | `smolagents >=1.26,<2` | [smolagents](../docs/sdk-examples/smolagents.html) |
+| Google ADK | `google-adk` | `google-adk >=2.3,<3` | [Google ADK](../docs/sdk-examples/google_adk.html) |
+| Semantic Kernel | `semantic-kernel` | `semantic-kernel >=1.36,<2` | [Semantic Kernel](../docs/sdk-examples/semantic_kernel.html) |
 
 You only need dependencies for the SDKs you use. The base install remains small
 and also supports direct Python calls.

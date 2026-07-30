@@ -86,4 +86,4 @@ optional field.
 - [Google Images API](https://serpapi.com/google-images-api)
 
 See the [image discovery recipe](recipes.html) and the
-[Pydantic AI image example](../sdk-examples/pydantic_ai.html).
+[Pydantic AI image example](../docs/sdk-examples/pydantic_ai.html).

@@ -103,4 +103,4 @@ stops, dates, image, and location data. Use full mode for supporting sections.
 
 See the [destination ideas recipe](recipes.html), the
 [direct travel example](examples.html), and the
-[OpenAI Agents travel planner](../sdk-examples/openai_agents.html).
+[OpenAI Agents travel planner](../docs/sdk-examples/openai_agents.html).

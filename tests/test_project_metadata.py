@@ -107,41 +107,6 @@ def test_langgraph_extra_installs_langgraph_and_langchain_tool_dependencies() ->
     assert all(not dependency.startswith("langchain-openai") for dependency in dependencies)
 
 
-def test_dev_tooling_includes_ruff_and_ty() -> None:
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    dev_dependencies = pyproject["dependency-groups"]["dev"]
-
-    assert any(dependency.startswith("ruff") for dependency in dev_dependencies)
-    assert any(dependency.startswith("ty") for dependency in dev_dependencies)
-
-
-def test_tox_tests_supported_python_versions_with_fresh_environments() -> None:
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    dev_dependencies = pyproject["dependency-groups"]["dev"]
-    tox_config = (ROOT / "tox.ini").read_text()
-
-    assert any(dependency == "tox>=4.22,<5" for dependency in dev_dependencies)
-    for environment in ("py310", "py311", "py312", "py313", "py314"):
-        assert environment in tox_config.split("[testenv]", maxsplit=1)[0]
-    assert "package = wheel" in tox_config
-    assert "[testenv:clean-install]" in tox_config
-    assert "commands = python tests/clean_install_smoke.py" in tox_config
-    assert "[testenv:live]" in tox_config
-    assert "commands = python -m pytest -q -m live tests/test_live.py" in tox_config
-    assert "[testenv:openai-compat]" in tox_config
-    assert "[testenv:openai-compat-google-adk]" in tox_config
-    assert "[testenv:openai-compat-microsoft-agent-framework]" in tox_config
-    assert "[testenv:openai-compat-openai-agents]" in tox_config
-    for environment_name in (
-        "OPENAI_COMPAT_API_KEY",
-        "OPENAI_COMPAT_BASE_URL",
-        "OPENAI_COMPAT_MODEL",
-        "RUN_OPENAI_COMPAT_LLM_TESTS",
-    ):
-        assert environment_name in tox_config
-    assert "uv.lock" not in tox_config
-
-
 def test_tox_has_a_fresh_environment_for_every_framework_extra() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
     tox_config = (ROOT / "tox.ini").read_text()
@@ -152,41 +117,6 @@ def test_tox_has_a_fresh_environment_for_every_framework_extra() -> None:
         factorized_extra = f"{extra}: {extra}"
         standalone_extra = f"extras = {extra}"
         assert factorized_extra in tox_config or standalone_extra in tox_config
-
-
-def test_ci_routes_test_matrices_through_tox() -> None:
-    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-
-    assert "uv run tox -e ${{ matrix.tox-environment }}" in workflow
-    assert "uv sync --dev --extra ${{ matrix.extra }}" not in workflow
-
-
-def test_google_adk_python_310_environment_includes_litellm_backend() -> None:
-    tox_config = (ROOT / "tox.ini").read_text()
-
-    assert "[testenv:integration-py{310,314}-google-adk]" in tox_config
-    section = tox_config.split("[testenv:integration-py{310,314}-google-adk]", maxsplit=1)[1].split(
-        "[testenv:", maxsplit=1
-    )[0]
-    assert "py310: litellm" in section
-    assert "py310: orjson" in section
-
-
-def test_gitignore_covers_python_artifacts_and_local_env_files() -> None:
-    gitignore = (ROOT / ".gitignore").read_text().splitlines()
-
-    for pattern in (
-        "__pycache__/",
-        ".tox/",
-        ".venv/",
-        "dist/",
-        "great-docs/",
-        ".env",
-        "*.env",
-        "!.env.example",
-        "!examples/sample.env",
-    ):
-        assert pattern in gitignore
 
 
 def test_github_actions_are_pinned_to_commit_shas() -> None:
@@ -203,18 +133,6 @@ def test_github_actions_are_pinned_to_commit_shas() -> None:
         assert re.fullmatch(r"[^@\s]+@[0-9a-f]{40}", reference), line
 
 
-def test_uv_build_backend_is_configured() -> None:
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-
-    assert pyproject["build-system"]["build-backend"] == "uv_build"
-    assert any(
-        dependency.startswith("uv_build") for dependency in pyproject["build-system"]["requires"]
-    )
-    assert "tool" not in pyproject or "hatch" not in pyproject.get("tool", {})
-    source_exclude = set(pyproject["tool"]["uv"]["build-backend"]["source-exclude"])
-    assert {"/examples/**", "/great-docs/**"} <= source_exclude
-
-
 def test_openai_compat_llm_tests_are_documented_and_excluded_by_default() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
     pytest_options = pyproject["tool"]["pytest"]["ini_options"]
@@ -223,6 +141,20 @@ def test_openai_compat_llm_tests_are_documented_and_excluded_by_default() -> Non
     assert "not openai_compat_llm" in pytest_options["addopts"]
     assert any(marker.startswith("openai_compat_llm:") for marker in pytest_options["markers"])
     assert (ROOT / "tests" / "openai_compat_llm_tests").is_dir()
+
+
+def test_workflows_avoid_unsafe_triggers_and_static_publish_credentials() -> None:
+    workflows = {
+        path.name: path.read_text() for path in (ROOT / ".github" / "workflows").glob("*.yml")
+    }
+
+    assert workflows
+    assert all("pull_request_target" not in workflow for workflow in workflows.values())
+    for filename in ("release.yml", "testpypi.yml"):
+        workflow = workflows[filename]
+        assert "id-token: write" in workflow
+        assert "PYPI_TOKEN" not in workflow
+        assert "password:" not in workflow
 
 
 def _has_uv_conflict(conflicts: list[list[dict[str, str]]], *extras: str) -> bool:

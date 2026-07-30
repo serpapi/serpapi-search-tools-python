@@ -85,4 +85,4 @@ sections.
 - [YouTube Search API](https://serpapi.com/youtube-search-api)
 
 See the [video discovery recipe](recipes.html) and the
-[smolagents example](../sdk-examples/smolagents.html).
+[smolagents example](../docs/sdk-examples/smolagents.html).

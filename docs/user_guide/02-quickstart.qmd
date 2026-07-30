@@ -192,6 +192,6 @@ For more diagnosis paths, see [Debugging](debugging.html).
 
 - [Choose a search tool](search_tools.html)
 - [Common configuration](configuration.html)
-- [OpenAI Agents SDK example](../sdk-examples/openai_agents.html)
+- [OpenAI Agents SDK example](../docs/sdk-examples/openai_agents.html)
 - [Recipes](recipes.html)
 - [Runnable examples](examples.html)

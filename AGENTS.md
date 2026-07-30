@@ -14,8 +14,7 @@
 | `tests/openai_compat_llm_tests/` | Opt-in tests for local or hosted OpenAI-compatible APIs, excluded by default |
 | `examples/` | Runnable local examples, excluded from package artifacts |
 | `docs/user_guide/` | Great Docs user-guide source pages |
-| `docs/sdk_examples/` | Great Docs SDK example source pages |
-| `sdk_examples` | Compatibility symlink used to preserve the `/sdk-examples/` output route |
+| `docs/sdk_examples/` | Great Docs SDK example source pages rendered at `/docs/sdk-examples/` |
 | `great-docs.yml` | Great Docs config and API reference layout |
 
 ## Testing
