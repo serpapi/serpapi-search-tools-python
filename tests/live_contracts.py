@@ -50,6 +50,13 @@ LIVE_PARAMETER_CASES = (
         result_key="shopping_results",
     ),
     LiveParameterCase(
+        id="guide-videos-simple",
+        factory="videos_search",
+        default_params={"hl": "en", "gl": "us"},
+        arguments={"query": "latte art"},
+        result_key="video_results",
+    ),
+    LiveParameterCase(
         id="guide-hotels-currency",
         factory="hotels_search",
         default_params={"currency": "USD", "gl": "us"},

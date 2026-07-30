@@ -31,6 +31,7 @@ PROVIDER_IMPORTS = {
     "langchain": "langchain_core.tools",
     "langgraph": "langgraph",
     "llamaindex": "llama_index.core.tools",
+    "microsoft-agent-framework": "agent_framework",
     "openai-agents": "agents",
     "pydantic-ai": "pydantic_ai",
     "semantic-kernel": "semantic_kernel.functions",

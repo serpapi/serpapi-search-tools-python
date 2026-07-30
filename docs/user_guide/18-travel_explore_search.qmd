@@ -40,8 +40,8 @@ Example broad invocation:
 | Field | Type | Required | Default and constraints |
 | --- | --- | --- | --- |
 | `departure_id` | string | yes | Departure airport or supported location identifier |
-| `arrival_id` | string | no | Arrival airport, city, or supported location identifier |
-| `arrival_area_id` | string | no | Google Knowledge Graph area or country identifier |
+| `arrival_id` | string | no | Arrival airport, city, or supported location identifier; mutually exclusive with `arrival_area_id` |
+| `arrival_area_id` | string | no | Google Knowledge Graph area or country identifier; mutually exclusive with `arrival_id` |
 | `outbound_date` | date string | no | `YYYY-MM-DD` |
 | `return_date` | date string | no | Requires outbound; cannot be earlier |
 | `travel_class` | enum | no | `economy`; also `premium_economy`, `business`, or `first` |
@@ -56,6 +56,7 @@ Example broad invocation:
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix currency, locale, price, stops, duration, or supported interest filters |
+| `mode` | `compact` | Return up to five destinations; use `SearchResultMode.FULL` for the untouched response |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add caching, logging, testing, or response reduction |
@@ -82,10 +83,9 @@ those modes are incompatible.
 
 ## What comes back
 
-Look for `destinations`. Destination entries may include city or place names,
-country, airport information, flight price, duration, stops, dates, image, and
-location data. Broad searches and constrained date searches can return
-different supporting sections.
+Compact mode returns up to five `destinations`. Destination entries may include
+city or place names, country, airport information, flight price, duration,
+stops, dates, image, and location data. Use full mode for supporting sections.
 
 ## Common mistakes
 

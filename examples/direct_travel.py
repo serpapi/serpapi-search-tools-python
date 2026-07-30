@@ -35,13 +35,16 @@ def main() -> None:
     )
     explore_result = explore(departure_id="JFK")
 
-    for label, encoded in (
-        ("hotels", hotel_result),
-        ("flights", flight_result),
-        ("explore", explore_result),
+    for label, result_keys, encoded in (
+        ("hotels", ("properties",), hotel_result),
+        ("flights", ("best_flights", "other_flights"), flight_result),
+        ("explore", ("destinations",), explore_result),
     ):
         result = json.loads(encoded)
-        print(label, result.get("search_metadata", {}).get("status"))
+        count = sum(
+            len(result.get(key, [])) for key in result_keys if isinstance(result.get(key), list)
+        )
+        print(label, count)
 
 
 if __name__ == "__main__":

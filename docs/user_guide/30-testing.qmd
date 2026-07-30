@@ -56,13 +56,28 @@ These tests start a local FastAPI server. They exercise real framework agent
 APIs and tool calls without contacting a model provider or SerpApi:
 
 ```bash
-uv run --extra frameworks pytest -q -m integration tests/integration_agents
+uv run --extra frameworks --group openai-compat \
+  pytest -q -m integration tests/integration_agents
 ```
 
 Google ADK uses a separate dependency branch:
 
 ```bash
 uv run --extra google-adk pytest -q -m integration \
+  tests/integration_agents
+```
+
+Microsoft Agent Framework also uses an isolated dependency branch:
+
+```bash
+uv run --extra microsoft-agent-framework pytest -q -m integration \
+  tests/integration_agents
+```
+
+The current OpenAI Agents SDK is isolated for the same reason:
+
+```bash
+uv run --extra openai-agents pytest -q -m integration \
   tests/integration_agents
 ```
 
@@ -86,23 +101,28 @@ OPENAI_COMPAT_BASE_URL=http://127.0.0.1:1234/v1 \
 OPENAI_COMPAT_API_KEY=local-openai-compatible-server \
 OPENAI_COMPAT_MODEL=google/gemma-4-e2b \
 SERPAPI_API_KEY=... \
-uv run --extra frameworks pytest -q -m openai_compat_llm \
+uv run --extra frameworks --group openai-compat \
+  pytest -q -m openai_compat_llm \
   tests/openai_compat_llm_tests
 ```
 
 Set `OPENAI_COMPAT_MODEL` for hosted APIs; doing so avoids a model-discovery
 request. The suite never falls back to the common `OPENAI_API_KEY` variable.
-It runs the eleven SDKs that expose an OpenAI-compatible agent path with a fake
-SerpApi client, exercises the top SDKs across representative input shapes, and
-keeps one separate real-SerpApi end-to-end case. Claude Agent SDK and Semantic
-Kernel are covered by deterministic native-handler invocation tests because
-their execution APIs do not use this common chat-completions harness.
+Together, the shared and isolated environments run every SDK that exposes an
+OpenAI-compatible agent path with a fake SerpApi client, exercise the top SDKs
+across representative input shapes, and keep one separate real-SerpApi
+end-to-end case. Microsoft Agent Framework and OpenAI Agents use isolated
+dependency branches. Claude Agent SDK and Semantic Kernel are covered by
+deterministic native-handler invocation tests because their execution APIs do
+not use this common chat-completions harness.
 
 The same suites are available as isolated tox environments:
 
 ```bash
 uv run tox -e openai-compat
 uv run tox -e openai-compat-google-adk
+uv run tox -e openai-compat-microsoft-agent-framework
+uv run tox -e openai-compat-openai-agents
 ```
 
 ## Live SerpApi tests
@@ -117,7 +137,7 @@ hotels, flights, and travel-explore requests. The core suite runs on Python 3.14
 and checks non-empty result families, typed parameter effects, Unicode, error
 contracts, cache modes, and parameter combinations copied from the docs.
 
-CI also makes one real Google Light request through each of the 13 optional SDK
+CI also makes one real Google Light request through each of the 14 optional SDK
 adapters. These adapter tests invoke the native tool interface directly and do
 not require an LLM key. CrewAI and LangGraph currently use Python 3.13; the
 other adapter lanes use Python 3.14.

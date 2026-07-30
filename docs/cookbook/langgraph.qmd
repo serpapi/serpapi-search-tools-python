@@ -1,0 +1,22 @@
+---
+title: LangGraph launch intelligence
+description: Loop through web, news, and shopping evidence in a stateful graph.
+---
+
+# LangGraph launch intelligence
+
+This graph alternates between an analyst model and specialized search nodes
+until it can produce a product-launch intelligence brief.
+
+SerpApi enhancement: web, news, and shopping searches expose distinct evidence
+surfaces in the graph's tool node.
+
+```bash
+uv run --with . --with langgraph --with langchain-openai cookbook/langgraph/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/langgraph)
+or the official
+[Agentic RAG example](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_agentic_rag.ipynb).
+

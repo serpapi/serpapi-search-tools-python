@@ -42,6 +42,7 @@ YouTube's `search_query` parameter.
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix locale or supported YouTube search filters |
+| `mode` | `compact` | Return up to five video results; use `SearchResultMode.FULL` for the untouched response |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add caching, logging, tests, or response reduction |
@@ -67,18 +68,17 @@ valid token rather than inventing filter fields.
 
 ## What comes back
 
-Responses can contain `video_results`, `channel_results`, and
-`playlist_results`. Video entries commonly include title, link, thumbnail,
-channel, duration, views, and publication information. Fields vary by result
-type.
+Compact mode returns up to five `video_results`. Entries commonly include
+title, link, thumbnail, channel, duration, views, and publication information.
+Use full mode when application code needs auxiliary channel or playlist
+sections.
 
 ## Common mistakes
 
 - Calling the tool with `search_query`; use `query`.
 - Expecting transcript text from a search response.
 - Treating channel and playlist entries as if they have video-only fields.
-- Passing the complete result list to a model when a small selection of titles,
-  channels, links, and snippets is enough.
+- Opting into full results for a model when compact video results are enough.
 
 ## Official SerpApi documentation
 

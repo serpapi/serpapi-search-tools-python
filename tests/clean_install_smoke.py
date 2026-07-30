@@ -21,6 +21,7 @@ AGENT_SDK_DISTRIBUTIONS = (
     "langchain-core",
     "langgraph",
     "llama-index-core",
+    "agent-framework-core",
     "openai-agents",
     "pydantic-ai",
     "semantic-kernel",
@@ -31,11 +32,11 @@ AGENT_SDK_DISTRIBUTIONS = (
 class _Response:
     text = ""
 
+    def __init__(self, result: dict[str, Any]) -> None:
+        self._result = result
+
     def json(self) -> dict[str, Any]:
-        return {
-            "search_metadata": {"status": "Success"},
-            "organic_results": [{"title": "Coffee"}],
-        }
+        return self._result
 
 
 def _fake_request(
@@ -65,7 +66,21 @@ def _fake_request(
         },
     )
     assert kwargs == {}
-    return _Response()
+    if params["engine"] == "google_flights":
+        return _Response(
+            {
+                "search_metadata": {"status": "Success"},
+                "best_flights": [{"price": 200}],
+                "price_insights": {"lowest_price": 180},
+            }
+        )
+    return _Response(
+        {
+            "search_metadata": {"status": "Success"},
+            "organic_results": [{"title": "Coffee"}],
+            "related_searches": [{"query": "tea"}],
+        }
+    )
 
 
 def main() -> None:
@@ -93,7 +108,10 @@ def main() -> None:
     decoded = json.loads(encoded)
 
     assert type(decoded) is dict
-    assert decoded["organic_results"] == [{"title": "Coffee"}]
+    assert decoded == {
+        "organic_results": [{"title": "Coffee"}],
+        "related_searches": [{"query": "tea"}],
+    }
     assert not encoded.startswith('"')
     assert "\\u001b[" not in encoded
     assert "\x1b[" not in encoded
@@ -105,7 +123,7 @@ def main() -> None:
         arrival_id="AUS",
         outbound_date="2026-08-01",
     )
-    assert json.loads(flight_encoded)["search_metadata"]["status"] == "Success"
+    assert json.loads(flight_encoded) == {"best_flights": [{"price": 200}]}
 
 
 if __name__ == "__main__":

@@ -31,6 +31,7 @@ SUPPORTED_AGENT_PROVIDERS: tuple[str, ...] = (
     "smolagents",
     "crewai",
     "autogen",
+    "microsoft-agent-framework",
     "haystack",
     "llamaindex",
     "google-adk",
@@ -45,6 +46,7 @@ PROVIDER_IMPORTS = {
     "smolagents": "smolagents",
     "crewai": "crewai",
     "autogen": "autogen_agentchat.agents",
+    "microsoft-agent-framework": "agent_framework",
     "haystack": "haystack.components.agents",
     "llamaindex": "llama_index.core.agent.workflow",
     "google-adk": "google.adk.agents",
@@ -145,6 +147,16 @@ def run_agent_provider(
         )
     if provider == "autogen":
         return _run_autogen(
+            base_url=base_url,
+            api_key=api_key,
+            model=model,
+            prompt=prompt,
+            tool_names=tool_names,
+            client=client,
+            serpapi_api_key=serpapi_api_key,
+        )
+    if provider == "microsoft-agent-framework":
+        return _run_microsoft_agent_framework(
             base_url=base_url,
             api_key=api_key,
             model=model,
@@ -322,6 +334,9 @@ def _run_langchain(
         api_key=api_key,
         base_url=base_url,
         temperature=0,
+        max_tokens=2048,
+        timeout=180,
+        max_retries=0,
     )
     agent = agents.create_agent(
         model=chat_model,
@@ -484,6 +499,37 @@ def _run_autogen(
             await model_client.close()
 
     return asyncio.run(run_agent())
+
+
+def _run_microsoft_agent_framework(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+    prompt: str,
+    tool_names: Iterable[str],
+    client: Any | None,
+    serpapi_api_key: str | None,
+) -> Any:
+    agent_framework = import_optional("agent_framework")
+    agent_framework_openai = import_optional("agent_framework.openai")
+
+    agent = agent_framework.Agent(
+        client=agent_framework_openai.OpenAIChatCompletionClient(
+            model=model,
+            api_key=api_key,
+            base_url=base_url,
+        ),
+        name="search_agent",
+        instructions="Use the SerpApi search tool when the user asks for search.",
+        tools=_tools(
+            "microsoft-agent-framework",
+            tool_names=tool_names,
+            client=client,
+            serpapi_api_key=serpapi_api_key,
+        ),
+    )
+    return asyncio.run(agent.run(prompt))
 
 
 def _run_haystack(

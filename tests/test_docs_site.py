@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 USER_GUIDE = DOCS / "user_guide"
 SDK_EXAMPLES = DOCS / "sdk_examples"
+COOKBOOK = DOCS / "cookbook"
 
 
 def _user_guide_page(filename: str) -> Path:
@@ -87,10 +88,14 @@ def test_great_docs_dependency_and_config_are_present() -> None:
 
 def test_great_docs_sources_and_developer_metadata_are_centralized() -> None:
     config = (ROOT / "great-docs.yml").read_text()
+    sdk_examples_compatibility_path = ROOT / "sdk_examples"
 
     assert USER_GUIDE.is_dir()
     assert SDK_EXAMPLES.is_dir()
+    assert COOKBOOK.is_dir()
     assert not (ROOT / "user_guide").exists()
+    assert sdk_examples_compatibility_path.is_symlink()
+    assert sdk_examples_compatibility_path.resolve() == SDK_EXAMPLES.resolve()
     assert "user_guide: docs/user_guide" in config
     assert "name: SerpApi" in config
     assert "role: Developer" in config
@@ -166,6 +171,7 @@ def test_authored_python_fences_are_valid_python() -> None:
     paths = [ROOT / "README.md", ROOT / "contributing.md"]
     paths.extend(USER_GUIDE.glob("*.qmd"))
     paths.extend(SDK_EXAMPLES.glob("*.qmd"))
+    paths.extend(COOKBOOK.glob("*.qmd"))
 
     for path in paths:
         for index, source in enumerate(
@@ -234,6 +240,7 @@ def test_authored_docs_do_not_use_retired_catch_all_api() -> None:
     paths = [ROOT / "README.md", ROOT / "contributing.md"]
     paths.extend(USER_GUIDE.glob("*.qmd"))
     paths.extend(SDK_EXAMPLES.glob("*.qmd"))
+    paths.extend(COOKBOOK.glob("*.qmd"))
     python = "\n".join(
         source
         for path in paths
@@ -245,12 +252,12 @@ def test_authored_docs_do_not_use_retired_catch_all_api() -> None:
     assert "serpapi_params" not in python
 
 
-def test_ci_runs_on_branches_and_prs_while_docs_publish_only_on_releases() -> None:
+def test_ci_runs_on_main_and_prs_while_docs_publish_only_on_releases() -> None:
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text()
     docs = (ROOT / ".github" / "workflows" / "docs.yml").read_text()
 
     assert "pull_request:" in ci
-    assert 'branches: ["**"]' in ci
+    assert "branches: [main]" in ci
     assert "contents: read" in ci
 
     assert re.search(r"(?m)^on:\n  release:\n    types: \[published\]$", docs)

@@ -14,6 +14,7 @@ _PROVIDER_MODULE_PREFIXES: dict[str, tuple[str, ...]] = {
     "langchain": ("langchain", "langchain_openai"),
     "langgraph": ("langchain", "langchain_openai", "langgraph"),
     "llamaindex": ("llama_index",),
+    "microsoft-agent-framework": ("agent_framework",),
     "openai-agents": ("agents",),
     "pydantic-ai": ("pydantic_ai",),
     "semantic-kernel": ("semantic_kernel",),

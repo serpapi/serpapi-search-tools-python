@@ -1,0 +1,22 @@
+---
+title: smolagents purchase research
+description: Compare listings, product imagery, and setup videos.
+---
+
+# smolagents purchase research
+
+This ToolCallingAgent produces a purchase shortlist from live listings, visual
+references, and setup or maintenance demonstrations.
+
+SerpApi enhancement: three typed search surfaces replace demonstration tools
+and provide complementary evidence for one decision.
+
+```bash
+uv run --with . --with smolagents --with openai cookbook/smolagents/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/smolagents)
+or smolagents'
+[multiple-tools example](https://github.com/huggingface/smolagents/blob/main/examples/multiple_tools.py).
+

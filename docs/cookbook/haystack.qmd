@@ -1,0 +1,22 @@
+---
+title: Haystack industry newsletter
+description: Discover, verify, and deduplicate a weekly news briefing.
+---
+
+# Haystack industry newsletter
+
+The agent selects a lead story and three briefs, verifies their background, and
+avoids treating syndicated copies as independent evidence.
+
+SerpApi enhancement: separate news and web tools support discovery and
+verification within the same agent loop.
+
+```bash
+uv run --with . --with haystack-ai cookbook/haystack/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/haystack)
+or the official Haystack
+[newsletter agent](https://github.com/deepset-ai/haystack-cookbook/blob/main/notebooks/newsletter-agent.ipynb).
+

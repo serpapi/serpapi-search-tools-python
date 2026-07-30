@@ -1,0 +1,25 @@
+---
+title: Semantic Kernel competitor brief
+description: Apply a plan-and-execute loop to live competitor research.
+---
+
+# Semantic Kernel competitor brief
+
+The agent states a research plan, resolves it with search plugins, inspects
+evidence gaps, and writes a competitor brief.
+
+SerpApi enhancement: provider-native search is replaced with typed web and news
+plugins.
+
+```bash
+uv run --with . --with semantic-kernel --with openai \
+  cookbook/semantic-kernel/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/semantic-kernel)
+or Semantic Kernel's official
+[plan-and-execute sample](https://github.com/microsoft/semantic-kernel/blob/main/python/samples/concepts/processes/plan_and_execute.py).
+
+For the successor framework, see the
+[Microsoft Agent Framework cookbook](microsoft-agent-framework.html).

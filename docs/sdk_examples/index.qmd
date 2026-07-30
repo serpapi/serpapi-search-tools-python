@@ -20,6 +20,7 @@ example.
 | CrewAI | [CrewAI](crewai.html) |
 | LlamaIndex | [LlamaIndex](llamaindex.html) |
 | Claude Agent SDK | [Claude Agent SDK](claude_agent_sdk.html) |
+| Microsoft Agent Framework | [Microsoft Agent Framework](microsoft_agent_framework.html) |
 | AutoGen | [AutoGen](autogen.html) |
 | Haystack | [Haystack](haystack.html) |
 | Agno | [Agno](agno.html) |

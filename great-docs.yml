@@ -68,10 +68,11 @@ authors:
 
 reference:
   - title: Enumerations and errors
-    desc: Supported engines, semantic travel values, and search failures
+    desc: Supported engines, response modes, semantic travel values, and search failures
     contents:
       - WebSearchEngine
       - ShoppingSearchEngine
+      - SearchResultMode
       - TravelClass
       - SerpApiSearchError
 
@@ -101,6 +102,10 @@ source:
 dark_mode_toggle: true
 homepage: user_guide
 sections:
+  - title: Cookbook
+    dir: docs/cookbook
+    index: true
+    index_columns: 2
   - title: Examples
     dir: sdk_examples
     index: true
@@ -125,7 +130,7 @@ include_in_header:
   - text: >-
       <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'assets/docs-mobile.css'}));</script>
   - text: >-
-      <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'assets/docs-mobile.js';s.defer=true;document.head.appendChild(s);})();</script>
+      <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'assets/docs-mobile.js?v=2';s.defer=true;document.head.appendChild(s);})();</script>
 
 # Jupyter Kernel
 # --------------

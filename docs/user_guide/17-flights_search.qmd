@@ -67,6 +67,7 @@ trip.
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix currency, locale, stops, airline, bag, or time filters supported by SerpApi |
+| `mode` | `compact` | Return up to five best and five other itineraries; use `SearchResultMode.FULL` for the untouched response |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add caching, logging, testing, or response compaction |
@@ -93,10 +94,10 @@ filters need a round trip, and bag counts cannot exceed eligible passengers.
 
 ## What comes back
 
-Responses commonly include `best_flights`, `other_flights`, `price_insights`,
-`airports`, and search metadata. Itinerary objects can contain one or more
-flight legs, layovers, total duration, carbon emissions, price, airline, and
-booking tokens.
+Compact mode returns up to five `best_flights` and five `other_flights`.
+Itinerary objects can contain one or more flight legs, layovers, total duration,
+carbon emissions, price, airline, and booking tokens. Use full mode for price
+insights, airports, or metadata.
 
 ## Common mistakes
 

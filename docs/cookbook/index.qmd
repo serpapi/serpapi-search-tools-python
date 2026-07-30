@@ -1,0 +1,48 @@
+---
+title: Agent cookbook
+description: Build outcome-driven agents with live SerpApi search.
+---
+
+# Build agents that finish real work
+
+Each cookbook entry starts from an official SDK example and turns it into a
+complete, source-backed workflow using `serpapi-search-tools`.
+
+These agents go beyond framework wiring: each has a concrete brief, uses the
+most specific search capabilities for the job, and writes a Markdown artifact
+you can inspect.
+
+## Choose a cookbook
+
+| SDK | Outcome | Search capabilities |
+| --- | --- | --- |
+| [LangChain](langchain.html) | Deep market research brief | Web and news |
+| [LangGraph](langgraph.html) | Product-launch intelligence | Web, news, and shopping |
+| [CrewAI](crewai.html) | Collaborative trip plan | Flights, hotels, and maps |
+| [LlamaIndex](llamaindex.html) | Remote-work destination brief | Travel explore, web, and maps |
+| [OpenAI Agents](openai-agents.html) | Managed research report | Web and news |
+| [Claude Agent SDK](claude-agent-sdk.html) | Source-verification memo | Web and news |
+| [Pydantic AI](pydantic-ai.html) | Visual location scout | Images, maps, and web |
+| [Microsoft Agent Framework](microsoft-agent-framework.html) | Technology due diligence | Web and news |
+| [AutoGen](autogen.html) | Company intelligence memo | Web and news |
+| [Haystack](haystack.html) | Weekly industry newsletter | Web and news |
+| [Semantic Kernel](semantic-kernel.html) | Competitor brief | Web and news |
+| [Agno](agno.html) | Market research report | Web, news, and shopping |
+| [smolagents](smolagents.html) | Purchase research assistant | Shopping, images, and videos |
+| [Google ADK](google-adk.html) | Retail location strategy | Maps, web, and news |
+
+## Configure once
+
+Clone the repository, then copy the cookbook environment template to the
+repository root:
+
+```bash
+cp cookbook/sample.env .env
+```
+
+Fill in `SERPAPI_API_KEY` and the model-provider key required by the chosen
+entry. Every page includes its exact `uv run` command and links to the official
+example that inspired it.
+
+Set `COOKBOOK_PROMPT` to replace the default brief. Reports are written to
+`cookbook-output/` unless `COOKBOOK_OUTPUT_DIR` is set.

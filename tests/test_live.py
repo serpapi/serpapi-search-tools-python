@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 from serpapi_search_tools import (
+    SearchResultMode,
     SerpApiSearchError,
     TravelClass,
     flights_search,
@@ -34,6 +35,17 @@ if not (os.getenv("SERPAPI_API_KEY") or os.getenv("SERPAPI_KEY")):
 
 UNICODE_QUERY = "café 東京 'best' & #1"
 RESPONSE_KEYS: dict[str, list[str]] = {}
+COMPACT_KEYS_BY_FACTORY: dict[str, set[str]] = {
+    "web_search": {"answer_box", "knowledge_graph", "ai_overview", "organic_results"},
+    "news_search": {"news_results"},
+    "maps_search": {"local_results"},
+    "images_search": {"images_results"},
+    "shopping_search": {"shopping_results"},
+    "videos_search": {"video_results"},
+    "hotels_search": {"properties"},
+    "flights_search": {"best_flights", "other_flights"},
+    "travel_explore_search": {"destinations"},
+}
 
 ENGINE_CASES = (
     pytest.param("web-google", "google", "q", "SerpApi", "organic_results", id="web-google"),
@@ -111,7 +123,7 @@ RESULT_FIELD_GROUPS: dict[str, tuple[tuple[str, ...], ...]] = {
     "web-bing": (("title",), ("link",)),
     "web-yahoo": (("title",), ("link",)),
     "web-duckduckgo": (("title",), ("link",)),
-    "news": (("title",), ("link",)),
+    "news": (("title",), ("link", "stories")),
     "maps": (("title",), ("place_id", "data_id")),
     "images": (("title",), ("original", "thumbnail")),
     "shopping-google": (("title",), ("price", "extracted_price")),
@@ -144,7 +156,7 @@ def test_live_public_tool_request_contracts(
     result_key: str,
 ) -> None:
     encoded = _call_live_case(case)
-    result = _decode_success(encoded, case)
+    result = _decode_success(encoded, case, expect_full=True)
     parameters = result["search_parameters"]
 
     assert parameters["engine"] == engine
@@ -179,13 +191,13 @@ def test_live_public_tool_request_contracts(
 
 def test_live_one_way_flight_uses_type_two() -> None:
     outbound, _ = _future_dates()
-    encoded = flights_search(provider="function")(
+    encoded = flights_search(provider="function", mode=SearchResultMode.FULL)(
         departure_id="lax",
         arrival_id="aus",
         outbound_date=outbound,
         travel_class=TravelClass.ECONOMY,
     )
-    result = _decode_success(encoded, "flights-one-way")
+    result = _decode_success(encoded, "flights-one-way", expect_full=True)
     parameters = result["search_parameters"]
 
     assert parameters["departure_id"] == "LAX"
@@ -196,15 +208,19 @@ def test_live_one_way_flight_uses_type_two() -> None:
 
 
 def test_live_unicode_query_round_trips() -> None:
-    encoded = web_search(provider="function", allowed_engines=["google_light"])(query=UNICODE_QUERY)
-    result = _decode_success(encoded, "unicode-google-light")
+    encoded = web_search(
+        provider="function",
+        allowed_engines=["google_light"],
+        mode=SearchResultMode.FULL,
+    )(query=UNICODE_QUERY)
+    result = _decode_success(encoded, "unicode-google-light", expect_full=True)
 
     assert result["search_parameters"]["q"] == UNICODE_QUERY
     assert result["organic_results"]
 
 
 @pytest.mark.parametrize("case", LIVE_PARAMETER_CASES, ids=lambda case: case.id)
-def test_representative_default_parameter_combinations_work_live(
+def test_each_public_tool_returns_nonempty_compact_results_live(
     case: LiveParameterCase,
 ) -> None:
     outbound, returning = _future_dates()
@@ -220,6 +236,7 @@ def test_representative_default_parameter_combinations_work_live(
         "shopping_search": lambda **kwargs: shopping_search(
             allowed_engines=["google_shopping"], **kwargs
         ),
+        "videos_search": videos_search,
         "hotels_search": hotels_search,
         "flights_search": flights_search,
         "travel_explore_search": travel_explore_search,
@@ -227,15 +244,13 @@ def test_representative_default_parameter_combinations_work_live(
     tool = factories[case.factory](provider="function", default_params=case.default_params)
     result = _decode_success(tool(**arguments), f"docs-{case.id}")
 
+    assert set(result) <= COMPACT_KEYS_BY_FACTORY[case.factory]
     if case.factory == "flights_search":
-        assert _primary_results(result, "best_flights")
+        primary_results = _primary_results(result, "best_flights")
     else:
-        assert result.get(case.result_key), f"{case.id} returned no {case.result_key}"
-    if case.factory == "travel_explore_search":
-        parameters = result["search_parameters"]
-        assert str(parameters["type"]) == "1"
-        assert parameters["outbound_date"] == outbound
-        assert parameters["return_date"] == returning
+        primary_results = _primary_results(result, case.result_key)
+    assert primary_results, f"{case.id} returned no {case.result_key}"
+    assert len(primary_results) <= 5
 
 
 def test_invalid_api_key_returns_an_actionable_error_contract() -> None:
@@ -280,7 +295,12 @@ def test_weekly_local_validator_remains_aligned_with_serpapi(params: dict[str, A
     assert "error" in result
 
 
-def _decode_success(encoded: str, case: str) -> dict[str, Any]:
+def _decode_success(
+    encoded: str,
+    case: str,
+    *,
+    expect_full: bool = False,
+) -> dict[str, Any]:
     result = json.loads(encoded)
 
     assert type(result) is dict
@@ -288,9 +308,13 @@ def _decode_success(encoded: str, case: str) -> dict[str, Any]:
     assert "\x1b[" not in encoded
     assert "\n" not in encoded
     assert "error" not in result, result.get("error")
-    assert isinstance(result["search_metadata"], dict)
-    assert result["search_metadata"]["status"] in {"Success", "Cached"}
-    assert isinstance(result["search_parameters"], dict)
+    if expect_full:
+        assert isinstance(result["search_metadata"], dict)
+        assert result["search_metadata"]["status"] in {"Success", "Cached"}
+        assert isinstance(result["search_parameters"], dict)
+    else:
+        assert "search_metadata" not in result
+        assert "search_parameters" not in result
     RESPONSE_KEYS[case] = sorted(result)
     return result
 
@@ -313,50 +337,95 @@ def _call_live_case(case: str) -> str:
     outbound, returning = _future_dates()
     calls: dict[str, tuple[Any, dict[str, Any]]] = {
         "web-google": (
-            web_search(provider="function", allowed_engines=["google"]),
+            web_search(
+                provider="function",
+                allowed_engines=["google"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "SerpApi"},
         ),
         "web-google-light": (
-            web_search(provider="function", allowed_engines=["google_light"]),
+            web_search(
+                provider="function",
+                allowed_engines=["google_light"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "SerpApi"},
         ),
         "web-yahoo": (
-            web_search(provider="function", allowed_engines=["yahoo"]),
+            web_search(
+                provider="function",
+                allowed_engines=["yahoo"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "SerpApi"},
         ),
         "web-bing": (
-            web_search(provider="function", allowed_engines=["bing"]),
+            web_search(
+                provider="function",
+                allowed_engines=["bing"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "SerpApi"},
         ),
         "web-duckduckgo": (
-            web_search(provider="function", allowed_engines=["duckduckgo"]),
+            web_search(
+                provider="function",
+                allowed_engines=["duckduckgo"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "SerpApi"},
         ),
-        "news": (news_search(provider="function"), {"query": "technology"}),
+        "news": (
+            news_search(provider="function", mode=SearchResultMode.FULL),
+            {"query": "technology"},
+        ),
         "maps": (
-            maps_search(provider="function"),
+            maps_search(provider="function", mode=SearchResultMode.FULL),
             {"query": "coffee", "location": "Austin, Texas", "zoom": 12, "nearby": True},
         ),
-        "images": (images_search(provider="function"), {"query": "latte art"}),
+        "images": (
+            images_search(provider="function", mode=SearchResultMode.FULL),
+            {"query": "latte art"},
+        ),
         "shopping-google": (
-            shopping_search(provider="function", allowed_engines=["google_shopping"]),
+            shopping_search(
+                provider="function",
+                allowed_engines=["google_shopping"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "coffee grinder"},
         ),
         "shopping-amazon": (
-            shopping_search(provider="function", allowed_engines=["amazon"]),
+            shopping_search(
+                provider="function",
+                allowed_engines=["amazon"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "coffee grinder"},
         ),
         "shopping-walmart": (
-            shopping_search(provider="function", allowed_engines=["walmart"]),
+            shopping_search(
+                provider="function",
+                allowed_engines=["walmart"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "coffee grinder"},
         ),
         "shopping-ebay": (
-            shopping_search(provider="function", allowed_engines=["ebay"]),
+            shopping_search(
+                provider="function",
+                allowed_engines=["ebay"],
+                mode=SearchResultMode.FULL,
+            ),
             {"query": "coffee grinder"},
         ),
-        "videos": (videos_search(provider="function"), {"query": "latte art"}),
+        "videos": (
+            videos_search(provider="function", mode=SearchResultMode.FULL),
+            {"query": "latte art"},
+        ),
         "hotels": (
-            hotels_search(provider="function"),
+            hotels_search(provider="function", mode=SearchResultMode.FULL),
             {
                 "query": "hotels in Austin",
                 "check_in_date": outbound,
@@ -367,7 +436,7 @@ def _call_live_case(case: str) -> str:
             },
         ),
         "flights": (
-            flights_search(provider="function"),
+            flights_search(provider="function", mode=SearchResultMode.FULL),
             {
                 "departure_id": "lax",
                 "arrival_id": "aus",
@@ -377,7 +446,7 @@ def _call_live_case(case: str) -> str:
             },
         ),
         "travel-explore": (
-            travel_explore_search(provider="function"),
+            travel_explore_search(provider="function", mode=SearchResultMode.FULL),
             {
                 "departure_id": "LAX",
                 "arrival_area_id": "/m/0852h",

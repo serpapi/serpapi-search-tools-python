@@ -1,0 +1,22 @@
+---
+title: CrewAI collaborative trip planner
+description: Research and edit a trip plan with typed travel search.
+---
+
+# CrewAI collaborative trip planner
+
+A search researcher gathers flight, hotel, and neighborhood evidence. A second
+agent turns it into a practical trip recommendation with a visible budget.
+
+SerpApi enhancement: generic search is replaced with Google Flights, Google
+Hotels, and Google Maps tools whose schemas expose the required travel inputs.
+
+```bash
+uv run --with . --with crewai cookbook/crewai/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/crewai)
+or the official
+[CrewAI examples collection](https://github.com/crewAIInc/crewAI-examples).
+

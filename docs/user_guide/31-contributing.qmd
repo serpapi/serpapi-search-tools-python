@@ -63,7 +63,7 @@ unit suite.
 
 The **Publish main to TestPyPI** workflow is a manual release rehearsal. It
 always checks out `main`, then runs source quality checks, builds the
-distributions, smoke-tests and live-tests the exact wheel, and verifies all 13
+distributions, smoke-tests and live-tests the exact wheel, and verifies all 14
 supported SDK adapters before publishing.
 
 Configure a protected GitHub environment named `testpypi`, restrict it to

@@ -84,7 +84,11 @@ def test_hotels_search_builds_complete_request() -> None:
 
 def test_flights_search_infers_one_way_type_without_q() -> None:
     client = FakeClient()
-    tool = flights_search(provider="function", client=client)
+    tool = flights_search(
+        provider="function",
+        client=client,
+        default_params={"return_date": "2026-08-04", "type": 1},
+    )
 
     tool(departure_id="LAX", arrival_id="AUS", outbound_date="2026-08-01")
 
@@ -166,7 +170,11 @@ def test_travel_explore_infers_type_from_dates(
     expected_type: int | None,
 ) -> None:
     client = FakeClient()
-    tool = travel_explore_search(provider="function", client=client)
+    tool = travel_explore_search(
+        provider="function",
+        client=client,
+        default_params={"arrival_id": "LAX", "type": 1},
+    )
 
     tool(
         departure_id="JFK",
@@ -242,6 +250,15 @@ def test_travel_explore_infers_type_from_dates(
             travel_explore_search,
             {"departure_id": "JFK", "return_date": "2026-08-04"},
             "return_date requires outbound_date",
+        ),
+        (
+            travel_explore_search,
+            {
+                "departure_id": "JFK",
+                "arrival_id": "LAX",
+                "arrival_area_id": "/m/0r4w",
+            },
+            "arrival_id and arrival_area_id cannot be combined",
         ),
     ],
 )

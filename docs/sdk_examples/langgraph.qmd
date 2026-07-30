@@ -12,11 +12,15 @@ only those choices.
 ## Install
 
 ```bash
-pip install "serpapi-search-tools[langgraph]"
+pip install "serpapi-search-tools[langgraph]" langchain-openai
 ```
 
 If LangGraph is already installed in your project, use
 `pip install serpapi-search-tools` instead.
+
+The SerpApi extra installs the LangGraph and LangChain tool interfaces, while
+`langchain-openai` is the model backend selected by this example. Replace it
+when your graph uses another model provider.
 
 ```bash
 export SERPAPI_API_KEY="your-serpapi-key"
@@ -66,6 +70,7 @@ multi_source_search = web_search(
 )
 ```
 
-The `langgraph` extra installs LangGraph 1.x and the LangChain tool and OpenAI
-integration packages used above. Install it separately from the Google ADK
-extra; their supported transitive dependency branches are incompatible.
+The `langgraph` extra installs LangGraph 1.x and the LangChain tool interface
+used above. The OpenAI integration remains an application choice. Install the
+SDK extra separately from the Google ADK extra; their supported transitive
+dependency branches are incompatible.

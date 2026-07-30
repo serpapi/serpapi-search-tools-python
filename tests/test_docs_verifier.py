@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from scripts.fix_built_docs_links import repair
 
 from tests.verify_built_docs import verify
 
@@ -36,3 +37,23 @@ def test_relative_link_cannot_escape_site_even_when_target_exists(tmp_path: Path
 
     with pytest.raises(AssertionError, match="outside the rendered site"):
         verify(site)
+
+
+def test_qualified_enum_member_links_are_repaired_to_rendered_anchors(
+    tmp_path: Path,
+) -> None:
+    site = tmp_path / "_site"
+    _write_page(
+        site / "reference" / "SearchResultMode.html",
+        '<h4 id="full">FULL</h4>',
+    )
+    _write_page(
+        site / "user-guide" / "configuration.html",
+        (
+            '<a href="../reference/SearchResultMode.html'
+            '#serpapi_search_tools.SearchResultMode.FULL">full</a>'
+        ),
+    )
+
+    assert repair(site) == 1
+    verify(site)

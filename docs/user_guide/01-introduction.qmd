@@ -81,9 +81,10 @@ response = json.loads(search(query="Python packaging"))
 print(response.get("organic_results", []))
 ```
 
-Every tool returns the complete SerpApi response as JSON text. Your
-application can keep the full response, select a few fields, or summarize a
-small set of results before passing them to a model.
+Every tool returns compact JSON text by default: only its primary result
+families, bounded to five entries, plus useful web answer sections. Application
+code can opt into the untouched response with
+`mode=SearchResultMode.FULL`.
 
 ## Next steps
 

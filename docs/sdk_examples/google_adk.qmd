@@ -38,7 +38,7 @@ from serpapi_search_tools import shopping_search, web_search
 async def main():
     agent = Agent(
         name="shopping_agent",
-        model="gemini-3.5-flash",
+        model="gemini-flash-lite-latest",
         instruction="Use SerpApi for current product research.",
         tools=[
             web_search(),

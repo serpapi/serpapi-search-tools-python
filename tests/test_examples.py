@@ -71,26 +71,26 @@ def test_marketplace_comparison_flattens_real_price_and_link_variants() -> None:
     }
 
 
-def test_agent_logging_client_compacts_only_the_primary_result_family() -> None:
+def test_agent_logging_client_leaves_compaction_to_the_package_runtime() -> None:
     namespace = {"__name__": "example_test"}
     script = EXAMPLES / "_logging_client.py"
     exec(compile(script.read_text(), str(script), "exec"), namespace)
 
-    compacted = namespace["_compact_result"](
-        {
-            "search_metadata": {"status": "Success"},
-            "search_parameters": {"engine": "google_maps"},
-            "local_results": [{"title": "one"}, {"title": "two"}, {"title": "three"}],
-            "filters": ["large", "unused"],
-        },
-        max_results=2,
-    )
-
-    assert compacted == {
+    response = {
         "search_metadata": {"status": "Success"},
         "search_parameters": {"engine": "google_maps"},
-        "local_results": [{"title": "one"}, {"title": "two"}],
+        "local_results": [{"title": "one"}, {"title": "two"}, {"title": "three"}],
+        "filters": ["large", "unused"],
     }
+
+    class FakeClient:
+        def search(self, params: dict[str, object]) -> dict[str, object]:
+            return response
+
+    logging_client = namespace["LoggingClient"].__new__(namespace["LoggingClient"])
+    logging_client._client = FakeClient()
+
+    assert logging_client.search({"engine": "google_maps", "q": "coffee"}) == response
 
 
 def test_examples_are_runnable_scripts_and_compile() -> None:

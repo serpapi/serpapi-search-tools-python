@@ -59,6 +59,7 @@ An agent invocation has a structured shape:
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix currency, locale, country, or supported property filters |
+| `mode` | `compact` | Return up to five properties; use `SearchResultMode.FULL` for the untouched response |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add caching, request logging, or deterministic tests |
@@ -85,10 +86,10 @@ not duplicate values in `default_params`.
 
 ## What comes back
 
-Look for `properties`. Entries may include property names, links, GPS
-coordinates, ratings, amenities, images, extracted prices, rate-per-night
-details, and nearby places. The response can also include brands, filters,
-search metadata, and pagination.
+Compact mode returns up to five `properties`. Entries may include property
+names, links, GPS coordinates, ratings, amenities, images, extracted prices,
+rate-per-night details, and nearby places. Use full mode for brands, filters,
+metadata, or pagination.
 
 ## Common mistakes
 

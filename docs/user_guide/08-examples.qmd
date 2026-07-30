@@ -39,8 +39,7 @@ uv run python examples/direct_regioned_search.py
 uv run python examples/direct_cached_search.py
 ```
 
-The direct scripts parse the complete JSON response and print bounded summaries
-instead of sending a full response to another system.
+The direct scripts parse the compact JSON response and print bounded summaries.
 
 ## Structured travel defaults
 
@@ -76,13 +75,12 @@ uv run --extra openai-agents python examples/openai_agents_travel_planner.py
 ```
 
 The `examples/` directory includes OpenAI Agents, Pydantic AI, LangChain,
-LangGraph, CrewAI, LlamaIndex, Claude Agent SDK, AutoGen, Haystack, Agno,
-smolagents, Google ADK, and Semantic Kernel examples.
+LangGraph, CrewAI, LlamaIndex, Claude Agent SDK, Microsoft Agent Framework,
+AutoGen, Haystack, Agno, smolagents, Google ADK, and Semantic Kernel examples.
 
-The multi-tool OpenAI Agents scripts use a custom logging client that keeps
-metadata and the first three primary results before returning JSON to the
-model. This is an application choice for controlling tokens; tools return the
-complete SerpApi response when no compacting client is supplied.
+The multi-tool OpenAI Agents scripts use a custom client for credential-free
+request and response-shape logging. The library applies compact mode by default,
+so custom compaction is not required for ordinary agent use.
 
 In an application with one supported SDK installed, pass a list of
 capability-specific tools and rely on automatic detection:

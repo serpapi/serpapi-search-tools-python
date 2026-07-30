@@ -1,0 +1,22 @@
+---
+title: OpenAI Agents managed research
+description: Delegate live research while retaining editorial ownership.
+---
+
+# OpenAI Agents managed research
+
+A report editor calls a SerpApi research specialist as a tool, requests focused
+follow-up investigations, and owns the final report.
+
+SerpApi enhancement: the specialist uses separate web and news tools and must
+return URLs and uncertainty with its research notes.
+
+```bash
+uv run --with . --with openai-agents cookbook/openai-agents/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/openai-agents)
+or OpenAI's official
+[research bot](https://github.com/openai/openai-agents-python/tree/main/examples/research_bot).
+

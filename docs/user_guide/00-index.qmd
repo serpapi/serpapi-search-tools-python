@@ -13,10 +13,11 @@ your existing agent SDK or as normal Python functions.
 ## Supported agent SDKs
 
 The package works with OpenAI Agents SDK, Pydantic AI, LangChain, LangGraph,
-CrewAI, LlamaIndex, Claude Agent SDK, AutoGen, Haystack, Semantic Kernel, Agno,
-smolagents, and Google ADK. When one supported SDK is installed, the package
-detects it automatically. See [Agent SDKs](user-guide/frameworks.html) for
-version details and a complete example for each SDK.
+CrewAI, LlamaIndex, Claude Agent SDK, Microsoft Agent Framework, AutoGen,
+Haystack, Semantic Kernel, Agno, smolagents, and Google ADK. When one supported
+SDK family is installed, the package detects it automatically. See
+[Agent SDKs](user-guide/frameworks.html) for version details and a complete
+example for each SDK.
 
 You can also use every search tool without an agent SDK by choosing
 `provider="function"`.

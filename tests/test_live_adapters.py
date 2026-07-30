@@ -38,9 +38,9 @@ def test_native_sdk_adapter_executes_a_real_google_light_search() -> None:
     assert "\\u001b[" not in encoded
     assert "\x1b[" not in encoded
     assert "\n" not in encoded
-    assert result["search_metadata"]["status"] in {"Success", "Cached"}
-    assert result["search_parameters"]["engine"] == "google_light"
-    assert result["search_parameters"]["q"] == "SerpApi Python"
+    assert "search_metadata" not in result
+    assert "search_parameters" not in result
+    assert set(result) <= {"answer_box", "knowledge_graph", "ai_overview", "organic_results"}
     assert result["organic_results"]
     first = result["organic_results"][0]
     assert first["title"]
@@ -65,6 +65,8 @@ def _invoke_native(provider: str, tool: Any, arguments: dict[str, Any]) -> str:
         from autogen_core import CancellationToken
 
         return str(asyncio.run(tool.run_json(arguments, CancellationToken())))
+    if provider == "microsoft-agent-framework":
+        return str(tool(**arguments))
     if provider == "haystack":
         return str(tool.invoke(**arguments))
     if provider == "semantic-kernel":

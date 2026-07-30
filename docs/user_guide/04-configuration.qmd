@@ -45,6 +45,7 @@ All nine constructors accept these options:
 | `client` | `None` | Replace the built-in client for tests, caching, logging, retries, or response reduction. |
 | `default_params` | `None` | Set supported SerpApi options such as locale, currency, or result count in application code. |
 | `timeout` | `None` | Set a request timeout on the built-in SerpApi client. |
+| `mode` | `SearchResultMode.COMPACT` | Return focused, bounded result families for agents, or opt into the untouched response with `SearchResultMode.FULL`. |
 | `include_examples` | `True` | Keep or remove the short invocation hint in the tool description. |
 | `name` | constructor name | Give separately configured tools distinct names the model can understand. |
 
@@ -68,8 +69,8 @@ from serpapi_search_tools import maps_search, web_search
 tools = [web_search(), maps_search()]
 ```
 
-If multiple supported SDKs share an environment, make the selection explicit
-for deterministic behavior:
+If multiple supported SDK families share an environment, automatic detection
+raises an error instead of silently choosing one. Make the selection explicit:
 
 ```python
 from serpapi_search_tools import maps_search, web_search
@@ -79,6 +80,9 @@ tools = [
     maps_search(provider="openai-agents"),
 ]
 ```
+
+LangGraph and LangChain count as one adapter family because both use the
+LangChain structured-tool adapter.
 
 If no supported SDK is installed, automatic detection returns a normal Python
 callable. `provider="function"` requests that callable explicitly and is useful
@@ -101,6 +105,42 @@ The search inputs and useful SerpApi parameters depend on the capability:
 | [`travel_explore_search`](travel_explore_search.html) | Typed destination constraints plus discovery filters |
 
 Read the dedicated page before adding engine-specific `default_params`.
+
+## Choose compact or full results
+
+All tools default to `SearchResultMode.COMPACT`. Compact mode normally removes
+response metadata, parameters, pagination, filters, and other auxiliary
+sections. It keeps errors and at most five entries from each primary result
+family. If a successful response contains no recognized result family, it
+returns `no_results: true` plus only safe status and search-information fields
+instead of an ambiguous empty object.
+
+| Tool | Compact result families |
+| --- | --- |
+| `web_search` except Google Light | `answer_box`, `knowledge_graph`, `ai_overview`, `organic_results` |
+| `web_search` with Google Light | `answer_box`, `knowledge_graph`, `organic_results`, `related_questions`, `related_searches`, `top_stories` |
+| `news_search` | `news_results` |
+| `maps_search` | `local_results` |
+| `images_search` | `images_results` |
+| `shopping_search` | `shopping_results` for Google Shopping; `organic_results` for Amazon, Walmart, and eBay |
+| `videos_search` | `video_results` |
+| `hotels_search` | `properties` |
+| `flights_search` | `best_flights`, `other_flights` |
+| `travel_explore_search` | `destinations` |
+
+Use full mode in application code that needs an auxiliary response section:
+
+```python
+from serpapi_search_tools import SearchResultMode, web_search
+
+debug_search = web_search(
+    provider="function",
+    mode=SearchResultMode.FULL,
+)
+```
+
+`mode` is a constructor option, not a model input. An agent cannot expand its
+own tool response and unexpectedly consume more context.
 
 ## Restrict web and shopping engines
 
@@ -132,9 +172,9 @@ safe_us_images = images_search(
 )
 ```
 
-Explicit typed invocation fields win over matching defaults, and the package
-always controls `engine`. The following transport parameters are reserved and
-rejected in `default_params`:
+Typed tool fields, including their declared defaults, win over matching
+`default_params`, and the package always controls `engine`. The following
+transport parameters are reserved and rejected in `default_params`:
 
 - `api_key`
 - `async`
@@ -185,7 +225,7 @@ HTTP wrapper. The object needs one synchronous `search(params)` method:
 ```python
 import json
 
-from serpapi_search_tools import hotels_search
+from serpapi_search_tools import SearchResultMode, hotels_search
 
 
 class RecordingClient:
@@ -198,7 +238,11 @@ class RecordingClient:
 
 
 client = RecordingClient()
-search = hotels_search(provider="function", client=client)
+search = hotels_search(
+    provider="function",
+    client=client,
+    mode=SearchResultMode.FULL,
+)
 result = json.loads(
     search(
         query="hotels in Kyoto",

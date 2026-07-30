@@ -10,6 +10,10 @@ _OBJECT_FRAGMENT = re.compile(
     r'(?P<prefix>href="(?P<path>[^"#]*?(?P<name>[A-Za-z][A-Za-z0-9_]*)\.html))'
     r"#serpapi_search_tools\.(?P=name)\""
 )
+_QUALIFIED_ENUM_FRAGMENT = re.compile(
+    r'(?P<prefix>href="[^"#]*?(?P<name>[A-Za-z][A-Za-z0-9_]*)\.html)'
+    r"#serpapi_search_tools\.(?P=name)\.(?P<member>[A-Z][A-Z0-9_]*)\""
+)
 _ENUM_FRAGMENT = re.compile(r'href="#(?P<name>[A-Z][A-Z0-9_]*)"')
 _SOURCE_PREFIX = (
     "https://github.com/serpapi/serpapi-search-tools-python/blob/main/serpapi_search_tools/"
@@ -23,7 +27,11 @@ def repair(site_root: Path) -> int:
     changed = 0
     for path in site_root.rglob("*.html"):
         source = path.read_text(encoding="utf-8")
-        repaired = _OBJECT_FRAGMENT.sub(r'\g<prefix>"', source)
+        repaired = _QUALIFIED_ENUM_FRAGMENT.sub(
+            lambda match: f'{match.group("prefix")}#{match.group("member").lower()}"',
+            source,
+        )
+        repaired = _OBJECT_FRAGMENT.sub(r'\g<prefix>"', repaired)
         repaired = _ENUM_FRAGMENT.sub(
             lambda match: f'href="#{match.group("name").lower()}"',
             repaired,

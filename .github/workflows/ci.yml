@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: ["**"]
+    branches: [main]
   schedule:
     - cron: "17 4 * * 1"
   workflow_dispatch:
@@ -126,6 +126,12 @@ jobs:
           - provider: autogen
             python-version: "3.14"
             tox-environment: integration-py314-autogen
+          - provider: microsoft-agent-framework
+            python-version: "3.10"
+            tox-environment: integration-py310-microsoft-agent-framework
+          - provider: microsoft-agent-framework
+            python-version: "3.14"
+            tox-environment: integration-py314-microsoft-agent-framework
           - provider: haystack
             python-version: "3.10"
             tox-environment: integration-py310-haystack
@@ -208,6 +214,9 @@ jobs:
           - provider: autogen
             python-version: "3.14"
             tox-environment: integration-py314-autogen
+          - provider: microsoft-agent-framework
+            python-version: "3.14"
+            tox-environment: integration-py314-microsoft-agent-framework
           - provider: claude-agent-sdk
             python-version: "3.14"
             tox-environment: integration-py314-claude-agent-sdk

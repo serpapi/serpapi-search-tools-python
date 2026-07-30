@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+import serpapi_search_tools._adapters as adapters
 from serpapi_search_tools import flights_search, hotels_search, maps_search, web_search
 
 
@@ -72,12 +73,10 @@ def test_langchain_adapter_preserves_structured_hotel_signature(
     client = FakeClient()
 
     tool = hotels_search(provider="langchain", client=client)
-    result = json.loads(
-        tool["func"](
-            query="Kyoto hotels",
-            check_in_date="2026-08-01",
-            check_out_date="2026-08-04",
-        )
+    tool["func"](
+        query="Kyoto hotels",
+        check_in_date="2026-08-01",
+        check_out_date="2026-08-04",
     )
 
     assert tool["name"] == "hotels_search"
@@ -86,7 +85,28 @@ def test_langchain_adapter_preserves_structured_hotel_signature(
         "check_in_date",
         "check_out_date",
     ]
-    assert result["params"]["engine"] == "google_hotels"
+    assert client.calls[0]["engine"] == "google_hotels"
+
+
+def test_pydantic_schema_allows_null_only_for_none_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = ModuleType("langchain_core.tools")
+    module.StructuredTool = StructuredTool
+    monkeypatch.setitem(sys.modules, "langchain_core.tools", module)
+
+    tool = maps_search(provider="langchain", client=FakeClient())
+    model = tool["args_schema"]
+    schema = model.model_json_schema()["properties"]
+
+    assert schema["zoom"]["type"] == "integer"
+    assert {choice["type"] for choice in schema["location"]["anyOf"]} == {
+        "string",
+        "null",
+    }
+    with pytest.raises(ValueError, match="zoom"):
+        model.model_validate({"query": "coffee", "zoom": None})
+    assert model.model_validate({"query": "coffee"}).zoom == 14
 
 
 def test_langgraph_adapter_reuses_langchain_native_tool(
@@ -184,8 +204,41 @@ def test_openai_agents_adapter_treats_empty_arguments_as_an_empty_object(
     monkeypatch.setitem(sys.modules, "agents", module)
     tool = web_search(provider="openai-agents", client=FakeClient())
 
-    with pytest.raises(TypeError, match="query"):
-        asyncio.run(tool.on_invoke_tool(None, ""))
+    result = json.loads(asyncio.run(tool.on_invoke_tool(None, "")))
+
+    assert result["error"] == "Invalid tool arguments."
+    assert "query" in result["details"]
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        "{not-json",
+        json.dumps({"query": "coffee", "unknown": True}),
+        json.dumps({"query": "coffee", "engine": "not-an-engine"}),
+    ],
+)
+def test_openai_agents_adapter_returns_bounded_argument_errors(
+    monkeypatch: pytest.MonkeyPatch,
+    arguments: str,
+) -> None:
+    module = ModuleType("agents")
+
+    class FunctionTool:
+        def __init__(self, **kwargs: object) -> None:
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+
+    module.FunctionTool = FunctionTool
+    monkeypatch.setitem(sys.modules, "agents", module)
+    tool = web_search(provider="openai-agents", client=FakeClient())
+
+    encoded = asyncio.run(tool.on_invoke_tool(None, arguments))
+    result = json.loads(encoded)
+
+    assert result["error"] == "Invalid tool arguments."
+    assert result["details"]
+    assert len(result["details"]) <= 500
 
 
 def test_openai_agents_adapter_does_not_block_the_event_loop(
@@ -270,7 +323,8 @@ def test_claude_adapter_uses_explicit_hotel_schema_and_forwards_arbitrary_fields
         "check_out_date",
     ]
     assert tool_value["schema"]["properties"]["children_ages"]["type"] == "array"
-    assert json.loads(result["content"][0]["text"])["params"]["children_ages"] == "8"
+    assert json.loads(result["content"][0]["text"]) == {"no_results": True}
+    assert client.calls[0]["children_ages"] == "8"
 
 
 def test_claude_adapter_does_not_block_the_event_loop(
@@ -332,6 +386,31 @@ def test_autogen_adapter_accepts_maps_function(monkeypatch: pytest.MonkeyPatch) 
 
     assert tool.name == "maps_search"
     assert "location" in inspect.signature(tool.func).parameters
+
+
+def test_microsoft_agent_framework_adapter_uses_exact_schema(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = ModuleType("agent_framework")
+
+    class FunctionTool:
+        def __init__(self, **kwargs: object) -> None:
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+
+    module.FunctionTool = FunctionTool
+    monkeypatch.setitem(sys.modules, "agent_framework", module)
+
+    tool = flights_search(provider="microsoft-agent-framework", client=FakeClient())
+
+    assert tool.name == "flights_search"
+    assert tool.input_model["required"] == [
+        "departure_id",
+        "arrival_id",
+        "outbound_date",
+    ]
+    assert tool.input_model["additionalProperties"] is False
+    assert "query" not in tool.input_model["properties"]
 
 
 def test_haystack_adapter_accepts_web_function(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -423,7 +502,9 @@ def test_smolagents_converts_flight_schema_and_forwards_fields(
         "first",
     ]
     assert tool.inputs["return_date"]["nullable"] is True
-    assert json.loads(encoded)["params"]["type"] == 2
+    assert tool.inputs["travel_class"]["nullable"] is True
+    assert json.loads(encoded) == {"no_results": True}
+    assert client.calls[0]["type"] == 2
 
 
 def test_google_adk_adapter_preserves_maps_metadata(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -477,6 +558,37 @@ def test_missing_optional_dependency_has_actionable_error(
         web_search(provider="langchain", client=FakeClient())
 
 
+def test_missing_crewai_on_python_314_reports_the_supported_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_import = builtins.__import__
+
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "crewai.tools":
+            raise ImportError("blocked for test")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    monkeypatch.setattr(adapters, "_PYTHON_VERSION", (3, 14))
+
+    with pytest.raises(ImportError, match=r"supports Python 3\.10 through 3\.13"):
+        web_search(provider="crewai", client=FakeClient())
+
+
 def test_unknown_provider_lists_supported_options() -> None:
     with pytest.raises(ValueError, match="Unknown provider 'future-sdk'"):
         web_search(provider="future-sdk", client=FakeClient())
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "",
+        "name with spaces",
+        "name.with.dots",
+        "a" * 65,
+    ],
+)
+def test_tool_names_are_validated_before_adapter_loading(name: str) -> None:
+    with pytest.raises(ValueError, match=r"1 to 64 ASCII letters"):
+        web_search(provider="future-sdk", client=FakeClient(), name=name)

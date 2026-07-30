@@ -12,11 +12,14 @@
     var path = window.location.pathname;
     if (path.endsWith("/")) return true;
     if (!path.endsWith("/index.html")) return false;
-    return !/(?:\/user-guide|\/sdk-examples|\/reference)\/index\.html$/.test(path);
+    return !/(?:\/docs\/cookbook|\/user-guide|\/sdk-examples|\/reference)\/index\.html$/.test(
+      path,
+    );
   }
 
   function currentArea() {
     var path = window.location.pathname;
+    if (path.indexOf("/docs/cookbook/") !== -1) return "cookbook";
     if (path.indexOf("/sdk-examples/") !== -1) return "examples";
     if (path.indexOf("/reference/") !== -1) return "reference";
     return "guide";
@@ -64,6 +67,11 @@
 
     var destinations = [
       { area: "guide", label: "User Guide", path: "index.html" },
+      {
+        area: "cookbook",
+        label: "Cookbook",
+        path: "docs/cookbook/index.html",
+      },
       {
         area: "examples",
         label: "SDK Examples",

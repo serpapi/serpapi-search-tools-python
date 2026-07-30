@@ -1,4 +1,4 @@
-# Run: uv run --with . --with openai-agents examples/openai_agents_travel_planner.py
+# Run: uv run --with '.[openai-agents]' examples/openai_agents_travel_planner.py
 """Give an OpenAI Agents planner the three typed travel search tools."""
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ def _require_serpapi_key() -> str:
 
 async def main() -> None:
     _require_env("OPENAI_API_KEY")
-    client = LoggingClient(_require_serpapi_key(), max_results=3)
+    client = LoggingClient(_require_serpapi_key())
     outbound = date.today() + timedelta(days=60)
     returning = outbound + timedelta(days=4)
     prompt = (

@@ -11,11 +11,15 @@ Call a search constructor and pass the resulting `StructuredTool` to
 ## Install
 
 ```bash
-pip install "serpapi-search-tools[langchain]"
+pip install "serpapi-search-tools[langchain]" langchain-openai
 ```
 
 If LangChain is already installed in your project, use
 `pip install serpapi-search-tools` instead.
+
+The SerpApi extra installs the LangChain tool interface, while
+`langchain-openai` is the model backend selected by this example. Replace that
+second package when your application uses another LangChain model provider.
 
 ```bash
 export SERPAPI_API_KEY="your-serpapi-key"

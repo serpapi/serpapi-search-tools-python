@@ -14,6 +14,7 @@ ProviderName: TypeAlias = Literal[
     "openai-agents",
     "claude-agent-sdk",
     "pydantic-ai",
+    "microsoft-agent-framework",
     "autogen",
     "haystack",
     "semantic-kernel",
@@ -59,6 +60,12 @@ PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
         "claude-agent-sdk",
     ),
     ProviderSpec("pydantic-ai", ("pydantic_ai",), "pydantic-ai", "pydantic-ai"),
+    ProviderSpec(
+        "microsoft-agent-framework",
+        ("agent-framework", "agent_framework", "microsoft_agent_framework", "maf"),
+        "agent-framework-core",
+        "microsoft-agent-framework",
+    ),
     ProviderSpec("autogen", (), "autogen-core", "autogen"),
     ProviderSpec("haystack", (), "haystack-ai", "haystack"),
     ProviderSpec(
@@ -87,6 +94,7 @@ def normalize_provider(provider: str) -> str:
 
 
 def detect_provider() -> str:
+    installed: list[str] = []
     for spec in PROVIDER_SPECS:
         if spec.distribution is None:
             continue
@@ -94,5 +102,17 @@ def detect_provider() -> str:
             importlib.metadata.version(spec.distribution)
         except importlib.metadata.PackageNotFoundError:
             continue
-        return spec.name
+        installed.append(spec.name)
+    families = {
+        "langchain" if provider in {"langchain", "langgraph"} else provider
+        for provider in installed
+    }
+    if len(families) > 1:
+        choices = ", ".join(installed)
+        raise RuntimeError(
+            f"Multiple supported agent SDKs are installed ({choices}). "
+            "Pass provider=... explicitly."
+        )
+    if installed:
+        return installed[0]
     return "function"

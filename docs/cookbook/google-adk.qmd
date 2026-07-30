@@ -1,0 +1,22 @@
+---
+title: Google ADK retail location strategy
+description: Compare cities with maps, durable context, and current reporting.
+---
+
+# Google ADK retail location strategy
+
+The agent compares candidate cities using competitor patterns, durable city
+context, and recent local developments before recommending one location.
+
+SerpApi enhancement: the sample search stack is replaced with typed maps, web,
+and news tools through the Google ADK adapter.
+
+```bash
+uv run --with . --with google-adk cookbook/google-adk/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/google-adk)
+or Google's official
+[retail location strategy sample](https://github.com/google/adk-samples/tree/main/python/agents/retail-ai-location-strategy).
+

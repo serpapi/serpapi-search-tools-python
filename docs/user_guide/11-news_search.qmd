@@ -46,6 +46,7 @@ field or SerpApi's native `q` name.
 | --- | --- | --- |
 | `provider` | `"auto"` | Auto-detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix locale, country, or bounded result settings |
+| `mode` | `compact` | Return up to five news results; use `SearchResultMode.FULL` for the untouched response |
 | `api_key` | `None` | Override `SERPAPI_API_KEY` / `SERPAPI_KEY` |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Provide a custom search client |
@@ -71,9 +72,9 @@ token fields such as `topic_token`, `publication_token`, `section_token`, and
 
 ## What comes back
 
-Look first for `news_results`. Items commonly include a title, source, date,
-snippet, thumbnail, and link. The complete response also includes
-`search_metadata` and `search_parameters`.
+Compact mode returns up to five `news_results`. Items commonly include a title,
+source, date, snippet, thumbnail, and link. Metadata and parameters are omitted;
+use `mode=SearchResultMode.FULL` when application code needs them.
 
 ## Common mistakes
 

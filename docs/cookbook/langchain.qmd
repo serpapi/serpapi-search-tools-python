@@ -1,0 +1,25 @@
+---
+title: LangChain deep market research
+description: Create a source-backed market brief with web and news search.
+---
+
+# LangChain deep market research
+
+The agent plans a market investigation, separates recent reporting from
+durable sources, reconciles evidence, and writes a decision-ready brief.
+
+SerpApi enhancement: typed web and news tools replace the original generic
+search dependency.
+
+Run from the repository root:
+
+```bash
+uv run --with . --with langchain --with langchain-openai cookbook/langchain/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/langchain)
+or the official
+[Deep Agents from scratch](https://docs.langchain.com/oss/python/langchain/deep-agent-from-scratch)
+source.
+

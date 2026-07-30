@@ -37,6 +37,11 @@ PROVIDER_CASES = {
     "smolagents": ("videos_search", {"query": "latte art"}, "youtube"),
     "crewai": ("shopping_search", {"query": "espresso machine", "engine": "amazon"}, "amazon"),
     "autogen": ("news_search", {"query": "Python releases"}, "google_news"),
+    "microsoft-agent-framework": (
+        "web_search",
+        {"query": "Python releases", "engine": "google_light"},
+        "google_light",
+    ),
     "haystack": ("maps_search", {"query": "coffee", "location": "Austin, Texas"}, "google_maps"),
     "llamaindex": ("travel_explore_search", {"departure_id": "JFK"}, "google_travel_explore"),
     "google-adk": ("web_search", {"query": "coffee", "engine": "google_light"}, "google_light"),

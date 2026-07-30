@@ -4,6 +4,7 @@ from enum import Enum
 
 import pytest
 
+from serpapi_search_tools import SearchResultMode
 from serpapi_search_tools._query_tools import (
     ShoppingSearchEngine,
     WebSearchEngine,
@@ -67,7 +68,12 @@ def test_multi_engine_tools_route_query_to_native_parameter(
     factory, engine: str, native_query: str
 ) -> None:
     client = FakeClient()
-    tool = factory(provider="function", allowed_engines=[engine], client=client)
+    tool = factory(
+        provider="function",
+        allowed_engines=[engine],
+        client=client,
+        mode=SearchResultMode.FULL,
+    )
 
     payload = json.loads(tool(query="coffee"))
 
@@ -181,6 +187,19 @@ def test_maps_search_adds_search_mode_and_structured_location() -> None:
             "nearby": True,
         }
     ]
+
+
+def test_maps_typed_defaults_override_colliding_constructor_defaults() -> None:
+    client = FakeClient()
+    tool = maps_search(
+        provider="function",
+        client=client,
+        default_params={"location": "Austin", "z": 12, "nearby": True},
+    )
+
+    tool(query="coffee")
+
+    assert client.calls == [{"engine": "google_maps", "q": "coffee", "type": "search"}]
 
 
 def test_maps_nearby_requires_location_before_client_call() -> None:

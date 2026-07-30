@@ -1,5 +1,10 @@
 # serpapi-search-tools
 
+[![PyPI version](https://img.shields.io/pypi/v/serpapi-search-tools.svg)](https://pypi.org/project/serpapi-search-tools/)
+[![CI](https://github.com/serpapi/serpapi-search-tools-python/actions/workflows/ci.yml/badge.svg)](https://github.com/serpapi/serpapi-search-tools-python/actions/workflows/ci.yml)
+[![Python versions](https://img.shields.io/pypi/pyversions/serpapi-search-tools.svg)](https://pypi.org/project/serpapi-search-tools/)
+[![License: MIT](https://img.shields.io/pypi/l/serpapi-search-tools.svg)](https://github.com/serpapi/serpapi-search-tools-python/blob/main/LICENSE)
+
 Give Python agents live web, news, maps, image, shopping, video, hotel, and
 flight search through small typed tools.
 
@@ -73,9 +78,21 @@ result = json.loads(search(query="Python packaging"))
 print(result["organic_results"])
 ```
 
-The callable returns the complete SerpApi response as compact JSON text. This
-keeps the return value consistent across agent SDKs and preserves every result
-section returned by the selected engine.
+The callable returns compact JSON text containing only the result families an
+agent normally needs. Google search keeps answer boxes, knowledge graphs, AI
+overviews, and up to five organic results. Google Light also keeps its related
+questions, related searches, and top stories. Specialized tools keep up to five
+primary results for their vertical. A successful response without a recognized
+result family returns a bounded `no_results` status instead of `{}`.
+
+Request the untouched SerpApi response when application code needs metadata,
+pagination, filters, or another auxiliary section:
+
+```python
+from serpapi_search_tools import SearchResultMode, web_search
+
+full_search = web_search(mode=SearchResultMode.FULL)
+```
 
 ## Quickstart: an agent with several search capabilities
 
@@ -102,9 +119,11 @@ print(result.final_output)
 ```
 
 Automatic detection is the normal path when one supported SDK is installed. If
-multiple supported SDKs share an environment, choose one explicitly to avoid
-ambiguity, for example `web_search(provider="openai-agents")`. When no supported
-SDK is installed, automatic detection falls back to a plain callable.
+multiple supported SDK families share an environment, automatic detection
+raises an actionable error; choose one explicitly, for example
+`web_search(provider="openai-agents")`. LangGraph and LangChain count as one
+adapter family. When no supported SDK is installed, automatic detection falls
+back to a plain callable.
 
 For a step-by-step explanation, keys, customization, and troubleshooting, read
 the [detailed quickstart](https://serpapi.github.io/serpapi-search-tools-python/user-guide/quickstart.html).
@@ -116,21 +135,42 @@ show how applications compose and consume search tools:
 
 | Goal | Example | What it demonstrates |
 | --- | --- | --- |
-| Research across several verticals | [`direct_multi_search.py`](examples/direct_multi_search.py) | Web, news, maps, and shopping with bounded summaries |
-| Compare marketplaces | [`direct_marketplace_comparison.py`](examples/direct_marketplace_comparison.py) | Google Shopping, Amazon, Walmart, and eBay normalized into one shape |
-| Configure regional tools | [`direct_regioned_search.py`](examples/direct_regioned_search.py) | Separate names and `gl`/`hl` defaults for US and German search |
-| Avoid duplicate requests | [`direct_cached_search.py`](examples/direct_cached_search.py) | A custom client that caches identical calls and logs safe parameters |
-| Plan a structured trip | [`openai_agents_travel_planner.py`](examples/openai_agents_travel_planner.py) | Explore, flights, and hotels exposed together to OpenAI Agents |
+| Research across several verticals | [`direct_multi_search.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/direct_multi_search.py) | Web, news, maps, and shopping with bounded summaries |
+| Compare marketplaces | [`direct_marketplace_comparison.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/direct_marketplace_comparison.py) | Google Shopping, Amazon, Walmart, and eBay normalized into one shape |
+| Configure regional tools | [`direct_regioned_search.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/direct_regioned_search.py) | Separate names and `gl`/`hl` defaults for US and German search |
+| Avoid duplicate requests | [`direct_cached_search.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/direct_cached_search.py) | A custom client that caches identical calls and logs safe parameters |
+| Plan a structured trip | [`openai_agents_travel_planner.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/openai_agents_travel_planner.py) | Explore, flights, and hotels exposed together to OpenAI Agents |
 
 All direct scenarios need only a SerpApi key. Agent scenarios additionally need
-the model-provider key used by that script. See [`examples/README.md`](examples/README.md)
+the model-provider key used by that script. See
+[`examples/README.md`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/README.md)
 for exact commands and the complete SDK matrix.
 
-The multi-tool agent examples wrap the client with an application-owned result
-compactor that keeps search metadata plus the first three primary results. The
-package still returns the complete response by default; compacting before an
-LLM call avoids sending large maps, shopping, or travel payloads back to the
-model.
+Compact results are the package default, so multi-tool agents do not need
+application-owned response wrappers. This avoids sending large maps, shopping,
+or travel payloads back to the model. Use `mode=SearchResultMode.FULL` only
+when code outside the model context needs the complete response.
+
+## Build a complete agent from the cookbook
+
+The
+[`cookbook/`](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook)
+directory contains one outcome-driven agent for every supported SDK. Each entry
+starts from an official provider example, clearly credits the original source,
+and explains how the workflow was enhanced with SerpApi.
+
+The cookbook includes complete market research, company intelligence, trip
+planning, newsletter, purchase research, source verification, and retail
+location workflows. Every agent loads the same repository-root `.env` format,
+writes a Markdown artifact, and has a standalone `uv run` command.
+
+Start with the
+[cookbook index](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/)
+or copy the environment template:
+
+```bash
+cp cookbook/sample.env .env
+```
 
 ## Choose the right tool
 
@@ -316,6 +356,7 @@ Every constructor accepts:
 | `default_params` | Application-controlled SerpApi options |
 | `timeout` | Timeout passed to the SerpApi SDK client |
 | `name` | Tool name presented to the model |
+| `mode` | Result detail level: `"compact"` (default) or `"full"` |
 
 `web_search` and `shopping_search` additionally accept `allowed_engines` and
 `default_engine`. The tool offers only the engine values you configured.
@@ -331,6 +372,7 @@ Every constructor accepts:
 | `crewai` | `crewai` | CrewAI `BaseTool` |
 | `llamaindex` | `llamaindex` | LlamaIndex `FunctionTool` |
 | `claude-agent-sdk` | `claude-agent-sdk` | Claude SDK MCP tool |
+| `microsoft-agent-framework` | `microsoft-agent-framework` | Microsoft Agent Framework `FunctionTool` |
 | `autogen` | `autogen` | AutoGen `FunctionTool` |
 | `haystack` | `haystack` | Haystack `Tool` |
 | `semantic-kernel` | `semantic-kernel` | Semantic Kernel function |
@@ -340,6 +382,11 @@ Every constructor accepts:
 
 Agent SDK dependencies are optional and loaded only when you use them. The base
 package depends only on the official `serpapi` Python client.
+
+Microsoft Agent Framework is Microsoft's recommended successor for AutoGen and
+Semantic Kernel agent applications. Both older adapters remain supported for
+existing projects. CrewAI is supported on Python 3.10 through 3.13; the base
+package and other compatible adapters support Python 3.14.
 
 ## Supported engine documentation
 
@@ -372,5 +419,6 @@ SerpApi's complete documentation index is available in
 - [Configuration](https://serpapi.github.io/serpapi-search-tools-python/user-guide/configuration.html)
 - [Recipes](https://serpapi.github.io/serpapi-search-tools-python/user-guide/recipes.html)
 - [Agent SDKs](https://serpapi.github.io/serpapi-search-tools-python/user-guide/frameworks.html)
+- [Agent cookbook](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/)
 - [Runnable examples](https://serpapi.github.io/serpapi-search-tools-python/sdk-examples/)
 - [Testing and contributing](https://serpapi.github.io/serpapi-search-tools-python/user-guide/testing.html)

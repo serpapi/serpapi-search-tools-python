@@ -22,6 +22,7 @@ def test_public_package_exposes_intent_specific_tools_and_semantic_enums() -> No
 
     assert set(package.__all__) == {
         "ShoppingSearchEngine",
+        "SearchResultMode",
         "SerpApiSearchError",
         "TravelClass",
         "WebSearchEngine",
@@ -61,6 +62,40 @@ def test_frameworks_are_optional_extras() -> None:
     assert all("serpapi" not in dependency for deps in optional.values() for dependency in deps)
     assert _has_uv_conflict(conflicts, "google-adk", "langchain")
     assert _has_uv_conflict(conflicts, "google-adk", "langgraph")
+    assert not _has_uv_conflict(conflicts, "frameworks", "microsoft-agent-framework")
+    assert _has_uv_conflict(conflicts, "frameworks", "openai-agents")
+    assert _has_uv_conflict(conflicts, "openai-agents", "semantic-kernel")
+
+
+def test_declared_major_version_bounds_match_tested_framework_branches() -> None:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    optional = pyproject["project"]["optional-dependencies"]
+    openai_compat = pyproject["dependency-groups"]["openai-compat"]
+
+    assert "openai>=1.0.0,<3" in optional["frameworks"]
+    assert "pydantic-ai>=1.30.1,<3" in optional["frameworks"]
+    assert optional["pydantic-ai"] == ["pydantic-ai>=1.30.1,<3"]
+    assert "haystack-ai>=2.30.2,<4" in optional["frameworks"]
+    assert optional["haystack"] == ["haystack-ai>=2.30.2,<4"]
+    assert optional["llamaindex"] == ["llama-index-core>=0.14.22,<0.15"]
+    assert openai_compat == [
+        "langchain-openai>=1.1.9,<2",
+        "llama-index-llms-openai>=0.6.26,<0.8",
+    ]
+    assert all(
+        not dependency.startswith(("langchain-openai", "llama-index-llms-openai"))
+        for dependencies in optional.values()
+        for dependency in dependencies
+    )
+    assert all(
+        re.match(r"^pydantic(?:\s|[<>=!~;]|$)", dependency) is None
+        for dependencies in optional.values()
+        for dependency in dependencies
+    )
+    assert all(
+        not classifier.startswith("License ::")
+        for classifier in pyproject["project"]["classifiers"]
+    )
 
 
 def test_langgraph_extra_installs_langgraph_and_langchain_tool_dependencies() -> None:
@@ -69,7 +104,7 @@ def test_langgraph_extra_installs_langgraph_and_langchain_tool_dependencies() ->
 
     assert any(dependency.startswith("langgraph>=1.2.6,<2") for dependency in dependencies)
     assert any(dependency.startswith("langchain-core") for dependency in dependencies)
-    assert any(dependency.startswith("langchain-openai") for dependency in dependencies)
+    assert all(not dependency.startswith("langchain-openai") for dependency in dependencies)
 
 
 def test_dev_tooling_includes_ruff_and_ty() -> None:
@@ -95,6 +130,8 @@ def test_tox_tests_supported_python_versions_with_fresh_environments() -> None:
     assert "commands = python -m pytest -q -m live tests/test_live.py" in tox_config
     assert "[testenv:openai-compat]" in tox_config
     assert "[testenv:openai-compat-google-adk]" in tox_config
+    assert "[testenv:openai-compat-microsoft-agent-framework]" in tox_config
+    assert "[testenv:openai-compat-openai-agents]" in tox_config
     for environment_name in (
         "OPENAI_COMPAT_API_KEY",
         "OPENAI_COMPAT_BASE_URL",

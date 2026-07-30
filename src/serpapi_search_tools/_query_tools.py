@@ -8,6 +8,7 @@ from serpapi_search_tools._adapters import as_provider_tool
 from serpapi_search_tools._shared import (
     ProviderName,
     SearchClient,
+    SearchResultMode,
     SearchRuntime,
     ToolDefinition,
     object_schema,
@@ -75,12 +76,14 @@ def _runtime(
     client: SearchClient | None,
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
+    mode: SearchResultMode | str,
 ) -> SearchRuntime:
     return SearchRuntime(
         api_key=api_key,
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
     )
 
 
@@ -268,6 +271,7 @@ def web_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "web_search",
 ) -> Any:
     """Create a general-web search tool.
@@ -283,8 +287,9 @@ def web_search(
         when it is allowed.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -296,7 +301,7 @@ def web_search(
 
     definition = _multi_engine_query_definition(
         name=name,
-        description="Search general web pages and return the full SerpApi response as JSON.",
+        description="Search general web pages and return focused SerpApi results as JSON.",
         catalog=WebSearchEngine,
         query_params=WEB_QUERY_PARAM_BY_ENGINE,
         allowed_engines=allowed_engines,
@@ -307,6 +312,7 @@ def web_search(
             client=client,
             default_params=default_params,
             timeout=timeout,
+            mode=mode,
         ),
         include_examples=include_examples,
     )
@@ -326,6 +332,7 @@ def shopping_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "shopping_search",
 ) -> Any:
     """Create a multi-marketplace product search tool.
@@ -340,8 +347,9 @@ def shopping_search(
         Marketplace used when the model omits ``engine``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -366,6 +374,7 @@ def shopping_search(
             client=client,
             default_params=default_params,
             timeout=timeout,
+            mode=mode,
         ),
         include_examples=include_examples,
     )
@@ -383,6 +392,7 @@ def _fixed_query_factory(
     client: SearchClient | None,
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
+    mode: SearchResultMode | str,
     name: str,
     validator: Any = None,
 ) -> Any:
@@ -396,6 +406,7 @@ def _fixed_query_factory(
             client=client,
             default_params=default_params,
             timeout=timeout,
+            mode=mode,
         ),
         include_examples=include_examples,
         validator=validator,
@@ -460,6 +471,7 @@ def news_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "news_search",
 ) -> Any:
     """Create a Google News query-mode tool for current articles and stories.
@@ -470,8 +482,9 @@ def news_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -491,6 +504,7 @@ def news_search(
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
         name=name,
         validator=_validate_news_query_mode,
     )
@@ -504,6 +518,7 @@ def images_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "images_search",
 ) -> Any:
     """Create a Google Images tool for image URLs and metadata.
@@ -514,8 +529,9 @@ def images_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -535,6 +551,7 @@ def images_search(
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
         name=name,
         validator=_validate_images_query_mode,
     )
@@ -548,6 +565,7 @@ def videos_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "videos_search",
 ) -> Any:
     """Create a YouTube tool for videos, channels, and playlists.
@@ -558,8 +576,9 @@ def videos_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -579,6 +598,7 @@ def videos_search(
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
         name=name,
     )
 
@@ -591,6 +611,7 @@ def maps_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "maps_search",
 ) -> Any:
     """Create a Google Maps search-mode tool for places and businesses.
@@ -605,8 +626,9 @@ def maps_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -621,6 +643,7 @@ def maps_search(
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
     )
 
     def maps_tool(
@@ -633,7 +656,13 @@ def maps_search(
             raise ValueError("nearby=True requires location.")
         if isinstance(zoom, bool) or not isinstance(zoom, int) or not 3 <= zoom <= 30:
             raise ValueError("zoom must be an integer from 3 to 30.")
-        typed_params: dict[str, Any] = {"q": query, "type": "search"}
+        typed_params: dict[str, Any] = {
+            "q": query,
+            "type": "search",
+            "location": None,
+            "z": None,
+            "nearby": None,
+        }
         if location is not None:
             if not location.strip():
                 raise ValueError("location must not be empty when provided.")

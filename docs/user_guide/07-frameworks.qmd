@@ -39,15 +39,16 @@ Replace `openai-agents` with the extra in the table below.
 
 | SDK | Extra / explicit provider | Supported range | Complete example |
 | --- | --- | --- | --- |
-| OpenAI Agents SDK | `openai-agents` | `openai-agents >=0.3.3,<1` | [OpenAI Agents](../sdk-examples/openai_agents.html) |
+| OpenAI Agents SDK | `openai-agents` | `openai-agents >=0.18.3,<1` | [OpenAI Agents](../sdk-examples/openai_agents.html) |
 | Pydantic AI | `pydantic-ai` | `pydantic-ai >=1.30.1,<3` | [Pydantic AI](../sdk-examples/pydantic_ai.html) |
 | LangChain | `langchain` | `langchain >=1.3.11,<2` | [LangChain](../sdk-examples/langchain.html) |
 | LangGraph | `langgraph` | `langgraph >=1.2.6,<2` | [LangGraph](../sdk-examples/langgraph.html) |
 | CrewAI | `crewai` | `crewai >=1.6.1,<2` | [CrewAI](../sdk-examples/crewai.html) |
 | LlamaIndex | `llamaindex` | core `>=0.14.22,<0.15` | [LlamaIndex](../sdk-examples/llamaindex.html) |
 | Claude Agent SDK | `claude-agent-sdk` | `claude-agent-sdk >=0.2.108,<1` | [Claude Agent SDK](../sdk-examples/claude_agent_sdk.html) |
+| Microsoft Agent Framework | `microsoft-agent-framework` | `agent-framework-openai >=1.10.1,<2` | [Microsoft Agent Framework](../sdk-examples/microsoft_agent_framework.html) |
 | AutoGen | `autogen` | AgentChat `>=0.7.5,<0.8` | [AutoGen](../sdk-examples/autogen.html) |
-| Haystack | `haystack` | `haystack-ai >=2.30.2,<3` | [Haystack](../sdk-examples/haystack.html) |
+| Haystack | `haystack` | `haystack-ai >=2.30.2,<4` | [Haystack](../sdk-examples/haystack.html) |
 | Agno | `agno` | `agno >=2.6.19,<3` | [Agno](../sdk-examples/agno.html) |
 | smolagents | `smolagents` | `smolagents >=1.26,<2` | [smolagents](../sdk-examples/smolagents.html) |
 | Google ADK | `google-adk` | `google-adk >=2.3,<3` | [Google ADK](../sdk-examples/google_adk.html) |
@@ -55,6 +56,10 @@ Replace `openai-agents` with the extra in the table below.
 
 You only need dependencies for the SDKs you use. The base install remains small
 and also supports direct Python calls.
+
+Microsoft Agent Framework is the successor recommended by Microsoft for new
+AutoGen and Semantic Kernel agent applications. The AutoGen and Semantic Kernel
+rows remain available for projects that have not migrated.
 
 ## Automatic detection is the normal path
 
@@ -66,8 +71,9 @@ from serpapi_search_tools import web_search
 tool = web_search()
 ```
 
-If multiple supported SDKs are installed, pass the table's provider value to
-avoid auto-detection ambiguity:
+If multiple supported SDK families are installed, automatic detection raises
+an error rather than selecting by import order. Pass the table's provider value
+explicitly:
 
 ```python
 from serpapi_search_tools import web_search
@@ -76,6 +82,7 @@ tool = web_search(provider="openai-agents")
 ```
 
 Use the same explicit provider for every tool in one agent.
+LangGraph and LangChain count as one adapter family.
 
 ## No supported SDK installed
 
@@ -87,12 +94,18 @@ framework. See [Support another agent SDK](configuration.html#support-another-ag
 
 The package supports Python 3.10 through 3.14. Fresh test environments build
 the wheel and resolve every SDK extra independently within its declared range.
+SDK extras declare only the packages needed to construct that SDK's SerpApi
+tool. They do not select an OpenAI, Anthropic, or other model integration for
+your application, and they do not pin shared transitive dependencies such as
+Pydantic. Complete examples install their chosen model backend explicitly.
 
 CrewAI is supported on Python 3.10 through 3.13. Install Google ADK in its own
 environment because its extension dependencies can conflict with the supported
-LangChain and LangGraph branches. The `frameworks` convenience extra is for
-repository integration tests; applications should normally install one SDK
-extra.
+LangChain and LangGraph branches. Microsoft Agent Framework is compatible with
+the `frameworks` bundle's OpenAI dependency branch. The `frameworks`
+convenience extra is for compatible repository integration tests; applications
+should normally install one SDK extra so its resolver can select mutually
+compatible transitive dependencies.
 
 If you want to add SDK support to the package itself, see
 [Contributing](contributing.html).

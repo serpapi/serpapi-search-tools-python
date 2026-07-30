@@ -1,0 +1,23 @@
+---
+title: LlamaIndex destination brief
+description: Compare remote-work destinations with travel, web, and maps evidence.
+---
+
+# LlamaIndex destination brief
+
+A FunctionAgent explores reachable destinations, researches practical
+remote-work facts, and checks local coworking access before recommending one
+city.
+
+SerpApi enhancement: three typed search surfaces replace a single generic
+function.
+
+```bash
+uv run --with '.[llamaindex]' --with llama-index-llms-openai \
+  cookbook/llamaindex/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/llamaindex)
+or LlamaIndex's official
+[agent workflow example](https://github.com/run-llama/llama_index/blob/main/docs/examples/agent/agent_workflow_basic.ipynb).

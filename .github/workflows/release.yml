@@ -92,6 +92,9 @@ jobs:
           - provider: autogen
             python-version: "3.14"
             tox-environment: integration-py314-autogen
+          - provider: microsoft-agent-framework
+            python-version: "3.14"
+            tox-environment: integration-py314-microsoft-agent-framework
           - provider: claude-agent-sdk
             python-version: "3.14"
             tox-environment: integration-py314-claude-agent-sdk

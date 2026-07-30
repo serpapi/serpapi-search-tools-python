@@ -1,0 +1,22 @@
+---
+title: Claude Agent SDK source verification
+description: Reconcile evidence through in-process SerpApi MCP tools.
+---
+
+# Claude Agent SDK source verification
+
+The agent receives web and news search as an in-process SDK MCP server and uses
+them to turn a broad public claim into a verification memo.
+
+SerpApi enhancement: the SDK's custom-tool pattern now searches live evidence
+and distinguishes confirmed facts, overstatements, and jurisdictional gaps.
+
+```bash
+uv run --with . --with claude-agent-sdk cookbook/claude-agent-sdk/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/claude-agent-sdk)
+or Anthropic's official
+[SDK MCP tool example](https://github.com/anthropics/claude-agent-sdk-python#custom-tools-as-in-process-sdk-mcp-servers).
+

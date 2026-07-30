@@ -69,7 +69,7 @@ Deterministic SDK integration scenarios and schema matrices live in
 
 The **Publish main to TestPyPI** GitHub Actions workflow is manual. Every source
 job explicitly checks out `main`, then runs the same source checks, exact-wheel
-smoke and live tests, and 13-adapter matrix used by the production PyPI release.
+smoke and live tests, and 14-adapter matrix used by the production PyPI release.
 
 Before the first run:
 

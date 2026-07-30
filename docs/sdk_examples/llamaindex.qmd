@@ -11,11 +11,15 @@ agent.
 ## Install
 
 ```bash
-pip install "serpapi-search-tools[llamaindex]"
+pip install "serpapi-search-tools[llamaindex]" llama-index-llms-openai
 ```
 
 If LlamaIndex is already installed in your project, use
 `pip install serpapi-search-tools` instead.
+
+The SerpApi extra installs LlamaIndex Core for `FunctionTool`; the second
+package is the OpenAI model integration chosen by this example. Replace it when
+your application uses another LlamaIndex LLM integration.
 
 ```bash
 export SERPAPI_API_KEY="your-serpapi-key"

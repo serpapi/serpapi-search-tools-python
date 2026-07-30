@@ -41,8 +41,10 @@ uv run tox -e integration-py314-langchain
 Adapter integration tests use the fake OpenAI-compatible FastAPI server:
 
 ```bash
-uv run --extra frameworks pytest -q -m integration tests/integration_agents
+uv run --extra frameworks --group openai-compat \
+  pytest -q -m integration tests/integration_agents
 uv run --extra google-adk pytest -q -m integration tests/integration_agents
+uv run --extra openai-agents pytest -q -m integration tests/integration_agents
 ```
 
 Live SerpApi tests require a key:
@@ -72,6 +74,27 @@ OPENAI_COMPAT_MODEL=google/gemma-4-e2b \
 uv run tox -e openai-compat-google-adk
 ```
 
+Run the Microsoft Agent Framework OpenAI-compatible smoke in its isolated
+dependency branch:
+
+```bash
+RUN_OPENAI_COMPAT_LLM_TESTS=1 \
+OPENAI_COMPAT_BASE_URL=http://127.0.0.1:1234/v1 \
+OPENAI_COMPAT_API_KEY=local-openai-compatible-server \
+OPENAI_COMPAT_MODEL=google/gemma-4-e2b \
+uv run tox -e openai-compat-microsoft-agent-framework
+```
+
+Run the current OpenAI Agents SDK smoke in its isolated dependency branch:
+
+```bash
+RUN_OPENAI_COMPAT_LLM_TESTS=1 \
+OPENAI_COMPAT_BASE_URL=http://127.0.0.1:1234/v1 \
+OPENAI_COMPAT_API_KEY=local-openai-compatible-server \
+OPENAI_COMPAT_MODEL=google/gemma-4-e2b \
+uv run tox -e openai-compat-openai-agents
+```
+
 Docs use Great Docs:
 
 ```bash
@@ -85,7 +108,7 @@ directory is ephemeral and ignored by git.
 
 ## CI Notes
 
-CI runs on pull requests and pushes to all branches. Pull request workflows use
+CI runs on pull requests and pushes to `main`. Pull request workflows use
 `pull_request`, not `pull_request_target`; maintainer approval for
 outside-collaborator PR runs is a GitHub repository setting. Public fork pull
 requests never receive repository secrets. Framework jobs use the fake

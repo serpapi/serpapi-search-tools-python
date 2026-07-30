@@ -1,0 +1,22 @@
+---
+title: Microsoft Agent Framework due diligence
+description: Discover and verify current technology claims.
+---
+
+# Microsoft Agent Framework technology due diligence
+
+The agent discovers recent warehouse-robotics developments, verifies material
+company claims, labels uncertainty, and writes a decision-ready memo.
+
+SerpApi enhancement: typed news and web tools replace the original local
+demonstration function and turn tool use into a source-backed research loop.
+
+```bash
+uv run --with '.[microsoft-agent-framework]' \
+  cookbook/microsoft-agent-framework/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/microsoft-agent-framework)
+or Microsoft Agent Framework's official Python
+[tool-use example](https://github.com/microsoft/Agent-Framework-Samples/blob/main/00.ForBeginners/04-tool-use/code_samples/python-agent-framework-ghmodel-tools.ipynb).

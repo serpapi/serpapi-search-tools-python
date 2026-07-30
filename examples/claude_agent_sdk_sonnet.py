@@ -33,7 +33,7 @@ def _require_serpapi_key() -> str:
 
 async def main() -> None:
     _require_env("ANTHROPIC_API_KEY")
-    client = LoggingClient(_require_serpapi_key(), max_results=3)
+    client = LoggingClient(_require_serpapi_key())
     serpapi_server = create_sdk_mcp_server(
         name="serpapi",
         version="1.0.0",

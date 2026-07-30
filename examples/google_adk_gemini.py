@@ -15,7 +15,7 @@ from serpapi_search_tools import shopping_search, web_search
 
 load_dotenv()
 
-MODEL = os.getenv("GOOGLE_ADK_MODEL", "gemini-3.5-flash")
+MODEL = os.getenv("GOOGLE_ADK_MODEL", "gemini-flash-lite-latest")
 PROMPT = (
     "Use the SerpApi tool to search Google Shopping for 'best travel backpacks'. "
     "Return three concise buying notes."

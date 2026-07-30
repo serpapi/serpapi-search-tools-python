@@ -1,0 +1,24 @@
+---
+title: AutoGen company intelligence
+description: Build a comparative company memo with current evidence.
+---
+
+# AutoGen company intelligence
+
+An AssistantAgent iterates over company facts and reporting, reflects on tool
+results, and writes a comparative intelligence memo.
+
+SerpApi enhancement: typed web and news tools replace the original search
+surface and make the durable/current evidence split explicit.
+
+```bash
+uv run --with '.[autogen]' cookbook/autogen/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/autogen)
+or AutoGen's official
+[company research example](https://github.com/microsoft/autogen/blob/main/python/docs/src/user-guide/agentchat-user-guide/examples/company-research.ipynb).
+
+For new Microsoft agent applications, see the
+[Microsoft Agent Framework cookbook](microsoft-agent-framework.html).

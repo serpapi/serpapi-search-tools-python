@@ -1,0 +1,77 @@
+---
+title: Microsoft Agent Framework
+description: Add native SerpApi FunctionTools to Microsoft Agent Framework.
+---
+
+# Microsoft Agent Framework
+
+Microsoft Agent Framework is the successor recommended by Microsoft for
+AutoGen and Semantic Kernel agent applications. Each search constructor returns
+a native `FunctionTool` with the exact SerpApi input schema.
+
+## Install
+
+```bash
+pip install "serpapi-search-tools[microsoft-agent-framework]"
+```
+
+If Agent Framework and its model provider are already installed, use
+`pip install serpapi-search-tools` instead.
+
+```bash
+export SERPAPI_API_KEY="your-serpapi-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+## Run it
+
+```python
+import asyncio
+
+from agent_framework import Agent
+from agent_framework.openai import OpenAIChatClient
+from serpapi_search_tools import news_search, web_search
+
+
+async def main():
+    agent = Agent(
+        client=OpenAIChatClient(model="gpt-5.4-mini"),
+        instructions="Use live search, verify important claims, and cite source URLs.",
+        tools=[
+            news_search(),
+            web_search(
+                allowed_engines=["google_light", "bing"],
+            ),
+        ],
+    )
+    print(await agent.run("Brief me on recent warehouse-robotics developments."))
+
+
+asyncio.run(main())
+```
+
+## Try it
+
+Ask: “Find three recent warehouse-robotics developments, verify the two most
+important company claims, and cite the original sources.”
+
+## Customize the search
+
+```python
+current_news = news_search(
+    provider="microsoft-agent-framework",
+    default_params={"num": 5, "hl": "en", "gl": "us"},
+    include_examples=False,
+)
+```
+
+Agent Framework accepts the returned `FunctionTool` directly in `Agent.tools`.
+The same adapter works with any Agent Framework model client.
+
+## Migrating from Microsoft frameworks
+
+Microsoft publishes official migration guides for
+[AutoGen](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-autogen/)
+and
+[Semantic Kernel](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel/).
+The older adapters remain available for existing applications.

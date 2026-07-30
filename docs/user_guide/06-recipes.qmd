@@ -225,10 +225,11 @@ preferences.
 
 ## Keep agent payloads manageable
 
-Every tool returns the complete SerpApi response. For agent applications,
-consider a custom `client=` that keeps metadata plus a small number of primary
-results before the JSON reaches the model. The repository's multi-tool OpenAI
-Agents examples demonstrate this pattern.
+Every tool returns a compact response by default, keeping only a bounded number
+of primary results before the JSON reaches the model. Use a custom `client=`
+for application-specific logging or caching, and opt into
+`SearchResultMode.FULL` only outside model context when auxiliary sections are
+required.
 
 Continue with [Runnable examples](examples.html),
 [Common configuration](configuration.html), or

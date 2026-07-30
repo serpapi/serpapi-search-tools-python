@@ -13,7 +13,6 @@ keywords = ["agents", "ai", "search", "serpapi", "tools"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
@@ -36,10 +35,9 @@ autogen = [
     "autogen-agentchat>=0.7.5,<0.8",
     "autogen-core>=0.7.5,<0.8",
     "autogen-ext[openai]>=0.7.5,<0.8",
-    "pydantic>=2.10.4,<3",
 ]
 claude-agent-sdk = ["claude-agent-sdk>=0.2.108,<1"]
-crewai = ["crewai>=1.6.1,<2; python_version < '3.14'", "pydantic>=2.10.4,<3"]
+crewai = ["crewai>=1.6.1,<2; python_version < '3.14'"]
 frameworks = [
     "agno>=2.6.19,<3",
     "autogen-core>=0.7.5,<0.8",
@@ -47,42 +45,31 @@ frameworks = [
     "autogen-ext[openai]>=0.7.5,<0.8",
     "claude-agent-sdk>=0.2.108,<1",
     "crewai>=1.6.1,<2; python_version < '3.14'",
-    "haystack-ai>=2.30.2,<3",
+    "haystack-ai>=2.30.2,<4",
     "langchain>=1.3.11,<2",
     "langchain-core>=1.4.8,<2",
-    "langchain-openai>=1.1.9,<2",
     "langgraph>=1.2.6,<2",
     "llama-index-core>=0.14.22,<0.15",
-    "llama-index-llms-openai>=0.6.26,<0.7",
     "openai>=1.0.0,<3",
-    "openai-agents>=0.3.3,<1",
     "pydantic-ai>=1.30.1,<3",
-    "pydantic>=2.10.4,<3",
     "semantic-kernel>=1.36.0,<2",
     "smolagents>=1.26.0,<2",
 ]
 google-adk = ["google-adk>=2.3.0,<3"]
-haystack = ["haystack-ai>=2.30.2,<3"]
+haystack = ["haystack-ai>=2.30.2,<4"]
 langchain = [
     "langchain>=1.3.11,<2",
     "langchain-core>=1.4.8,<2",
-    "langchain-openai>=1.1.9,<2",
-    "pydantic>=2.10.4,<3",
 ]
 langgraph = [
     "langchain>=1.3.11,<2",
     "langchain-core>=1.4.8,<2",
-    "langchain-openai>=1.1.9,<2",
     "langgraph>=1.2.6,<2",
-    "pydantic>=2.10.4,<3",
 ]
-llamaindex = [
-    "llama-index-core>=0.14.22,<0.15",
-    "llama-index-llms-openai>=0.6.26,<0.7",
-    "pydantic>=2.10.4,<3",
-]
-openai-agents = ["openai-agents>=0.3.3,<1"]
-pydantic-ai = ["pydantic-ai>=1.30.1,<3", "pydantic>=2.10.4,<3"]
+llamaindex = ["llama-index-core>=0.14.22,<0.15"]
+microsoft-agent-framework = ["agent-framework-openai>=1.10.1,<2"]
+openai-agents = ["openai-agents>=0.18.3,<1"]
+pydantic-ai = ["pydantic-ai>=1.30.1,<3"]
 semantic-kernel = ["openai>=1.0.0,<3", "semantic-kernel>=1.36.0,<2"]
 smolagents = ["openai>=1.0.0,<3", "smolagents>=1.26.0,<2"]
 
@@ -101,6 +88,10 @@ dev = [
 docs = [
     "great-docs>=0.14.0,<0.15; python_version >= '3.11'",
     "griffe>=0.35.0,<1; python_version >= '3.11'",
+]
+openai-compat = [
+    "langchain-openai>=1.1.9,<2",
+    "llama-index-llms-openai>=0.6.26,<0.8",
 ]
 
 [build-system]
@@ -133,6 +124,14 @@ conflicts = [
     [
         { extra = "frameworks" },
         { extra = "google-adk" },
+        { extra = "semantic-kernel" },
+    ],
+    [
+        { extra = "frameworks" },
+        { extra = "openai-agents" },
+    ],
+    [
+        { extra = "openai-agents" },
         { extra = "semantic-kernel" },
     ],
     [
@@ -189,6 +188,10 @@ conflicts = [
     ],
     [
         { group = "docs" },
+        { extra = "microsoft-agent-framework" },
+    ],
+    [
+        { group = "docs" },
         { extra = "pydantic-ai" },
     ],
     [
@@ -202,7 +205,7 @@ conflicts = [
 ]
 
 [tool.uv.build-backend]
-source-exclude = ["/examples/**", "/great-docs/**", "/.idea/**"]
+source-exclude = ["/cookbook/**", "/examples/**", "/great-docs/**", "/.idea/**"]
 
 [tool.ty.analysis]
 allowed-unresolved-imports = [
@@ -215,6 +218,7 @@ allowed-unresolved-imports = [
     "haystack.tools",
     "langchain_core.tools",
     "llama_index.core.tools",
+    "agent_framework",
     "pydantic_ai.tools",
     "semantic_kernel.functions",
     "smolagents",

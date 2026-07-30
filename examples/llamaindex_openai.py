@@ -1,4 +1,4 @@
-# Run: uv run --with '.[llamaindex]' examples/llamaindex_openai.py
+# Run: uv run --with '.[llamaindex]' --with llama-index-llms-openai examples/llamaindex_openai.py
 from __future__ import annotations
 
 import asyncio

@@ -1,0 +1,22 @@
+---
+title: Pydantic AI visual location scout
+description: Cross-check visual references with maps and web evidence.
+---
+
+# Pydantic AI visual location scout
+
+The agent finds visually distinct campaign locations, verifies place details,
+and checks practical restrictions before writing a scouting brief.
+
+SerpApi enhancement: typed image, maps, and web tools replace the demonstration
+weather and geocoding functions.
+
+```bash
+uv run --with . --with pydantic-ai cookbook/pydantic-ai/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/pydantic-ai)
+or Pydantic AI's official
+[weather agent](https://github.com/pydantic/pydantic-ai/blob/main/docs/examples/weather-agent.md).
+

@@ -1,0 +1,22 @@
+---
+title: Agno market research
+description: Combine category facts, launches, and live price signals.
+---
+
+# Agno market research
+
+This agent analyzes a product category using durable facts, recent launches,
+and current shopping listings, then writes a market report.
+
+SerpApi enhancement: web, news, and shopping tools replace the upstream search
+dependency while preserving the decision-focused market research goal.
+
+```bash
+uv run --with . --with agno cookbook/agno/main.py
+```
+
+Read the
+[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/agno)
+or Agno's official
+[market research cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/91_tools/parallel/market_research.py).
+

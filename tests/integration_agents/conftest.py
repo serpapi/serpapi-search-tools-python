@@ -21,10 +21,20 @@ class RecordingSearchClient:
     def search(self, params: dict[str, Any]) -> Mapping[str, Any]:
         call = dict(params)
         self.calls.append(call)
+        primary_key = {
+            "google_news": "news_results",
+            "google_maps": "local_results",
+            "google_images": "images_results",
+            "google_shopping": "shopping_results",
+            "youtube": "video_results",
+            "google_hotels": "properties",
+            "google_flights": "best_flights",
+            "google_travel_explore": "destinations",
+        }.get(str(call["engine"]), "organic_results")
         return {
             "search_metadata": {"status": "Success"},
             "search_parameters": call,
-            "organic_results": [
+            primary_key: [
                 {"title": f"Fake result for {call}", "link": "https://example.com/result"}
             ],
         }

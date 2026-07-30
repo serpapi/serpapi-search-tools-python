@@ -14,12 +14,13 @@ behavior.
 ```python
 import json
 
-from serpapi_search_tools import web_search
+from serpapi_search_tools import SearchResultMode, web_search
 
 search = web_search(
     provider="function",
     allowed_engines=["google_light"],
     default_params={"num": 3, "hl": "en", "gl": "us"},
+    mode=SearchResultMode.FULL,
 )
 response = json.loads(search(query="Python packaging tutorials"))
 
@@ -33,7 +34,7 @@ succeeds, inspect the arguments produced by the agent next.
 
 ## Know the result section
 
-SerpApi returns the full engine response as compact JSON. Common sections are:
+Compact mode returns these common result sections:
 
 | Tool | Common result section |
 | --- | --- |
@@ -45,11 +46,11 @@ SerpApi returns the full engine response as compact JSON. Common sections are:
 | `videos_search` | `video_results` |
 | `hotels_search` | `properties` |
 | `flights_search` | `best_flights`, `other_flights` |
-| `travel_explore_search` | destination and flight result sections |
+| `travel_explore_search` | `destinations` |
 
-Print `response.keys()`, `response.get("error")`,
-`response.get("search_metadata")`, and `response.get("search_parameters")`
-when the expected section is absent.
+Print `response.keys()` and `response.get("error")` when the expected section
+is absent. To inspect `search_metadata` and `search_parameters`, create the
+debug callable with `mode=SearchResultMode.FULL` as shown above.
 
 ## Inspect travel request construction
 

@@ -51,6 +51,7 @@ field.
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or choose an SDK explicitly |
 | `default_params` | `None` | Fix Google Maps locale or supported search filters |
+| `mode` | `compact` | Return up to five local results; use `SearchResultMode.FULL` for the untouched response |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add deterministic tests, caching, or request logging |
@@ -77,7 +78,7 @@ this search-mode tool.
 
 ## What comes back
 
-Search responses commonly contain `local_results`. Place entries may include a
+Compact mode returns up to five `local_results`. Place entries may include a
 title, address, rating, review count, category, phone, website, hours,
 coordinates, thumbnail, and identifiers. Availability varies by place and
 query.

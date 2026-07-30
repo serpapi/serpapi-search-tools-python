@@ -30,6 +30,7 @@ PROVIDER_MODULES = {
     "langchain": "langchain_core.tools",
     "langgraph": "langchain_core.tools",
     "llamaindex": "llama_index.core.tools",
+    "microsoft-agent-framework": "agent_framework",
     "openai-agents": "agents",
     "pydantic-ai": "pydantic_ai.tools",
     "semantic-kernel": "semantic_kernel.functions",
@@ -186,6 +187,8 @@ def _normalized_schema(provider: str, tool: Any) -> dict[str, Any]:
         return pydantic_tools.Tool(tool).function_schema.json_schema
     if provider == "autogen":
         return tool.schema["parameters"]
+    if provider == "microsoft-agent-framework":
+        return tool.to_json_schema_spec()["function"]["parameters"]
     if provider == "haystack":
         return tool.parameters
     if provider == "semantic-kernel":

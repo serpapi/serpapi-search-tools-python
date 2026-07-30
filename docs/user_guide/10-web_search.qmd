@@ -50,6 +50,7 @@ Google, Google Light, Bing, and DuckDuckGo use `q`; Yahoo uses `p`.
 | `allowed_engines` | all five engines | Restrict the enum visible to the model |
 | `default_engine` | `google_light` when allowed | Choose the engine used when the model omits `engine` |
 | `default_params` | `None` | Fix engine parameters such as locale or result count in application code |
+| `mode` | `compact` | Return focused web results; use `SearchResultMode.FULL` for the untouched response |
 | `api_key` | `None` | Override the environment-based SerpApi key |
 | `timeout` | `None` | Set the built-in client's request timeout |
 | `client` | `None` | Supply a testing, caching, logging, or custom HTTP client |
@@ -91,12 +92,13 @@ sending one `default_params` dictionary to several incompatible engines.
 
 ## What comes back
 
-The tool returns the complete SerpApi response as compact JSON text. The most
-common section is `organic_results`. Depending on the engine and query, the
-response may also include an answer box, knowledge graph, related searches,
-pagination, and `search_metadata`.
+Compact mode returns up to five `organic_results` and, when present, the
+`answer_box`, `knowledge_graph`, and `ai_overview`. It omits related searches,
+pagination, metadata, parameters, and other auxiliary sections.
 
 Treat sections as optional: a valid search may not contain every result family.
+Use `mode=SearchResultMode.FULL` when application code needs the untouched
+SerpApi response.
 
 ## Common mistakes
 

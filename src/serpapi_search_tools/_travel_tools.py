@@ -8,6 +8,7 @@ from serpapi_search_tools._adapters import as_provider_tool
 from serpapi_search_tools._shared import (
     ProviderName,
     SearchClient,
+    SearchResultMode,
     SearchRuntime,
     ToolDefinition,
     object_schema,
@@ -41,12 +42,14 @@ def _runtime(
     client: SearchClient | None,
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
+    mode: SearchResultMode | str,
 ) -> SearchRuntime:
     return SearchRuntime(
         api_key=api_key,
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
     )
 
 
@@ -152,6 +155,7 @@ def hotels_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "hotels_search",
 ) -> Any:
     """Create a Google Hotels tool with explicit stay dates.
@@ -165,8 +169,9 @@ def hotels_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -181,6 +186,7 @@ def hotels_search(
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
     )
 
     def hotels_tool(
@@ -212,6 +218,7 @@ def hotels_search(
             "check_out_date": check_out_date,
             "adults": adults,
             "children": children,
+            "children_ages": None,
         }
         if ages:
             typed_params["children_ages"] = ",".join(str(age) for age in ages)
@@ -278,6 +285,7 @@ def flights_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "flights_search",
 ) -> Any:
     """Create a Google Flights tool for one-way and round-trip routes.
@@ -292,8 +300,9 @@ def flights_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -308,6 +317,7 @@ def flights_search(
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
     )
 
     def flights_tool(
@@ -414,6 +424,7 @@ def travel_explore_search(
     client: SearchClient | None = None,
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
+    mode: SearchResultMode | str = SearchResultMode.COMPACT,
     name: str = "travel_explore_search",
 ) -> Any:
     """Create a Google Travel Explore destination-discovery tool.
@@ -428,8 +439,9 @@ def travel_explore_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout
-        Runtime authentication, custom client, application filters, and timeout.
+    api_key, client, default_params, timeout, mode
+        Runtime authentication, custom client, application filters, timeout, and
+        compact or full response selection.
     name
         Tool name presented to the model.
 
@@ -444,6 +456,7 @@ def travel_explore_search(
         client=client,
         default_params=default_params,
         timeout=timeout,
+        mode=mode,
     )
 
     def travel_explore_tool(
@@ -469,6 +482,8 @@ def travel_explore_search(
             arrival_area_id = require_nonempty(
                 {"arrival_area_id": arrival_area_id}, "arrival_area_id"
             )
+        if arrival_id is not None and arrival_area_id is not None:
+            raise ValueError("arrival_id and arrival_area_id cannot be combined.")
         if return_date is not None and outbound_date is None:
             raise ValueError("return_date requires outbound_date.")
         outbound = None
@@ -490,6 +505,7 @@ def travel_explore_search(
             "arrival_area_id": arrival_area_id,
             "outbound_date": outbound_date,
             "return_date": return_date,
+            "type": None,
             "travel_class": _travel_class_value(travel_class),
             "adults": adults,
             "children": children,
@@ -525,11 +541,17 @@ def travel_explore_search(
         },
         "arrival_id": {
             "type": "string",
-            "description": "Optional arrival airport or supported location identifier.",
+            "description": (
+                "Optional arrival airport or supported location identifier; "
+                "cannot be combined with arrival_area_id."
+            ),
         },
         "arrival_area_id": {
             "type": "string",
-            "description": "Optional Google Knowledge Graph area identifier.",
+            "description": (
+                "Optional Google Knowledge Graph area identifier; "
+                "cannot be combined with arrival_id."
+            ),
         },
         "outbound_date": {
             "type": "string",

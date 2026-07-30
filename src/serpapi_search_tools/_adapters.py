@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import re
+import sys
 from collections.abc import Callable, Mapping
 from enum import Enum
 from types import GenericAlias
@@ -16,6 +18,10 @@ from serpapi_search_tools._shared import (
     normalize_provider,
 )
 
+_TOOL_NAME_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+_TOOL_INPUT_ERROR_LIMIT = 500
+_PYTHON_VERSION = sys.version_info[:2]
+
 
 def _dependency_error(extra: str, package: str, exc: ImportError) -> ImportError:
     message = (
@@ -25,6 +31,29 @@ def _dependency_error(extra: str, package: str, exc: ImportError) -> ImportError
     error = ImportError(message)
     error.__cause__ = exc
     return error
+
+
+def _direct_dependency_error(package: str, exc: ImportError) -> ImportError:
+    error = ImportError(
+        f"{package} is required for this adapter. Install it with `pip install {package}`."
+    )
+    error.__cause__ = exc
+    return error
+
+
+def _validate_tool_name(name: str) -> None:
+    if not _TOOL_NAME_PATTERN.fullmatch(name):
+        raise ValueError(
+            "Tool names must contain 1 to 64 ASCII letters, digits, underscores, or hyphens."
+        )
+
+
+def _allows_none(
+    name: str,
+    schema: Mapping[str, Any],
+    required: set[str],
+) -> bool:
+    return name not in required and schema.get("default") is None
 
 
 def _with_tool_metadata(definition: ToolDefinition) -> Callable[..., str]:
@@ -44,7 +73,7 @@ def _pydantic_args_model(
     try:
         from pydantic import ConfigDict, Field, create_model
     except ImportError as exc:
-        raise _dependency_error("frameworks", "pydantic", exc) from exc
+        raise _direct_dependency_error("pydantic", exc) from exc
 
     properties = cast(Mapping[str, Mapping[str, Any]], definition.input_schema["properties"])
     required = set(cast(list[str], definition.input_schema.get("required", [])))
@@ -52,7 +81,7 @@ def _pydantic_args_model(
     for name, schema in properties.items():
         base_type = _pydantic_type_from_schema(name, schema, Field)
         field_type = base_type
-        if name not in required:
+        if _allows_none(name, schema, required):
             field_type = field_type | None
         default = ... if name in required else schema.get("default")
         if default is not None and isinstance(base_type, type) and issubclass(base_type, Enum):
@@ -121,7 +150,7 @@ def _with_pydantic_annotations(definition: ToolDefinition) -> Callable[..., str]
     try:
         from pydantic import Field
     except ImportError as exc:
-        raise _dependency_error("frameworks", "pydantic", exc) from exc
+        raise _direct_dependency_error("pydantic", exc) from exc
 
     function = _with_tool_metadata(definition)
     properties = cast(Mapping[str, Mapping[str, Any]], definition.input_schema["properties"])
@@ -129,7 +158,7 @@ def _with_pydantic_annotations(definition: ToolDefinition) -> Callable[..., str]
     annotations: dict[str, Any] = {}
     for name, schema in properties.items():
         field_type = _pydantic_type_from_schema(name, schema, Field)
-        if name not in required:
+        if _allows_none(name, schema, required):
             field_type = field_type | None
         schema_extra = {"format": schema["format"]} if "format" in schema else None
         annotations[name] = Annotated[
@@ -194,6 +223,11 @@ def as_crewai_tool(definition: ToolDefinition) -> Any:
     try:
         from crewai.tools import BaseTool
     except ImportError as exc:
+        if _PYTHON_VERSION >= (3, 14):
+            raise ImportError(
+                "The CrewAI adapter supports Python 3.10 through 3.13. "
+                "Use a supported Python version or choose another provider."
+            ) from exc
         raise _dependency_error("crewai", "crewai", exc) from exc
 
     function = _with_tool_metadata(definition)
@@ -229,9 +263,18 @@ def as_openai_agents_tool(definition: ToolDefinition) -> Any:
     except ImportError as exc:
         raise _dependency_error("openai-agents", "openai-agents", exc) from exc
 
+    arguments_model = _pydantic_args_model(definition)
+
     async def invoke_tool(context: Any, arguments_json: str) -> str:
-        arguments = json.loads(arguments_json) if arguments_json else {}
-        return await asyncio.to_thread(definition.function, **arguments)
+        try:
+            validated = arguments_model.model_validate_json(arguments_json or "{}")
+        except ValueError as exc:
+            return _invalid_tool_arguments(exc)
+        arguments = validated.model_dump(exclude_unset=True)
+        try:
+            return await asyncio.to_thread(definition.function, **arguments)
+        except ValueError as exc:
+            return _invalid_tool_arguments(exc)
 
     return FunctionTool(
         name=definition.name,
@@ -239,6 +282,29 @@ def as_openai_agents_tool(definition: ToolDefinition) -> Any:
         params_json_schema=definition.input_schema,
         on_invoke_tool=invoke_tool,
         strict_json_schema=False,
+    )
+
+
+def _invalid_tool_arguments(exc: ValueError) -> str:
+    details: list[str] = []
+    errors_method = getattr(exc, "errors", None)
+    if callable(errors_method):
+        try:
+            errors = errors_method(include_url=False, include_input=False)
+        except TypeError:
+            errors = errors_method()
+        for error in errors[:3]:
+            location = ".".join(str(part) for part in error.get("loc", ()))
+            message = str(error.get("msg", "invalid value"))
+            details.append(f"{location}: {message}" if location else message)
+    if not details:
+        details.append(str(exc))
+    detail = " ".join(" ".join(part.split()) for part in details)
+    if len(detail) > _TOOL_INPUT_ERROR_LIMIT:
+        detail = f"{detail[: _TOOL_INPUT_ERROR_LIMIT - 3]}..."
+    return json.dumps(
+        {"error": "Invalid tool arguments.", "details": detail},
+        separators=(",", ":"),
     )
 
 
@@ -273,6 +339,24 @@ def as_autogen_tool(definition: ToolDefinition) -> Any:
     )
     native_tool._args_type = _pydantic_args_model(definition)
     return native_tool
+
+
+def as_microsoft_agent_framework_tool(definition: ToolDefinition) -> Any:
+    try:
+        from agent_framework import FunctionTool
+    except ImportError as exc:
+        raise _dependency_error(
+            "microsoft-agent-framework",
+            "agent-framework-core",
+            exc,
+        ) from exc
+
+    return FunctionTool(
+        name=definition.name,
+        description=definition.description,
+        func=definition.function,
+        input_model=definition.input_schema,
+    )
 
 
 def as_pydantic_ai_tool(definition: ToolDefinition) -> Any:
@@ -421,6 +505,7 @@ def as_provider_tool(
 ) -> Any:
     """Adapt a provider-neutral definition into one SDK-native tool."""
 
+    _validate_tool_name(definition.name)
     definition = ToolDefinition(
         function=_with_tool_metadata(definition),
         name=definition.name,
@@ -440,6 +525,7 @@ def as_provider_tool(
         "openai-agents": as_openai_agents_tool,
         "claude-agent-sdk": as_claude_agent_sdk_tool,
         "pydantic-ai": as_pydantic_ai_tool,
+        "microsoft-agent-framework": as_microsoft_agent_framework_tool,
         "autogen": as_autogen_tool,
         "haystack": as_haystack_tool,
         "semantic-kernel": as_semantic_kernel_tool,

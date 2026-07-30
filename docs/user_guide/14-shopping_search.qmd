@@ -49,6 +49,7 @@ Google Shopping, `k` for Amazon, `query` for Walmart, and `_nkw` for eBay.
 | `allowed_engines` | all four engines | Limit the marketplaces visible to the model |
 | `default_engine` | `google_shopping` when allowed | Select the marketplace used when `engine` is omitted |
 | `default_params` | `None` | Fix result count or engine-specific marketplace filters |
+| `mode` | `compact` | Return up to five primary product results; use `SearchResultMode.FULL` for the untouched response |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add result normalization, caching, logging, or tests |
@@ -85,10 +86,9 @@ adding engine-specific values.
 
 ## What comes back
 
-Result families differ by marketplace. Google Shopping commonly returns
-`shopping_results`; Amazon, Walmart, and eBay commonly expose product listings
-under `organic_results`. Titles, prices, links, ratings, delivery details, and
-seller fields also vary.
+Compact mode returns up to five primary product results. Google Shopping uses
+`shopping_results`; Amazon, Walmart, and eBay use `organic_results`. Titles,
+prices, links, ratings, delivery details, and seller fields also vary.
 
 Normalize only fields your application needs and keep the original engine in
 the normalized record.
