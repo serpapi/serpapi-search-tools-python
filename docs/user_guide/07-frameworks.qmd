@@ -57,10 +57,6 @@ Replace `openai-agents` with the extra in the table below.
 You only need dependencies for the SDKs you use. The base install remains small
 and also supports direct Python calls.
 
-Microsoft Agent Framework is the successor recommended by Microsoft for new
-AutoGen and Semantic Kernel agent applications. The AutoGen and Semantic Kernel
-rows remain available for projects that have not migrated.
-
 ## Automatic detection is the normal path
 
 When one supported SDK is installed, omit `provider`:
@@ -90,22 +86,9 @@ Automatic detection falls back to a normal callable. You can request that form
 directly with `provider="function"` for scripts, tests, or an unlisted agent
 framework. See [Support another agent SDK](configuration.html#support-another-agent-sdk).
 
-## Compatibility notes
+## Install only what your agent uses
 
-The package supports Python 3.10 through 3.14. Fresh test environments build
-the wheel and resolve every SDK extra independently within its declared range.
-SDK extras declare only the packages needed to construct that SDK's SerpApi
-tool. They do not select an OpenAI, Anthropic, or other model integration for
-your application, and they do not pin shared transitive dependencies such as
-Pydantic. Complete examples install their chosen model backend explicitly.
-
-CrewAI is supported on Python 3.10 through 3.13. Install Google ADK in its own
-environment because its extension dependencies can conflict with the supported
-LangChain and LangGraph branches. Microsoft Agent Framework is compatible with
-the `frameworks` bundle's OpenAI dependency branch. The `frameworks`
-convenience extra is for compatible repository integration tests; applications
-should normally install one SDK extra so its resolver can select mutually
-compatible transitive dependencies.
-
-If you want to add SDK support to the package itself, see
-[Contributing](contributing.html).
+Each extra installs the packages needed to create tools for that SDK. Continue
+to install and configure the model integration your agent normally uses. In
+most applications, installing the base package plus one SDK extra keeps the
+environment easiest to understand and maintain.

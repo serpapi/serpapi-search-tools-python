@@ -8,12 +8,6 @@ description: Register SerpApi search as a Semantic Kernel function.
 Call a search constructor, register the resulting `kernel_function` as a plugin
 function, and let your kernel or agent invoke it.
 
-For new Microsoft agent applications, see
-[Microsoft Agent Framework](microsoft_agent_framework.html), with Microsoft's
-[Semantic Kernel migration guide](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel/)
-for the transition path. This page remains for supported Semantic Kernel
-applications.
-
 ## Install
 
 ```bash

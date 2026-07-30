@@ -52,7 +52,7 @@ uv run python scripts/fix_built_docs_links.py
 uv run python tests/verify_built_docs.py
 ```
 
-See `docs/user_guide/30-testing.qmd` for the complete tox, integration, live SerpApi,
+See `docs/development/testing.md` for the complete tox, integration, live SerpApi,
 and OpenAI-compatible model matrix.
 
 OpenAI-compatible model tests are opt-in and require

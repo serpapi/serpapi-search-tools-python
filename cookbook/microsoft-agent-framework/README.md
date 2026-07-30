@@ -13,9 +13,6 @@ This adaptation was **enhanced with SerpApi** by replacing the example's local
 demonstration function with typed web and news search tools, then applying the
 tool loop to a source-backed decision artifact.
 
-Microsoft Agent Framework is the successor recommended by Microsoft for
-AutoGen and Semantic Kernel agent applications.
-
 ## Run
 
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:

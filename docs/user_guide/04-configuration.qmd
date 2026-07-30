@@ -204,7 +204,7 @@ Official engine references are linked from every dedicated tool page.
 
 ## API keys
 
-For local development:
+Set the key in your local shell:
 
 ```bash
 export SERPAPI_API_KEY="your-serpapi-key"

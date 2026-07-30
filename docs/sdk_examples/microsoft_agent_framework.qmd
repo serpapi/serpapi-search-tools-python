@@ -5,9 +5,8 @@ description: Add native SerpApi FunctionTools to Microsoft Agent Framework.
 
 # Microsoft Agent Framework
 
-Microsoft Agent Framework is the successor recommended by Microsoft for
-AutoGen and Semantic Kernel agent applications. Each search constructor returns
-a native `FunctionTool` with the exact SerpApi input schema.
+Each search constructor returns a native `FunctionTool` with the exact SerpApi
+input schema.
 
 ## Install
 
@@ -67,11 +66,3 @@ current_news = news_search(
 
 Agent Framework accepts the returned `FunctionTool` directly in `Agent.tools`.
 The same adapter works with any Agent Framework model client.
-
-## Migrating from Microsoft frameworks
-
-Microsoft publishes official migration guides for
-[AutoGen](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-autogen/)
-and
-[Semantic Kernel](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel/).
-The older adapters remain available for existing applications.

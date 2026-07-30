@@ -1,11 +1,6 @@
----
-title: Testing
-guide-section: Contribute
----
-
 # Testing
 
-This page is for contributors. Package users can skip it.
+This page describes the contributor test matrix.
 
 ## Fast local checks
 
@@ -86,7 +81,8 @@ one of its own dependencies, the test fails instead of hiding the issue as a
 skip. Tox sets `SERPAPI_SEARCH_TOOL_REQUIRED_PROVIDER` for each SDK so an
 expected provider cannot disappear behind a skip.
 
-When a scenario fails, use [Debug search responses](debugging.html) to separate
+When a scenario fails, use
+[Debug search responses](../user_guide/20-debugging.qmd) to separate
 SerpApi request problems from agent-adapter or model-server problems.
 
 ## OpenAI-compatible LLM tests

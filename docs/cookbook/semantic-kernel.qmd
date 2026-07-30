@@ -20,6 +20,3 @@ Read the
 [complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/semantic-kernel)
 or Semantic Kernel's official
 [plan-and-execute sample](https://github.com/microsoft/semantic-kernel/blob/main/python/samples/concepts/processes/plan_and_execute.py).
-
-For the successor framework, see the
-[Microsoft Agent Framework cookbook](microsoft-agent-framework.html).

@@ -19,6 +19,3 @@ Read the
 [complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/autogen)
 or AutoGen's official
 [company research example](https://github.com/microsoft/autogen/blob/main/python/docs/src/user-guide/agentchat-user-guide/examples/company-research.ipynb).
-
-For new Microsoft agent applications, see the
-[Microsoft Agent Framework cookbook](microsoft-agent-framework.html).

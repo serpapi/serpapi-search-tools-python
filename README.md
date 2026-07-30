@@ -28,10 +28,25 @@ web search uses a query, hotel search requires stay dates, and flight search
 uses airports and travel dates. Inputs are validated before a request is sent
 to SerpApi, helping prevent failed searches and unnecessary API usage.
 
-Use this package when an agent needs current public information or specialized
-search results. You may not need it if your application never searches outside
-its own data, or if a one-off HTTP request is enough and you do not need
-agent-tool schemas.
+## Supported agent SDKs
+
+| SDK | Install extra / provider | Returned tool |
+| --- | --- | --- |
+| OpenAI Agents SDK | `openai-agents` | OpenAI Agents `FunctionTool` |
+| Pydantic AI | `pydantic-ai` | Pydantic AI `Tool` |
+| LangChain | `langchain` | LangChain `StructuredTool` |
+| LangGraph | `langgraph` | LangChain-compatible structured tool |
+| CrewAI | `crewai` | CrewAI `BaseTool` |
+| LlamaIndex | `llamaindex` | LlamaIndex `FunctionTool` |
+| Claude Agent SDK | `claude-agent-sdk` | Claude SDK MCP tool |
+| Microsoft Agent Framework | `microsoft-agent-framework` | Microsoft Agent Framework `FunctionTool` |
+| AutoGen | `autogen` | AutoGen `FunctionTool` |
+| Haystack | `haystack` | Haystack `Tool` |
+| Semantic Kernel | `semantic-kernel` | Semantic Kernel function |
+| Agno | `agno` | Agno `Function` |
+| smolagents | `smolagents` | smolagents `Tool` |
+| Google ADK | `google-adk` | Google ADK `FunctionTool` |
+
 
 ## Install
 
@@ -48,7 +63,7 @@ extra. For example:
 pip install "serpapi-search-tools[openai-agents]"
 ```
 
-Extras are available for all supported SDKs listed below.
+Extras are available for all supported SDKs listed above.
 
 Set a SerpApi key:
 
@@ -128,49 +143,9 @@ back to a plain callable.
 For a step-by-step explanation, keys, customization, and troubleshooting, read
 the [detailed quickstart](https://serpapi.github.io/serpapi-search-tools-python/user-guide/quickstart.html).
 
-## Choose an example by task
-
-The repository includes small SDK installation checks and fuller scenarios that
-show how applications compose and consume search tools:
-
-| Goal | Example | What it demonstrates |
-| --- | --- | --- |
-| Research across several verticals | [`direct_multi_search.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/direct_multi_search.py) | Web, news, maps, and shopping with bounded summaries |
-| Compare marketplaces | [`direct_marketplace_comparison.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/direct_marketplace_comparison.py) | Google Shopping, Amazon, Walmart, and eBay normalized into one shape |
-| Configure regional tools | [`direct_regioned_search.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/direct_regioned_search.py) | Separate names and `gl`/`hl` defaults for US and German search |
-| Avoid duplicate requests | [`direct_cached_search.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/direct_cached_search.py) | A custom client that caches identical calls and logs safe parameters |
-| Plan a structured trip | [`openai_agents_travel_planner.py`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/openai_agents_travel_planner.py) | Explore, flights, and hotels exposed together to OpenAI Agents |
-
-All direct scenarios need only a SerpApi key. Agent scenarios additionally need
-the model-provider key used by that script. See
-[`examples/README.md`](https://github.com/serpapi/serpapi-search-tools-python/blob/main/examples/README.md)
-for exact commands and the complete SDK matrix.
-
-Compact results are the package default, so multi-tool agents do not need
-application-owned response wrappers. This avoids sending large maps, shopping,
-or travel payloads back to the model. Use `mode=SearchResultMode.FULL` only
-when code outside the model context needs the complete response.
-
-## Build a complete agent from the cookbook
-
-The
-[`cookbook/`](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook)
-directory contains one outcome-driven agent for every supported SDK. Each entry
-starts from an official provider example, clearly credits the original source,
-and explains how the workflow was enhanced with SerpApi.
-
-The cookbook includes complete market research, company intelligence, trip
-planning, newsletter, purchase research, source verification, and retail
-location workflows. Every agent loads the same repository-root `.env` format,
-writes a Markdown artifact, and has a standalone `uv run` command.
-
-Start with the
-[cookbook index](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/)
-or copy the environment template:
-
-```bash
-cp cookbook/sample.env .env
-```
+Browse the [runnable examples](https://github.com/serpapi/serpapi-search-tools-python/tree/main/examples)
+for focused integrations or the [agent cookbook](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/)
+for complete, task-oriented agents built with every supported SDK.
 
 ## Choose the right tool
 
@@ -361,33 +336,6 @@ Every constructor accepts:
 `web_search` and `shopping_search` additionally accept `allowed_engines` and
 `default_engine`. The tool offers only the engine values you configured.
 
-## Supported agent SDKs
-
-| Provider value | Install extra | Returned tool |
-| --- | --- | --- |
-| `openai-agents` | `openai-agents` | OpenAI Agents `FunctionTool` |
-| `pydantic-ai` | `pydantic-ai` | Pydantic AI `Tool` |
-| `langchain` | `langchain` | LangChain `StructuredTool` |
-| `langgraph` | `langgraph` | LangChain-compatible structured tool |
-| `crewai` | `crewai` | CrewAI `BaseTool` |
-| `llamaindex` | `llamaindex` | LlamaIndex `FunctionTool` |
-| `claude-agent-sdk` | `claude-agent-sdk` | Claude SDK MCP tool |
-| `microsoft-agent-framework` | `microsoft-agent-framework` | Microsoft Agent Framework `FunctionTool` |
-| `autogen` | `autogen` | AutoGen `FunctionTool` |
-| `haystack` | `haystack` | Haystack `Tool` |
-| `semantic-kernel` | `semantic-kernel` | Semantic Kernel function |
-| `agno` | `agno` | Agno `Function` |
-| `smolagents` | `smolagents` | smolagents `Tool` |
-| `google-adk` | `google-adk` | Google ADK `FunctionTool` |
-
-Agent SDK dependencies are optional and loaded only when you use them. The base
-package depends only on the official `serpapi` Python client.
-
-Microsoft Agent Framework is Microsoft's recommended successor for AutoGen and
-Semantic Kernel agent applications. Both older adapters remain supported for
-existing projects. CrewAI is supported on Python 3.10 through 3.13; the base
-package and other compatible adapters support Python 3.14.
-
 ## Supported engine documentation
 
 - [Google Search](https://serpapi.com/search-api)
@@ -421,4 +369,3 @@ SerpApi's complete documentation index is available in
 - [Agent SDKs](https://serpapi.github.io/serpapi-search-tools-python/user-guide/frameworks.html)
 - [Agent cookbook](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/)
 - [Runnable examples](https://serpapi.github.io/serpapi-search-tools-python/sdk-examples/)
-- [Testing and contributing](https://serpapi.github.io/serpapi-search-tools-python/user-guide/testing.html)

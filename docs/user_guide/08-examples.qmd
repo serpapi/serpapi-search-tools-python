@@ -78,10 +78,6 @@ The `examples/` directory includes OpenAI Agents, Pydantic AI, LangChain,
 LangGraph, CrewAI, LlamaIndex, Claude Agent SDK, Microsoft Agent Framework,
 AutoGen, Haystack, Agno, smolagents, Google ADK, and Semantic Kernel examples.
 
-The multi-tool OpenAI Agents scripts use a custom client for credential-free
-request and response-shape logging. The library applies compact mode by default,
-so custom compaction is not required for ordinary agent use.
-
 In an application with one supported SDK installed, pass a list of
 capability-specific tools and rely on automatic detection:
 
@@ -94,9 +90,6 @@ tools = [
     maps_search(),
 ]
 ```
-
-The repository's runnable agent scripts select their provider explicitly
-because the development and test environments may contain multiple SDK extras.
 
 Open [SDK examples](../sdk-examples/index.html) for installation and complete
 copy-friendly code for each framework. See

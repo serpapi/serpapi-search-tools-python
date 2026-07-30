@@ -1,8 +1,3 @@
----
-title: Contributing
-guide-section: Contribute
----
-
 # Contributing
 
 The package separates search capabilities from agent-SDK adapters. Keep that
@@ -56,7 +51,7 @@ engines inside provider dispatch.
 ## Verification
 
 Run the focused tests while editing, then follow the complete matrix in
-[Testing](testing.html). Do not use live SerpApi or model calls in the default
+[Testing](testing.md). Do not use live SerpApi or model calls in the default
 unit suite.
 
 ## Test a release on TestPyPI
@@ -82,4 +77,4 @@ Documentation builds and deploys only when a GitHub Release is published. The
 release-triggered workflow renders Great Docs, repairs and verifies internal
 links, and deploys the verified artifact to GitHub Pages. During ordinary pull
 requests and branch development, use the local documentation commands in
-[Testing](testing.html).
+[Testing](testing.md).

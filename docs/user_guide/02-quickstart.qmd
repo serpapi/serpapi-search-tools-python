@@ -121,8 +121,8 @@ from serpapi_search_tools import web_search
 tool = web_search(provider="openai-agents")
 ```
 
-An explicit provider is also useful in shared notebooks, repository test
-environments, and deployments that install several optional extras.
+An explicit provider is also useful in shared notebooks and deployments that
+install several optional extras.
 
 ## 4. Customize the first tool
 

@@ -31,17 +31,6 @@ correct mistakes early and avoids unnecessary failed searches.
 The package does not include a language model or create the agent loop. You
 continue to configure those through the SDK you already use.
 
-## When it is a good fit
-
-Use this package when your agent needs current public information, specialized
-results such as places or travel options, or ready-made search tools for a
-supported Python SDK. It is also useful when you want the same search setup to
-work as a plain Python function in scripts and tests.
-
-You may not need it when your application never searches outside its own data,
-when your agent already has the exact search integration it needs, or when a
-single direct API request is simpler than adding an agent tool.
-
 You need a [SerpApi account and API key](https://serpapi.com/users/sign_up) for
 live searches. Agent examples may also need a separate key for the model
 provider used by that example.

@@ -124,8 +124,6 @@ def test_required_docs_source_pages_exist() -> None:
         "examples.qmd",
         "configuration.qmd",
         "debugging.qmd",
-        "testing.qmd",
-        "contributing.qmd",
     )
 
     for filename in required_pages:

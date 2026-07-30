@@ -13,11 +13,6 @@ This adaptation was **enhanced with SerpApi** by replacing the sample's
 provider-native web search with typed web and news plugins and by applying the
 workflow to a concrete competitor-analysis artifact.
 
-Semantic Kernel now points new users toward Microsoft Agent Framework; this
-entry intentionally targets the Semantic Kernel versions supported here. For a
-successor-framework example, use the
-[Microsoft Agent Framework cookbook](../microsoft-agent-framework/).
-
 ## Run
 
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
