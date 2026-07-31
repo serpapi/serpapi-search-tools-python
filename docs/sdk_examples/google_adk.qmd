@@ -81,7 +81,3 @@ products = shopping_search(
     include_examples=False,
 )
 ```
-
-Google ADK's extension dependencies conflict with the supported LangChain and
-LangGraph branches. Use a clean environment containing the `google-adk` extra
-rather than combining those extras.

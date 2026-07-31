@@ -21,7 +21,7 @@ dependency with typed `web_search` and `news_search` tools from
 Set `SERPAPI_API_KEY` and `XAI_API_KEY` in the repository-root `.env`, then run:
 
 ```bash
-uv run --with . --with langchain --with langchain-openai \
+uv run --isolated --no-project --with 'serpapi-search-tools[langchain]' --with python-dotenv --with langchain-openai \
   cookbook/langchain/main.py
 ```
 

@@ -12,7 +12,7 @@ SerpApi enhancement: the specialist uses separate web and news tools and must
 return URLs and uncertainty with its research notes.
 
 ```bash
-uv run --with . --with openai-agents cookbook/openai-agents/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv cookbook/openai-agents/main.py
 ```
 
 Read the

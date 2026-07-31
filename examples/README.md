@@ -1,15 +1,15 @@
 # Runnable examples
 
-Start with the direct examples. They need no agent SDK extra. The repository's
-development environment supplies `python-dotenv` so the scripts can load `.env`:
+Start with the direct examples. They need no agent SDK extra. These commands use
+the published package and add `python-dotenv` so the scripts can load `.env`:
 
 ```bash
-uv run python examples/direct_search.py
-uv run python examples/direct_travel.py
-uv run python examples/direct_multi_search.py
-uv run python examples/direct_marketplace_comparison.py
-uv run python examples/direct_regioned_search.py
-uv run python examples/direct_cached_search.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_search.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_travel.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_multi_search.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_marketplace_comparison.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_regioned_search.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_cached_search.py
 ```
 
 Every script loads `.env` before reading credentials. Copy `examples/sample.env`
@@ -43,16 +43,19 @@ to `.env`, or export values in your shell. You always need `SERPAPI_API_KEY` or
 Run an agent example with its extra:
 
 ```bash
-uv run --extra openai-agents python examples/openai_agents_openai.py
-uv run --extra openai-agents python examples/openai_agents_travel_planner.py
-uv run --with . --with langchain --with langchain-openai examples/langchain_grok.py
-uv run --with . --with langgraph --with langchain-openai examples/langgraph_openai.py
-uv run --with '.[llamaindex]' --with llama-index-llms-openai \
+uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv examples/openai_agents_openai.py
+uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv examples/openai_agents_travel_planner.py
+uv run --isolated --no-project --with 'serpapi-search-tools[langchain]' --with python-dotenv --with langchain-openai examples/langchain_grok.py
+uv run --isolated --no-project --with 'serpapi-search-tools[langgraph]' --with python-dotenv --with langchain-openai examples/langgraph_openai.py
+uv run --isolated --no-project --with 'serpapi-search-tools[llamaindex]' --with python-dotenv --with llama-index-llms-openai \
   examples/llamaindex_openai.py
-uv run --extra microsoft-agent-framework python examples/microsoft_agent_framework_openai.py
-uv run --extra claude-agent-sdk python examples/claude_agent_sdk_sonnet.py
-uv run --extra google-adk python examples/google_adk_gemini.py
+uv run --isolated --no-project --with 'serpapi-search-tools[microsoft-agent-framework]' --with python-dotenv examples/microsoft_agent_framework_openai.py
+uv run --isolated --no-project --with 'serpapi-search-tools[claude-agent-sdk]' --with python-dotenv examples/claude_agent_sdk_sonnet.py
+uv run --isolated --no-project --with 'serpapi-search-tools[google-adk]' --with python-dotenv examples/google_adk_gemini.py
 ```
+
+`--no-project` keeps these commands independent of the repository's local
+package and development environment.
 
 The examples default to `gpt-5.4-mini`, `claude-sonnet-5`,
 `gemini-flash-lite-latest`, and `grok-4.5`. Override the corresponding model

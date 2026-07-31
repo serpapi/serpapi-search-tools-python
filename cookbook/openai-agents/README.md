@@ -19,7 +19,7 @@ uncertainty in its handoff to the editor.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with '.[openai-agents]' cookbook/openai-agents/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv cookbook/openai-agents/main.py
 ```
 
 Optional environment variables: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and

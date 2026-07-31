@@ -12,7 +12,7 @@ SerpApi enhancement: three typed search surfaces replace demonstration tools
 and provide complementary evidence for one decision.
 
 ```bash
-uv run --with . --with smolagents --with openai cookbook/smolagents/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[smolagents]' --with python-dotenv cookbook/smolagents/main.py
 ```
 
 Read the

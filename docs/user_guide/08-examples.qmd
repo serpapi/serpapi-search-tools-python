@@ -13,8 +13,8 @@ every supported SDK.
 Use the direct examples to verify credentials and request construction:
 
 ```bash
-uv run python examples/direct_search.py
-uv run python examples/direct_travel.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_search.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_travel.py
 ```
 
 They demonstrate general web, news, hotels, flights, and travel exploration
@@ -33,10 +33,10 @@ without installing an agent framework.
 Run the direct scenarios from the project root:
 
 ```bash
-uv run python examples/direct_multi_search.py
-uv run python examples/direct_marketplace_comparison.py
-uv run python examples/direct_regioned_search.py
-uv run python examples/direct_cached_search.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_multi_search.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_marketplace_comparison.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_regioned_search.py
+uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_cached_search.py
 ```
 
 The direct scripts parse the compact JSON response and print bounded summaries.
@@ -64,14 +64,12 @@ explore = travel_explore_search(
 
 ## Run an agent example
 
-Install the matching optional extra if the agent SDK is not already present,
-set `SERPAPI_API_KEY` plus the model provider key used by the script, and run it
-from the project root:
+Set `SERPAPI_API_KEY` plus the model provider key used by the script, then run
+the published package with the matching optional extra from the project root:
 
 ```bash
-uv sync --dev --extra openai-agents
-uv run --extra openai-agents python examples/openai_agents_openai.py
-uv run --extra openai-agents python examples/openai_agents_travel_planner.py
+uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv examples/openai_agents_openai.py
+uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv examples/openai_agents_travel_planner.py
 ```
 
 The `examples/` directory includes OpenAI Agents, Pydantic AI, LangChain,

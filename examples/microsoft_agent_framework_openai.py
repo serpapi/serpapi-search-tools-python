@@ -1,4 +1,4 @@
-# Run: uv run --with '.[microsoft-agent-framework]' examples/microsoft_agent_framework_openai.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[microsoft-agent-framework]' --with python-dotenv examples/microsoft_agent_framework_openai.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

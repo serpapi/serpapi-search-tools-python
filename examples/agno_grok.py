@@ -1,4 +1,4 @@
-# Run: uv run --with . --with agno examples/agno_grok.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[agno]' --with python-dotenv examples/agno_grok.py  # noqa: E501
 from __future__ import annotations
 
 import os

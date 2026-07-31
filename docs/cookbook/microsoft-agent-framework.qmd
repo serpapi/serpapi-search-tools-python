@@ -12,7 +12,7 @@ SerpApi enhancement: typed news and web tools replace the original local
 demonstration function and turn tool use into a source-backed research loop.
 
 ```bash
-uv run --with '.[microsoft-agent-framework]' \
+uv run --isolated --no-project --with 'serpapi-search-tools[microsoft-agent-framework]' --with python-dotenv \
   cookbook/microsoft-agent-framework/main.py
 ```
 

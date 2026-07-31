@@ -12,7 +12,7 @@ SerpApi enhancement: web, news, and shopping tools replace the upstream search
 dependency while preserving the decision-focused market research goal.
 
 ```bash
-uv run --with . --with agno cookbook/agno/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[agno]' --with python-dotenv cookbook/agno/main.py
 ```
 
 Read the

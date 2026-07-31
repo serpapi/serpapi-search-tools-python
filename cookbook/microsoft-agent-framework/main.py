@@ -1,4 +1,4 @@
-# Run: uv run --with '.[microsoft-agent-framework]' cookbook/microsoft-agent-framework/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[microsoft-agent-framework]' --with python-dotenv cookbook/microsoft-agent-framework/main.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

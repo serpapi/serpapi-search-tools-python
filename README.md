@@ -28,8 +28,7 @@ tools = [
 When one supported agent SDK is installed, the package detects it and creates
 tools ready for that SDK. Each search tool asks for the information it needs:
 web search uses a query, hotel search requires stay dates, and flight search
-uses airports and travel dates. Inputs are validated before a request is sent
-to SerpApi, helping prevent failed searches and unnecessary API usage.
+uses airports and travel dates.
 
 ## Supported agent SDKs
 
@@ -179,10 +178,6 @@ for complete, task-oriented agents built with every supported SDK.
 | `flights_search` | `google_flights` | `departure_id`, `arrival_id`, `outbound_date` |
 | `travel_explore_search` | `google_travel_explore` | `departure_id` |
 
-Only `web_search` and `shopping_search` expose an `engine` choice to the model.
-Every other constructor fixes the engine and presents a schema tailored to that
-search intent.
-
 ### General web
 
 ```python
@@ -194,9 +189,10 @@ tool = web_search(
 )
 ```
 
-`google_light` is the default because it is a fast general-purpose web search.
-Yahoo is routed through its native `p` query parameter; the other supported web
-engines use `q`.
+SerpApi supports multiple general web search engines, including Google Light,
+Google, Bing, Yahoo, and DuckDuckGo. Google Light is the default because it
+provides fast, general-purpose web results. Use `allowed_engines` to choose
+which engines are available and `default_engine` to select the initial one.
 
 ### News, maps, images, and videos
 
@@ -319,8 +315,7 @@ Reserved keys (`api_key`, `async`, `engine`, and `output`) are rejected in
 ## Handle search failures
 
 The built-in client raises `SerpApiSearchError` when SerpApi rejects or cannot
-complete a request. Its message is sanitized so an API key embedded in an
-upstream request URL is replaced with `[REDACTED]`:
+complete a request:
 
 ```python
 from serpapi_search_tools import SerpApiSearchError, web_search

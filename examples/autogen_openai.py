@@ -1,4 +1,4 @@
-# Run: uv run --with '.[autogen]' examples/autogen_openai.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[autogen]' --with python-dotenv examples/autogen_openai.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

@@ -19,7 +19,7 @@ coverage, and live price signals.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with . --with langgraph --with langchain-openai \
+uv run --isolated --no-project --with 'serpapi-search-tools[langgraph]' --with python-dotenv --with langchain-openai \
   cookbook/langgraph/main.py
 ```
 

@@ -1,4 +1,4 @@
-# Run: uv run --with . --with langgraph --with langchain-openai examples/langgraph_openai.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[langgraph]' --with python-dotenv --with langchain-openai examples/langgraph_openai.py  # noqa: E501
 from __future__ import annotations
 
 import os

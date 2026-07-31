@@ -18,7 +18,7 @@ web, and maps tools rather than relying on a single generic function.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with '.[llamaindex]' --with llama-index-llms-openai \
+uv run --isolated --no-project --with 'serpapi-search-tools[llamaindex]' --with python-dotenv --with llama-index-llms-openai \
   cookbook/llamaindex/main.py
 ```
 

@@ -41,8 +41,11 @@ to `cookbook-output/` by default; set `COOKBOOK_OUTPUT_DIR` to change that.
 Each entry is a standalone script. For example:
 
 ```bash
-uv run --with . --with langchain --with langchain-openai \
+uv run --isolated --no-project --with 'serpapi-search-tools[langchain]' --with python-dotenv --with langchain-openai \
   cookbook/langchain/main.py
 ```
+
+`--no-project` installs the published package instead of the repository's local
+checkout.
 
 Open the entry's README for its exact command and source attribution.

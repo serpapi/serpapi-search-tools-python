@@ -1,4 +1,4 @@
-# Run: uv run --with '.[agno]' cookbook/agno/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[agno]' --with python-dotenv cookbook/agno/main.py  # noqa: E501
 from __future__ import annotations
 
 import os

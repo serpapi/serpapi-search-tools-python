@@ -12,7 +12,7 @@ SerpApi enhancement: generic search is replaced with Google Flights, Google
 Hotels, and Google Maps tools whose schemas expose the required travel inputs.
 
 ```bash
-uv run --with . --with crewai cookbook/crewai/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[crewai]' --with python-dotenv cookbook/crewai/main.py
 ```
 
 Read the

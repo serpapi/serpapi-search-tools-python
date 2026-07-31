@@ -18,7 +18,7 @@ the `serpapi-search-tools` Google ADK adapter.
 Set `SERPAPI_API_KEY` and `GEMINI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with . --with google-adk cookbook/google-adk/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[google-adk]' --with python-dotenv cookbook/google-adk/main.py
 ```
 
 Optional environment variables: `GOOGLE_ADK_MODEL`, `COOKBOOK_PROMPT`, and

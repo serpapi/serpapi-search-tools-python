@@ -1,4 +1,4 @@
-# Run: uv run --with . --with haystack-ai cookbook/haystack/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[haystack]' --with python-dotenv cookbook/haystack/main.py  # noqa: E501
 from __future__ import annotations
 
 import os

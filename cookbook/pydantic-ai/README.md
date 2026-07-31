@@ -19,7 +19,7 @@ requiring cross-verification before recommending a location.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with . --with pydantic-ai cookbook/pydantic-ai/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[pydantic-ai]' --with python-dotenv cookbook/pydantic-ai/main.py
 ```
 
 Optional environment variables: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
