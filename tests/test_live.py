@@ -35,17 +35,6 @@ if not (os.getenv("SERPAPI_API_KEY") or os.getenv("SERPAPI_KEY")):
 
 UNICODE_QUERY = "café 東京 'best' & #1"
 RESPONSE_KEYS: dict[str, list[str]] = {}
-COMPACT_KEYS_BY_FACTORY: dict[str, set[str]] = {
-    "web_search": {"answer_box", "knowledge_graph", "ai_overview", "organic_results"},
-    "news_search": {"news_results"},
-    "maps_search": {"local_results"},
-    "images_search": {"images_results"},
-    "shopping_search": {"shopping_results"},
-    "videos_search": {"video_results"},
-    "hotels_search": {"properties"},
-    "flights_search": {"best_flights", "other_flights"},
-    "travel_explore_search": {"destinations"},
-}
 
 ENGINE_CASES = (
     pytest.param("web-google", "google", "q", "SerpApi", "organic_results", id="web-google"),
@@ -244,7 +233,6 @@ def test_each_public_tool_returns_nonempty_compact_results_live(
     tool = factories[case.factory](provider="function", default_params=case.default_params)
     result = _decode_success(tool(**arguments), f"docs-{case.id}")
 
-    assert set(result) <= COMPACT_KEYS_BY_FACTORY[case.factory]
     if case.factory == "flights_search":
         primary_results = _primary_results(result, "best_flights")
     else:

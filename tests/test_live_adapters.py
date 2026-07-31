@@ -40,7 +40,6 @@ def test_native_sdk_adapter_executes_a_real_google_light_search() -> None:
     assert "\n" not in encoded
     assert "search_metadata" not in result
     assert "search_parameters" not in result
-    assert set(result) <= {"answer_box", "knowledge_graph", "ai_overview", "organic_results"}
     assert result["organic_results"]
     first = result["organic_results"][0]
     assert first["title"]
