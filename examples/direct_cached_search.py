@@ -1,4 +1,4 @@
-# Run: uv run --with . examples/direct_cached_search.py
+# Run: uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_cached_search.py  # noqa: E501
 """Wrap the SerpApi client with a tiny in-memory cache and safe logging."""
 
 from __future__ import annotations

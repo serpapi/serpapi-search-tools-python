@@ -1,4 +1,4 @@
-# Run: uv run --with . --with crewai examples/crewai_grok.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[crewai]' --with python-dotenv examples/crewai_grok.py  # noqa: E501
 from __future__ import annotations
 
 import os

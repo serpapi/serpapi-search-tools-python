@@ -14,7 +14,7 @@ search dependency.
 Run from the repository root:
 
 ```bash
-uv run --with . --with langchain --with langchain-openai cookbook/langchain/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[langchain]' --with python-dotenv --with langchain-openai cookbook/langchain/main.py
 ```
 
 Read the

@@ -18,7 +18,7 @@ search dependency while retaining its decision-focused market-research goal.
 Set `SERPAPI_API_KEY` and `XAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with '.[agno]' cookbook/agno/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[agno]' --with python-dotenv cookbook/agno/main.py
 ```
 
 Optional environment variables: `XAI_MODEL`, `XAI_BASE_URL`,

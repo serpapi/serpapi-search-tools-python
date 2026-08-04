@@ -1,4 +1,4 @@
-# Run: uv run --with '.[autogen]' cookbook/autogen/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[autogen]' --with python-dotenv cookbook/autogen/main.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

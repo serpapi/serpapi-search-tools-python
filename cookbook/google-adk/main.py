@@ -1,4 +1,4 @@
-# Run: uv run --with . --with google-adk cookbook/google-adk/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[google-adk]' --with python-dotenv cookbook/google-adk/main.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

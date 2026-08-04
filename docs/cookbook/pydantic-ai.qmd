@@ -12,7 +12,7 @@ SerpApi enhancement: typed image, maps, and web tools replace the demonstration
 weather and geocoding functions.
 
 ```bash
-uv run --with . --with pydantic-ai cookbook/pydantic-ai/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[pydantic-ai]' --with python-dotenv cookbook/pydantic-ai/main.py
 ```
 
 Read the

@@ -1,4 +1,4 @@
-# Run: uv run --with . --with langchain --with langchain-openai cookbook/langchain/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[langchain]' --with python-dotenv --with langchain-openai cookbook/langchain/main.py  # noqa: E501
 from __future__ import annotations
 
 import os

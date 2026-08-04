@@ -1,4 +1,4 @@
-# Run: uv run --with . --with claude-agent-sdk examples/claude_agent_sdk_sonnet.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[claude-agent-sdk]' --with python-dotenv examples/claude_agent_sdk_sonnet.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

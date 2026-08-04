@@ -1,4 +1,4 @@
-# Run: uv run --with . --with semantic-kernel --with openai examples/semantic_kernel_openai.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[semantic-kernel]' --with python-dotenv examples/semantic_kernel_openai.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

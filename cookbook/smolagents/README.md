@@ -18,7 +18,7 @@ complementary evidence surfaces for one purchase decision.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with . --with smolagents --with openai cookbook/smolagents/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[smolagents]' --with python-dotenv cookbook/smolagents/main.py
 ```
 
 Optional environment variables: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and

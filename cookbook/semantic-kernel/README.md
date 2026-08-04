@@ -18,7 +18,7 @@ workflow to a concrete competitor-analysis artifact.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with . --with semantic-kernel --with openai \
+uv run --isolated --no-project --with 'serpapi-search-tools[semantic-kernel]' --with python-dotenv \
   cookbook/semantic-kernel/main.py
 ```
 

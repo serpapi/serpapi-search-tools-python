@@ -1,4 +1,4 @@
-# Run: uv run --with '.[openai-agents]' examples/openai_agents_travel_planner.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv examples/openai_agents_travel_planner.py  # noqa: E501
 """Give an OpenAI Agents planner the three typed travel search tools."""
 
 from __future__ import annotations

@@ -18,7 +18,7 @@ distinguish company claims from independent reporting.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with '.[autogen]' cookbook/autogen/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[autogen]' --with python-dotenv cookbook/autogen/main.py
 ```
 
 Optional environment variables: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and

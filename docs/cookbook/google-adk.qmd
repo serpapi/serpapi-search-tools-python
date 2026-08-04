@@ -12,7 +12,7 @@ SerpApi enhancement: the sample search stack is replaced with typed maps, web,
 and news tools through the Google ADK adapter.
 
 ```bash
-uv run --with . --with google-adk cookbook/google-adk/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[google-adk]' --with python-dotenv cookbook/google-adk/main.py
 ```
 
 Read the

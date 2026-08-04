@@ -20,7 +20,7 @@ Set `SERPAPI_API_KEY` and `ANTHROPIC_API_KEY` in the repository-root `.env`,
 then:
 
 ```bash
-uv run --with . --with claude-agent-sdk cookbook/claude-agent-sdk/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[claude-agent-sdk]' --with python-dotenv cookbook/claude-agent-sdk/main.py
 ```
 
 Optional environment variables: `ANTHROPIC_MODEL`, `COOKBOOK_PROMPT`, and

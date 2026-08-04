@@ -12,7 +12,7 @@ SerpApi enhancement: web, news, and shopping searches expose distinct evidence
 surfaces in the graph's tool node.
 
 ```bash
-uv run --with . --with langgraph --with langchain-openai cookbook/langgraph/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[langgraph]' --with python-dotenv --with langchain-openai cookbook/langgraph/main.py
 ```
 
 Read the

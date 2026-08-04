@@ -1,4 +1,4 @@
-# Run: uv run --with . --with claude-agent-sdk cookbook/claude-agent-sdk/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[claude-agent-sdk]' --with python-dotenv cookbook/claude-agent-sdk/main.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

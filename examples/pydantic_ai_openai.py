@@ -1,4 +1,4 @@
-# Run: uv run --with . --with pydantic-ai examples/pydantic_ai_openai.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[pydantic-ai]' --with python-dotenv examples/pydantic_ai_openai.py  # noqa: E501
 from __future__ import annotations
 
 import os

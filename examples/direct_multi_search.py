@@ -1,4 +1,4 @@
-# Run: uv run --with . examples/direct_multi_search.py
+# Run: uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_multi_search.py  # noqa: E501
 """Combine several search verticals and print small, useful summaries."""
 
 from __future__ import annotations

@@ -12,7 +12,7 @@ SerpApi enhancement: provider-native search is replaced with typed web and news
 plugins.
 
 ```bash
-uv run --with . --with semantic-kernel --with openai \
+uv run --isolated --no-project --with 'serpapi-search-tools[semantic-kernel]' --with python-dotenv \
   cookbook/semantic-kernel/main.py
 ```
 

@@ -1,4 +1,4 @@
-# Run: uv run --with . --with smolagents --with openai cookbook/smolagents/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[smolagents]' --with python-dotenv cookbook/smolagents/main.py  # noqa: E501
 from __future__ import annotations
 
 import os

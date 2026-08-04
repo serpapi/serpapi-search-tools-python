@@ -1,4 +1,4 @@
-# Run: uv run --with . examples/direct_marketplace_comparison.py
+# Run: uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_marketplace_comparison.py  # noqa: E501
 """Normalize first-page product results from four marketplace engines."""
 
 from __future__ import annotations

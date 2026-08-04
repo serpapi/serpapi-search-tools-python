@@ -1,4 +1,4 @@
-# Run: uv run --with . --with google-adk examples/google_adk_gemini.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[google-adk]' --with python-dotenv examples/google_adk_gemini.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

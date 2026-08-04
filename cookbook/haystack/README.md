@@ -18,7 +18,7 @@ background independently.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with . --with haystack-ai cookbook/haystack/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[haystack]' --with python-dotenv cookbook/haystack/main.py
 ```
 
 Optional environment variables: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and

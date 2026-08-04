@@ -18,7 +18,7 @@ tool loop to a source-backed decision artifact.
 Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with '.[microsoft-agent-framework]' \
+uv run --isolated --no-project --with 'serpapi-search-tools[microsoft-agent-framework]' --with python-dotenv \
   cookbook/microsoft-agent-framework/main.py
 ```
 

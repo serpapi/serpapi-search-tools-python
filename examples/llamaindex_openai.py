@@ -1,4 +1,4 @@
-# Run: uv run --with '.[llamaindex]' --with llama-index-llms-openai examples/llamaindex_openai.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[llamaindex]' --with python-dotenv --with llama-index-llms-openai examples/llamaindex_openai.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

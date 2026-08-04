@@ -20,7 +20,7 @@ schemas.
 Set `SERPAPI_API_KEY` and `XAI_API_KEY` in the repository-root `.env`, then:
 
 ```bash
-uv run --with . --with crewai cookbook/crewai/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[crewai]' --with python-dotenv cookbook/crewai/main.py
 ```
 
 Optional environment variables: `XAI_MODEL`, `XAI_BASE_URL`,

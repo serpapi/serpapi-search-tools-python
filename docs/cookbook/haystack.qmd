@@ -12,7 +12,7 @@ SerpApi enhancement: separate news and web tools support discovery and
 verification within the same agent loop.
 
 ```bash
-uv run --with . --with haystack-ai cookbook/haystack/main.py
+uv run --isolated --no-project --with 'serpapi-search-tools[haystack]' --with python-dotenv cookbook/haystack/main.py
 ```
 
 Read the

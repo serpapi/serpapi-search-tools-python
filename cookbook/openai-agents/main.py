@@ -1,4 +1,4 @@
-# Run: uv run --with '.[openai-agents]' cookbook/openai-agents/main.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv cookbook/openai-agents/main.py  # noqa: E501
 from __future__ import annotations
 
 import asyncio

@@ -1,4 +1,4 @@
-# Run: uv run --with . examples/direct_regioned_search.py
+# Run: uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_regioned_search.py  # noqa: E501
 """Mount two named web tools with independent regional defaults."""
 
 from __future__ import annotations

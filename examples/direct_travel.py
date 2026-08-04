@@ -1,4 +1,4 @@
-# Run: uv run --with . examples/direct_travel.py
+# Run: uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_travel.py  # noqa: E501
 """Use the three structured travel tools directly, with no model involved."""
 
 from __future__ import annotations

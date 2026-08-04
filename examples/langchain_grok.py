@@ -1,4 +1,4 @@
-# Run: uv run --with . --with langchain --with langchain-openai examples/langchain_grok.py
+# Run: uv run --isolated --no-project --with 'serpapi-search-tools[langchain]' --with python-dotenv --with langchain-openai examples/langchain_grok.py  # noqa: E501
 from __future__ import annotations
 
 import os
