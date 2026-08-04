@@ -283,6 +283,44 @@ def test_builtin_client_redacts_api_key_from_provider_http_errors(
     assert caught.value.__cause__ is None
 
 
+def test_builtin_client_preserves_sanitized_provider_error_body(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    secret = "super-secret-serpapi-key"
+    serpapi_module = ModuleType("serpapi")
+
+    class Response:
+        def json(self) -> dict[str, str]:
+            return {
+                "error": f"Unsupported location; request used api_key={secret}",
+            }
+
+    class ProviderError(RuntimeError):
+        response = Response()
+
+    class Client:
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+        def search(self, params: dict[str, object]) -> dict[str, object]:
+            raise ProviderError("400 Client Error")
+
+    serpapi_module.Client = Client
+    monkeypatch.setitem(sys.modules, "serpapi", serpapi_module)
+
+    with pytest.raises(shared.SerpApiSearchError) as caught:
+        SearchRuntime(api_key=secret).execute(
+            engine="google_maps",
+            typed_params={"q": "coffee", "location": "unsupported"},
+        )
+
+    assert str(caught.value) == (
+        "SerpApi request failed: Unsupported location; request used api_key=[REDACTED]"
+    )
+    assert secret not in repr(caught.value)
+    assert caught.value.__cause__ is None
+
+
 def test_custom_client_failures_do_not_expose_exception_details() -> None:
     secret = "custom-client-secret"
 

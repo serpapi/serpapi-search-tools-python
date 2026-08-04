@@ -214,7 +214,7 @@ def _multi_engine_query_definition(
                 "enum": list(allowed),
                 "default": selected_default,
                 "description": (
-                    f"Search source. Omit to use {selected_default}. "
+                    f"Engine; defaults to {selected_default}. "
                     + "; ".join(f"{engine}: {engine_purposes[engine]}" for engine in allowed)
                     + "."
                 ),
@@ -307,11 +307,11 @@ def web_search(
         default_engine=default_engine,
         preferred_engine=WebSearchEngine.GOOGLE_LIGHT.value,
         engine_purposes={
-            "google": "richer Google result types",
-            "google_light": "fast general-web results",
-            "bing": "Bing web results",
-            "yahoo": "Yahoo web results",
-            "duckduckgo": "DuckDuckGo web results",
+            "google": "rich results",
+            "google_light": "fast results",
+            "bing": "web index",
+            "yahoo": "web index",
+            "duckduckgo": "web index",
         },
         runtime=_runtime(
             api_key=api_key,
@@ -376,10 +376,10 @@ def shopping_search(
         default_engine=default_engine,
         preferred_engine=ShoppingSearchEngine.GOOGLE_SHOPPING.value,
         engine_purposes={
-            "google_shopping": "compare products across merchants",
-            "amazon": "search Amazon listings",
-            "walmart": "search Walmart listings",
-            "ebay": "search eBay listings",
+            "google_shopping": "merchant comparison",
+            "amazon": "listings",
+            "walmart": "listings",
+            "ebay": "listings",
         },
         runtime=_runtime(
             api_key=api_key,
@@ -710,15 +710,14 @@ def maps_search(
             "query": {
                 "type": "string",
                 "description": (
-                    "Place, business name, or category to search for. Use location for a "
-                    "separate geographic search origin."
+                    "Place, business, or category; use location for a separate search origin."
                 ),
             },
             "location": {
                 "type": "string",
                 "description": (
-                    "Geographic search origin such as 'Austin, Texas'. Usually omit it when "
-                    "the query already names the city or area."
+                    "Geographic search origin, e.g. 'Austin, Texas'; omit when query names "
+                    "the area."
                 ),
             },
             "zoom": {
@@ -727,16 +726,14 @@ def maps_search(
                 "maximum": 30,
                 "default": 14,
                 "description": (
-                    "Map zoom used with location: 3 covers a wide area and larger values "
-                    "narrow the area."
+                    "Map zoom with location; 3 is broad and larger values are narrower."
                 ),
             },
             "nearby": {
                 "type": "boolean",
                 "default": False,
                 "description": (
-                    "Set true for 'near me' intent to prefer results close to location. "
-                    "Leave false when the query already names a city or area. Requires location."
+                    "True for 'near me'; requires location. Leave false when query names the area."
                 ),
             },
         },

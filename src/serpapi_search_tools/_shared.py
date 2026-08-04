@@ -138,9 +138,7 @@ class SearchRuntime:
         except Exception as exc:
             if self.client is None:
                 api_key = self.api_key or env_api_key()
-                message = str(exc)
-                if api_key:
-                    message = message.replace(api_key, "[REDACTED]")
+                message = _sanitized_provider_error(exc, api_key=api_key)
                 raise SerpApiSearchError(f"SerpApi request failed: {message}") from None
             raise SerpApiSearchError("Custom search client request failed.") from None
         plain_result = dict(result)
@@ -187,6 +185,23 @@ class SearchRuntime:
             )
             self._builtin_clients.client = client
             return client
+
+
+def _sanitized_provider_error(exc: Exception, *, api_key: str | None) -> str:
+    message = str(exc)
+    response = getattr(exc, "response", None)
+    if response is not None:
+        try:
+            payload = response.json()
+        except Exception:
+            payload = None
+        if isinstance(payload, Mapping):
+            provider_error = payload.get("error")
+            if isinstance(provider_error, str) and provider_error.strip():
+                message = provider_error.strip()
+    if api_key:
+        message = message.replace(api_key, "[REDACTED]")
+    return message
 
 
 def _compact_result(result: Mapping[str, Any], *, engine: str) -> dict[str, Any]:

@@ -525,6 +525,10 @@ def test_google_adk_adapter_preserves_maps_metadata(monkeypatch: pytest.MonkeyPa
 
 def test_pydantic_ai_adapter_returns_native_tool(monkeypatch: pytest.MonkeyPatch) -> None:
     module = ModuleType("pydantic_ai.tools")
+    exceptions_module = ModuleType("pydantic_ai.exceptions")
+
+    class ModelRetry(Exception):
+        pass
 
     class Tool:
         def __init__(self, function, **kwargs: object) -> None:
@@ -533,13 +537,74 @@ def test_pydantic_ai_adapter_returns_native_tool(monkeypatch: pytest.MonkeyPatch
                 setattr(self, key, value)
 
     module.Tool = Tool
+    exceptions_module.ModelRetry = ModelRetry
     monkeypatch.setitem(sys.modules, "pydantic_ai.tools", module)
+    monkeypatch.setitem(sys.modules, "pydantic_ai.exceptions", exceptions_module)
 
     tool = hotels_search(provider="pydantic-ai", client=FakeClient())
 
     assert isinstance(tool, Tool)
     assert tool.name == "hotels_search"
     assert "check_in_date" in inspect.signature(tool.function).parameters
+
+
+def test_pydantic_ai_adapter_retries_model_correctable_tool_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = ModuleType("pydantic_ai.tools")
+    exceptions_module = ModuleType("pydantic_ai.exceptions")
+
+    class ModelRetry(Exception):
+        pass
+
+    class Tool:
+        def __init__(self, function, **kwargs: object) -> None:
+            self.function = function
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+
+    module.Tool = Tool
+    exceptions_module.ModelRetry = ModelRetry
+    monkeypatch.setitem(sys.modules, "pydantic_ai.tools", module)
+    monkeypatch.setitem(sys.modules, "pydantic_ai.exceptions", exceptions_module)
+    tool = hotels_search(provider="pydantic-ai", client=FakeClient())
+
+    with pytest.raises(ModelRetry, match="one age per child"):
+        tool.function(
+            query="Paris",
+            check_in_date="2026-08-23",
+            check_out_date="2026-08-29",
+            adults=1,
+            children=0,
+            children_ages=[1],
+        )
+
+
+def test_pydantic_ai_adapter_retries_search_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = ModuleType("pydantic_ai.tools")
+    exceptions_module = ModuleType("pydantic_ai.exceptions")
+
+    class ModelRetry(Exception):
+        pass
+
+    class Tool:
+        def __init__(self, function, **kwargs: object) -> None:
+            self.function = function
+
+    class FailingClient:
+        def search(self, params: dict[str, object]) -> dict[str, object]:
+            raise RuntimeError("provider failed")
+
+    module.Tool = Tool
+    exceptions_module.ModelRetry = ModelRetry
+    monkeypatch.setitem(sys.modules, "pydantic_ai.tools", module)
+    monkeypatch.setitem(sys.modules, "pydantic_ai.exceptions", exceptions_module)
+    tool = web_search(provider="pydantic-ai", client=FailingClient())
+
+    with pytest.raises(ModelRetry, match="Custom search client request failed"):
+        tool.function(query="coffee")
 
 
 def test_missing_optional_dependency_has_actionable_error(

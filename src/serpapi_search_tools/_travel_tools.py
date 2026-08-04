@@ -83,6 +83,8 @@ def _validate_passengers(
     require_nonnegative(children, field="children")
     require_nonnegative(infants_in_seat, field="infants_in_seat")
     require_nonnegative(infants_on_lap, field="infants_on_lap")
+    if infants_on_lap > adults:
+        raise ValueError("infants_on_lap cannot exceed adults; each lap infant needs an adult.")
 
 
 def _validate_flight_filters(params: Mapping[str, Any]) -> None:
@@ -136,13 +138,17 @@ def _common_travel_properties() -> dict[str, dict[str, Any]]:
             "type": "integer",
             "minimum": 0,
             "default": 0,
-            "description": "Number of infants traveling in their own seats.",
+            "description": (
+                "Infants in their own seats. If seating is unspecified, ask seat or lap."
+            ),
         },
         "infants_on_lap": {
             "type": "integer",
             "minimum": 0,
             "default": 0,
-            "description": "Number of lap infants.",
+            "description": (
+                "Lap infants, maximum one per adult. If seating is unspecified, ask seat or lap."
+            ),
         },
     }
 
@@ -257,18 +263,13 @@ def hotels_search(
                 "type": "integer",
                 "minimum": 0,
                 "default": 0,
-                "description": (
-                    "Number of child guests. When greater than 0, provide one matching "
-                    "children_ages value per child."
-                ),
+                "description": "Number of child guests.",
             },
             "children_ages": {
                 "type": "array",
                 "items": {"type": "integer", "minimum": 1, "maximum": 17},
                 "description": (
-                    "Required when children is greater than 0: provide exactly one age from "
-                    "1 to 17 per child. Use 1 for a child under one year old; omit when "
-                    "children is 0."
+                    "One age (1-17) per child; use 1 for infants under one. Omit when children=0."
                 ),
             },
         },
@@ -392,19 +393,15 @@ def flights_search(
         "departure_id": {
             "type": "string",
             "description": (
-                "Specific departure airport IATA code such as LHR, or a city Google Knowledge "
-                "Graph location ID (KGMID) beginning with /m/ or /g/, such as /m/04jpl for "
-                "London. Do not use metropolitan city codes such as LON. Separate multiple "
-                "values with commas."
+                "Departure airport IATA code or city KGMID (/m/ or /g/); comma-separate "
+                "multiple values."
             ),
         },
         "arrival_id": {
             "type": "string",
             "description": (
-                "Specific arrival airport IATA code such as CDG, or a city Google Knowledge "
-                "Graph location ID (KGMID) beginning with /m/ or /g/, such as /m/05qtj for "
-                "Paris. Do not use metropolitan city codes such as PAR. Separate multiple "
-                "values with commas."
+                "Arrival airport IATA code or city KGMID (/m/ or /g/); comma-separate "
+                "multiple values."
             ),
         },
         "outbound_date": {
@@ -416,8 +413,7 @@ def flights_search(
             "type": "string",
             "format": "date",
             "description": (
-                "Return date in YYYY-MM-DD format. Provide for a round trip; omit for one "
-                "way. Must not be before outbound_date."
+                "Return date for round trips; omit for one-way. Must be on or after outbound_date."
             ),
         },
         **_common_travel_properties(),
@@ -563,42 +559,33 @@ def travel_explore_search(
         "departure_id": {
             "type": "string",
             "description": (
-                "Departure airport IATA code such as JFK, or a city Google Knowledge Graph "
-                "location ID (KGMID) beginning with /m/ or /g/, such as /m/04jpl for London. "
-                "Do not use metropolitan city codes such as LON. Separate multiple values "
-                "with commas."
+                "Departure airport IATA code or city KGMID (/m/ or /g/); comma-separate "
+                "multiple values."
             ),
         },
         "arrival_id": {
             "type": "string",
             "description": (
-                "Specific arrival airport IATA code such as CDG, or a city Google Knowledge "
-                "Graph location ID (KGMID) beginning with /m/ or /g/, such as /m/05qtj for "
-                "Paris. Use arrival_area_id for a region or country. Cannot be combined with "
-                "arrival_area_id."
+                "Arrival airport IATA code or city KGMID (/m/ or /g/). Use arrival_area_id "
+                "for regions; the fields are mutually exclusive."
             ),
         },
         "arrival_area_id": {
             "type": "string",
             "description": (
-                "Destination region or country Google Knowledge Graph location ID (KGMID) "
-                "beginning with /m/ or /g/, such as /m/02j9z for Europe. Use arrival_id for "
-                "an airport or city. Cannot be combined with arrival_id."
+                "Region or country KGMID (/m/ or /g/); mutually exclusive with arrival_id."
             ),
         },
         "outbound_date": {
             "type": "string",
             "format": "date",
-            "description": (
-                "Future outbound date in YYYY-MM-DD format. Omit for flexible-date exploration."
-            ),
+            "description": "Future outbound date; omit for flexible dates.",
         },
         "return_date": {
             "type": "string",
             "format": "date",
             "description": (
-                "Return date in YYYY-MM-DD format. Requires outbound_date and must not be "
-                "before it. Omit for one-way or flexible-date exploration."
+                "Return date; requires outbound_date. Omit for one-way or flexible dates."
             ),
         },
         **_common_travel_properties(),
