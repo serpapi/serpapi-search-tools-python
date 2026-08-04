@@ -39,11 +39,11 @@ Example broad invocation:
 
 | Field | Type | Required | Default and constraints |
 | --- | --- | --- | --- |
-| `departure_id` | string | yes | Departure airport or supported location identifier |
-| `arrival_id` | string | no | Arrival airport, city, or supported location identifier; mutually exclusive with `arrival_area_id` |
-| `arrival_area_id` | string | no | Google Knowledge Graph area or country identifier; mutually exclusive with `arrival_id` |
-| `outbound_date` | date string | no | `YYYY-MM-DD` |
-| `return_date` | date string | no | Requires outbound; cannot be earlier |
+| `departure_id` | string | yes | Airport IATA code such as `JFK`, or a city Google Knowledge Graph location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for London; do not use metropolitan codes such as `LON`; comma-separated values are supported |
+| `arrival_id` | string | no | Specific arrival airport IATA code or city KGMID beginning with `/m/` or `/g/`, such as `/m/05qtj` for Paris; use `arrival_area_id` for a region or country; mutually exclusive with it |
+| `arrival_area_id` | string | no | Region or country KGMID beginning with `/m/` or `/g/`, such as `/m/02j9z` for Europe; use `arrival_id` for an airport or city; mutually exclusive with it |
+| `outbound_date` | date string | no | Future date in `YYYY-MM-DD` format; omit for flexible-date exploration |
+| `return_date` | date string | no | Requires outbound, cannot be earlier, and should be omitted for one-way or flexible-date exploration |
 | `travel_class` | enum | no | `economy`; also `premium_economy`, `business`, or `first` |
 | `adults` | integer | no | `1`; at least `1` |
 | `children` | integer | no | `0`; cannot be negative |
@@ -90,9 +90,11 @@ stops, dates, image, and location data. Use full mode for supporting sections.
 ## Common mistakes
 
 - Sending a text `query` or `q`; this tool starts from `departure_id`.
+- Using a metropolitan code such as `LON` instead of an airport IATA code or
+  city KGMID.
 - Supplying `return_date` without `outbound_date`.
 - Treating `arrival_area_id` as ordinary text; it is a Google Knowledge Graph
-  identifier.
+  identifier beginning with `/m/` or `/g/` for a region or country.
 - Combining `travel_mode` and `interest` in `default_params`.
 - Using Explore for a route that is already known; use `flights_search` for a
   tighter schema.

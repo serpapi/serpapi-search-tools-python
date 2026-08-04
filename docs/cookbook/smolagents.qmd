@@ -5,18 +5,87 @@ description: Compare listings, product imagery, and setup videos.
 
 # smolagents purchase research
 
-This ToolCallingAgent produces a purchase shortlist from live listings, visual
-references, and setup or maintenance demonstrations.
+- **Agent pattern:** `ToolCallingAgent` shortlist
+- **Search surfaces:** Shopping, images, and videos
+- **Saved artifact:** `smolagents-purchase-research.md`
 
-SerpApi enhancement: three typed search surfaces replace demonstration tools
-and provide complementary evidence for one decision.
+## What you'll build
+
+A smolagents purchase researcher that combines live listings, visual
+references, and setup or maintenance demonstrations before recommending a
+shortlist. Each evidence surface answers a different part of the buying
+decision.
+
+**Default brief:** Help a beginner choose a compact espresso machine under USD
+700. Recommend no more than three options with tradeoffs, evidence limits, and
+source URLs.
+
+## How the agent works
+
+1. **Check live listings.** Shopping search captures current products, prices,
+   sellers, and availability signals.
+2. **Inspect form and controls.** Image search supplies visual references
+   without treating appearance as proof of dimensions.
+3. **Test ownership friction.** Video search finds setup and maintenance
+   demonstrations before the agent ranks the shortlist.
+
+## Core agent setup
+
+This excerpt keeps the smolagents model, tools, and research guardrails
+together. The full script also validates credentials, supplies the prompt, and
+saves the purchase shortlist.
+
+```python
+agent = ToolCallingAgent(
+    model=model,
+    tools=[
+        shopping_search(provider="smolagents"),
+        images_search(provider="smolagents"),
+        videos_search(provider="smolagents"),
+    ],
+    instructions=(
+        "Use all relevant tools, treat listing prices as time-sensitive, "
+        "and corroborate dimensions rather than inferring them from images."
+    ),
+    max_steps=8,
+)
+report = str(agent.run(PROMPT))
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/smolagents/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[smolagents]' --with python-dotenv cookbook/smolagents/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/smolagents)
-or smolagents'
-[multiple-tools example](https://github.com/huggingface/smolagents/blob/main/examples/multiple_tools.py).
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
 
+**Bounded research:** The `ToolCallingAgent` gets eight steps and is instructed
+to use all relevant surfaces while treating listing prices as time-sensitive.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/smolagents-purchase-research.md`. Expect up
+to three options with current listing evidence, visual and ownership tradeoffs,
+evidence limitations, and direct source URLs.
+
+Set `COOKBOOK_PROMPT` to research a different product, budget, or buyer profile.
+
+## SerpApi tools used
+
+`shopping_search` returns current listings and prices, `images_search` helps
+compare form and controls, and `videos_search` finds setup or maintenance
+demonstrations. Keeping those signals distinct helps the agent explain price,
+physical, and ownership tradeoffs in the shortlist.
+
+**Framework pattern:** The `ToolCallingAgent` setup follows smolagents'
+multiple-tools example and uses SerpApi shopping, image, and video search.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/smolagents)
+- [View smolagents' source example](https://github.com/huggingface/smolagents/blob/main/examples/multiple_tools.py)

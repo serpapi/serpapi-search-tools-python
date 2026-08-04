@@ -83,6 +83,8 @@ def _validate_passengers(
     require_nonnegative(children, field="children")
     require_nonnegative(infants_in_seat, field="infants_in_seat")
     require_nonnegative(infants_on_lap, field="infants_on_lap")
+    if infants_on_lap > adults:
+        raise ValueError("infants_on_lap cannot exceed adults; each lap infant needs an adult.")
 
 
 def _validate_flight_filters(params: Mapping[str, Any]) -> None:
@@ -136,13 +138,17 @@ def _common_travel_properties() -> dict[str, dict[str, Any]]:
             "type": "integer",
             "minimum": 0,
             "default": 0,
-            "description": "Number of infants traveling in their own seats.",
+            "description": (
+                "Infants in their own seats. If seating is unspecified, ask seat or lap."
+            ),
         },
         "infants_on_lap": {
             "type": "integer",
             "minimum": 0,
             "default": 0,
-            "description": "Number of lap infants.",
+            "description": (
+                "Lap infants, maximum one per adult. If seating is unspecified, ask seat or lap."
+            ),
         },
     }
 
@@ -238,12 +244,14 @@ def hotels_search(
             "check_in_date": {
                 "type": "string",
                 "format": "date",
-                "description": "Check-in date in YYYY-MM-DD format.",
+                "description": "Future check-in date in YYYY-MM-DD format.",
             },
             "check_out_date": {
                 "type": "string",
                 "format": "date",
-                "description": "Check-out date in YYYY-MM-DD format.",
+                "description": (
+                    "Check-out date in YYYY-MM-DD format; must be after check_in_date."
+                ),
             },
             "adults": {
                 "type": "integer",
@@ -260,7 +268,9 @@ def hotels_search(
             "children_ages": {
                 "type": "array",
                 "items": {"type": "integer", "minimum": 1, "maximum": 17},
-                "description": "One age from 1 to 17 for each child guest.",
+                "description": (
+                    "One age (1-17) per child; use 1 for infants under one. Omit when children=0."
+                ),
             },
         },
         required=["query", "check_in_date", "check_out_date"],
@@ -371,29 +381,44 @@ def flights_search(
         )
 
     description = (
-        "Search Google Flights for one-way or round-trip itineraries using explicit airports "
-        "and travel dates."
+        "Search Google Flights for a known one-way or round-trip route using airport IATA "
+        "codes or city KGMIDs (Freebase IDs) and explicit future travel dates. Only use a "
+        "city ID when the exact ID is supplied; for a city name, ask for a specific airport. "
+        "Never infer an ID or use a metropolitan code."
     )
     if include_examples:
-        description += " Example: search from LAX to AUS using an explicit future outbound date."
+        description += (
+            " Example format: use an airport's three-letter IATA code for a specific airport, "
+            "or a city's /m/ or /g/ KGMID/Freebase ID for city-wide results."
+        )
     properties = {
         "departure_id": {
             "type": "string",
-            "description": "Departure airport code or supported location identifier.",
+            "description": (
+                "Specific departure airport IATA code or exact user-supplied city KGMID "
+                "(Freebase ID, /m/ or /g/); never infer IDs or use metropolitan codes; "
+                "comma-separate multiple values."
+            ),
         },
         "arrival_id": {
             "type": "string",
-            "description": "Arrival airport code or supported location identifier.",
+            "description": (
+                "Specific arrival airport IATA code or exact user-supplied city KGMID "
+                "(Freebase ID, /m/ or /g/); never infer IDs or use metropolitan codes; "
+                "comma-separate multiple values."
+            ),
         },
         "outbound_date": {
             "type": "string",
             "format": "date",
-            "description": "Outbound date in YYYY-MM-DD format.",
+            "description": "Future outbound date in YYYY-MM-DD format.",
         },
         "return_date": {
             "type": "string",
             "format": "date",
-            "description": "Optional return date in YYYY-MM-DD format.",
+            "description": (
+                "Return date for round trips; omit for one-way. Must be on or after outbound_date."
+            ),
         },
         **_common_travel_properties(),
     }
@@ -529,39 +554,43 @@ def travel_explore_search(
         )
 
     description = (
-        "Explore destinations and fares from a departure location with optional destination "
-        "and date constraints."
+        "Explore destinations and fares from a departure airport or city with optional "
+        "specific-destination, regional, and date constraints."
     )
     if include_examples:
-        description += " Example: departure_id='JFK', arrival_area_id='/m/02j9z'."
+        description += " Example: departure_id='JFK', arrival_area_id='/m/02j9z' for Europe."
     properties = {
         "departure_id": {
             "type": "string",
-            "description": "Required departure airport or supported location identifier.",
+            "description": (
+                "Departure airport IATA code or city KGMID (/m/ or /g/); comma-separate "
+                "multiple values."
+            ),
         },
         "arrival_id": {
             "type": "string",
             "description": (
-                "Optional arrival airport or supported location identifier; "
-                "cannot be combined with arrival_area_id."
+                "Arrival airport IATA code or city KGMID (/m/ or /g/). Use arrival_area_id "
+                "for regions; the fields are mutually exclusive."
             ),
         },
         "arrival_area_id": {
             "type": "string",
             "description": (
-                "Optional Google Knowledge Graph area identifier; "
-                "cannot be combined with arrival_id."
+                "Region or country KGMID (/m/ or /g/); mutually exclusive with arrival_id."
             ),
         },
         "outbound_date": {
             "type": "string",
             "format": "date",
-            "description": "Optional outbound date in YYYY-MM-DD format.",
+            "description": "Future outbound date; omit for flexible dates.",
         },
         "return_date": {
             "type": "string",
             "format": "date",
-            "description": "Optional return date; requires outbound_date.",
+            "description": (
+                "Return date; requires outbound_date. Omit for one-way or flexible dates."
+            ),
         },
         **_common_travel_properties(),
     }

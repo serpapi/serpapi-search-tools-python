@@ -5,17 +5,88 @@ description: Build a comparative company memo with current evidence.
 
 # AutoGen company intelligence
 
-An AssistantAgent iterates over company facts and reporting, reflects on tool
-results, and writes a comparative intelligence memo.
+- **Agent pattern:** Reflective tool loop
+- **Search surfaces:** Web and news
+- **Saved artifact:** `autogen-company-intelligence.md`
 
-SerpApi enhancement: typed web and news tools replace the original search
-surface and make the durable/current evidence split explicit.
+## What you'll build
+
+An AutoGen `AssistantAgent` that compares three companies in residential
+energy-management software. It iterates over live evidence and reflects on tool
+results before it writes the final intelligence memo.
+
+**Default brief:** Compare positioning, recent signals, risks, and evidence
+quality without inventing financial figures. Keep company claims distinct from
+independent reporting.
+
+## How the agent works
+
+1. **Establish company facts.** Web search collects product, positioning, and
+   other durable company information.
+2. **Track recent moves.** News search captures launches, partnerships, and
+   reporting that may change quickly.
+3. **Reflect before writing.** AutoGen reviews its tool evidence for up to eight
+   iterations and labels the quality of each comparison.
+
+## Core agent setup
+
+This excerpt focuses on AutoGen's reflective tool loop. The full script also
+creates and closes the model client, validates keys, and saves the final memo.
+
+```python
+agent = AssistantAgent(
+    "company_researcher",
+    model_client=model_client,
+    system_message=(
+        "Search iteratively, distinguish company claims from independent "
+        "reporting, and cite source URLs."
+    ),
+    tools=[
+        web_search(provider="autogen", allowed_engines=["google_light", "bing"]),
+        news_search(provider="autogen"),
+    ],
+    reflect_on_tool_use=True,
+    max_tool_iterations=8,
+)
+result = await agent.run(task=PROMPT)
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/autogen/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[autogen]' --with python-dotenv cookbook/autogen/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/autogen)
-or AutoGen's official
-[company research example](https://github.com/microsoft/autogen/blob/main/python/docs/src/user-guide/agentchat-user-guide/examples/company-research.ipynb).
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
+
+**Portable environment:** `--isolated --no-project` resolves the published
+package and AutoGen extra independently from this repository's project
+environment.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/autogen-company-intelligence.md`. Expect a
+sourced comparison of positioning, current moves, risks, and evidence strength
+across three companies.
+
+Change `COOKBOOK_PROMPT` to choose another market or comparison set without
+editing the script.
+
+## SerpApi tools used
+
+`web_search` gathers company, product, and positioning facts, while
+`news_search` finds recent launches, partnerships, and reporting. The split
+helps the agent distinguish company claims from current independent coverage
+before reflecting on its evidence.
+
+**Framework pattern:** The reflective research loop is inspired by AutoGen's
+company research notebook and uses SerpApi web and news tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/autogen)
+- [View AutoGen's source example](https://github.com/microsoft/autogen/blob/main/python/docs/src/user-guide/agentchat-user-guide/examples/company-research.ipynb)

@@ -251,9 +251,9 @@ def test_invalid_api_key_returns_an_actionable_error_contract() -> None:
     with pytest.raises(SerpApiSearchError) as caught:
         tool(query="SerpApi")
 
-    assert "401" in str(caught.value)
-    assert "[REDACTED]" in str(caught.value)
-    assert "invalid-live-test-key" not in str(caught.value)
+    message = str(caught.value)
+    assert message.startswith("SerpApi request failed: ")
+    assert "invalid-live-test-key" not in message
 
 
 @pytest.mark.weekly_live

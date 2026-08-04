@@ -5,18 +5,93 @@ description: Compare cities with maps, durable context, and current reporting.
 
 # Google ADK retail location strategy
 
-The agent compares candidate cities using competitor patterns, durable city
-context, and recent local developments before recommending one location.
+- **Agent pattern:** Session-backed ADK runner
+- **Search surfaces:** Maps, web, and news
+- **Saved artifact:** `google-adk-location-strategy.md`
 
-SerpApi enhancement: the sample search stack is replaced with typed maps, web,
-and news tools through the Google ADK adapter.
+## What you'll build
+
+A Google ADK agent that compares cities for the first location of a specialty
+coffee roaster. It evaluates place-level competition, durable city context,
+and recent local developments before recommending one market.
+
+**Default brief:** Choose between Austin, Raleigh, and Denver. Compare each city
+consistently and return evidence, tradeoffs, a recommendation, and source URLs.
+
+## How the agent works
+
+1. **Inspect place patterns.** Maps search looks for competitors and
+   neighborhood signals at the local level.
+2. **Add context and recency.** Web search supplies durable city facts while
+   news search finds recent local changes.
+3. **Compare in one session.** An in-memory ADK session keeps the evidence
+   together while the agent builds the final strategy.
+
+## Core agent setup
+
+This excerpt shows the ADK agent's three evidence surfaces. The full script
+also configures its session service, transient-error retries, credentials, and
+Markdown output.
+
+```python
+agent = Agent(
+    name="serpapi_retail_location_strategist",
+    model=MODEL,
+    instruction=(
+        "Use maps for place-level evidence, web for durable context, "
+        "and news for current signals."
+    ),
+    tools=[
+        maps_search(provider="google-adk"),
+        web_search(provider="google-adk", allowed_engines=["google_light", "bing"]),
+        news_search(provider="google-adk"),
+    ],
+)
+runner = Runner(agent=agent, app_name=app_name, session_service=session_service)
+
+async for event in runner.run_async(
+    user_id=user_id,
+    session_id=session_id,
+    new_message=message,
+):
+    ...
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/google-adk/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) in the
+repository-root `.env`, then run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[google-adk]' --with python-dotenv cookbook/google-adk/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/google-adk)
-or Google's official
-[retail location strategy sample](https://github.com/google/adk-samples/tree/main/python/agents/retail-ai-location-strategy).
+Optional controls: `GOOGLE_ADK_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
 
+**Resilient live run:** The recipe retries transient Gemini availability
+failures up to three times while preserving the same ADK session and task.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/google-adk-location-strategy.md`. Expect a
+consistent city comparison, place-level evidence, current local signals,
+tradeoffs, one recommendation, and direct source URLs.
+
+Use `COOKBOOK_PROMPT` to replace the cities, retail concept, or decision
+criteria without changing the agent setup.
+
+## SerpApi tools used
+
+`maps_search` reveals competitor and neighborhood patterns, `web_search`
+supplies durable city context, and `news_search` tracks recent local
+developments. Using all three helps the agent compare each city with the same
+place-level, contextual, and current evidence.
+
+**Framework pattern:** The city-comparison workflow follows Google's retail AI
+location strategy sample and uses SerpApi maps, web, and news tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/google-adk)
+- [View Google's source example](https://github.com/google/adk-samples/tree/main/python/agents/retail-ai-location-strategy)

@@ -7,12 +7,14 @@ import re
 import sys
 from collections.abc import Callable, Mapping
 from enum import Enum
+from importlib import import_module
 from types import GenericAlias
 from typing import Annotated, Any, Literal, cast, get_type_hints
 
 from serpapi_search_tools._shared import (
     PROVIDER_ALIASES,
     ProviderName,
+    SerpApiSearchError,
     ToolDefinition,
     detect_provider,
     normalize_provider,
@@ -361,12 +363,31 @@ def as_microsoft_agent_framework_tool(definition: ToolDefinition) -> Any:
 
 def as_pydantic_ai_tool(definition: ToolDefinition) -> Any:
     try:
-        from pydantic_ai.tools import Tool
+        pydantic_exceptions = cast(Any, import_module("pydantic_ai.exceptions"))
+        pydantic_tools = cast(Any, import_module("pydantic_ai.tools"))
     except ImportError as exc:
         raise _dependency_error("pydantic-ai", "pydantic-ai", exc) from exc
 
+    ModelRetry = pydantic_exceptions.ModelRetry
+    Tool = pydantic_tools.Tool
+    function = _with_pydantic_annotations(definition)
+
+    def invoke(*args: Any, **kwargs: Any) -> str:
+        try:
+            return function(*args, **kwargs)
+        except (ValueError, SerpApiSearchError) as exc:
+            raise ModelRetry(str(exc)) from exc
+
+    typed_invoke = cast(Any, invoke)
+    typed_function = cast(Any, function)
+    typed_invoke.__name__ = definition.name
+    typed_invoke.__qualname__ = definition.name
+    typed_invoke.__doc__ = definition.description
+    typed_invoke.__annotations__ = typed_function.__annotations__
+    typed_invoke.__signature__ = inspect.signature(function)
+
     return Tool(
-        _with_pydantic_annotations(definition),
+        invoke,
         name=definition.name,
         description=definition.description,
     )

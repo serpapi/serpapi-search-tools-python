@@ -5,21 +5,90 @@ description: Create a source-backed market brief with web and news search.
 
 # LangChain deep market research
 
-The agent plans a market investigation, separates recent reporting from
-durable sources, reconciles evidence, and writes a decision-ready brief.
+- **Agent pattern:** Plan-and-research agent
+- **Search surfaces:** Web and news
+- **Saved artifact:** `langchain-market-research.md`
 
-SerpApi enhancement: typed web and news tools replace the original generic
-search dependency.
+## What you'll build
 
-Run from the repository root:
+A LangChain agent that produces a source-backed market brief instead of a
+one-shot answer. It plans the investigation, separates durable sources from
+recent reporting, compares independent evidence, and identifies unanswered
+questions.
 
-```bash
-uv run --isolated --no-project --with 'serpapi-search-tools[langchain]' --with python-dotenv --with langchain-openai cookbook/langchain/main.py
+**Default brief:** Assess commercial battery recycling in the United States.
+Finish with market signals, risks, open questions, and source URLs after
+comparing at least three independent sources.
+
+## How the agent works
+
+1. **Plan the questions.** The system prompt asks for a short research plan
+   before the first search.
+2. **Split durable and current.** Web search gathers background evidence; news
+   search tracks recent market developments.
+3. **Compare before concluding.** The agent reconciles independent sources and
+   marks risks or missing evidence in the final brief.
+
+## Core agent setup
+
+This excerpt shows the LangChain agent's research contract and tool set. The
+full script also configures the OpenAI-compatible model, environment, and
+Markdown report.
+
+```python
+agent = create_agent(
+    model=model,
+    tools=[
+        web_search(
+            provider="langchain",
+            allowed_engines=["google_light", "bing"],
+        ),
+        news_search(provider="langchain"),
+    ],
+    system_prompt=(
+        "Make a short plan before searching, distinguish current reporting "
+        "from durable background sources, and never present unsupported claims as fact."
+    ),
+)
+result = agent.invoke({"messages": [{"role": "user", "content": PROMPT}]})
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/langchain)
-or the official
-[Deep Agents from scratch](https://docs.langchain.com/oss/python/langchain/deep-agent-from-scratch)
-source.
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/langchain/main.py)
 
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `XAI_API_KEY` in the repository-root `.env`, then
+run:
+
+```bash
+uv run --isolated --no-project --with 'serpapi-search-tools[langchain]' --with python-dotenv --with langchain-openai \
+  cookbook/langchain/main.py
+```
+
+Optional controls: `XAI_MODEL`, `XAI_BASE_URL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
+
+**OpenAI-compatible model:** The recipe uses LangChain's `ChatOpenAI` client
+with xAI by default. Change the model or base URL through the environment
+without touching the search tools.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/langchain-market-research.md`. Expect a
+decision-ready brief with durable context, recent signals, source comparisons,
+market risks, unanswered questions, and direct URLs.
+
+Set `COOKBOOK_PROMPT` to reuse the same research discipline for another market.
+
+## SerpApi tools used
+
+`web_search` gathers durable market and company sources, while `news_search`
+finds recent developments. Their separate schemas help the agent plan each
+search against the right evidence type and compare sources before writing the
+brief.
+
+**Framework pattern:** The research workflow follows LangChain's Deep Agents
+from scratch guide and uses SerpApi web and news tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/langchain)
+- [View LangChain's source guide](https://docs.langchain.com/oss/python/langchain/deep-agent-from-scratch)

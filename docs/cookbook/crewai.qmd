@@ -5,18 +5,97 @@ description: Research and edit a trip plan with typed travel search.
 
 # CrewAI collaborative trip planner
 
-A search researcher gathers flight, hotel, and neighborhood evidence. A second
-agent turns it into a practical trip recommendation with a visible budget.
+- **Agent pattern:** Sequential two-agent crew
+- **Search surfaces:** Flights, hotels, and maps
+- **Saved artifact:** `crewai-trip-plan.md`
 
-SerpApi enhancement: generic search is replaced with Google Flights, Google
-Hotels, and Google Maps tools whose schemas expose the required travel inputs.
+## What you'll build
+
+A two-agent CrewAI trip planner. A researcher gathers current flight, hotel,
+and neighborhood evidence; a decision editor turns that packet into a practical
+four-night plan with an explicit budget.
+
+**Default brief:** Plan Kyoto for two adults, flying SFO to KIX roughly 120
+days from now. Keep flights and lodging under USD 4,000 and prefer a walkable,
+transit-friendly neighborhood.
+
+## How the agent works
+
+1. **Search exact travel inputs.** The researcher uses airport codes, generated
+   dates, occupancy, and currency with flights and hotels search.
+2. **Ground the neighborhood.** Maps search checks nearby places and gives the
+   planner location-level evidence.
+3. **Edit the decision.** A second agent selects one flight and hotel, totals
+   the estimate, and surfaces assumptions or price volatility.
+
+## Core agent setup
+
+This excerpt highlights the typed travel tools and the two-agent handoff. The
+full script defines the research and planning tasks, runtime dates, model, and
+saved report.
+
+```python
+travel_tools = [
+    flights_search(provider="crewai", default_params={"currency": "USD"}),
+    hotels_search(provider="crewai", default_params={"currency": "USD"}),
+    maps_search(provider="crewai", default_params={"gl": "jp"}),
+]
+researcher = crewai.Agent(
+    role="Travel search researcher",
+    goal="Collect current flight, hotel, and neighborhood evidence.",
+    llm=llm,
+    tools=travel_tools,
+)
+planner = crewai.Agent(
+    role="Travel decision editor",
+    goal="Turn verified options into a practical, budget-aware trip decision.",
+    llm=llm,
+)
+crew = crewai.Crew(
+    agents=[researcher, planner],
+    tasks=[research_task, planning_task],
+    process=crewai.Process.sequential,
+)
+report = str(crew.kickoff())
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/crewai/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `XAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[crewai]' --with python-dotenv cookbook/crewai/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/crewai)
-or the official
-[CrewAI examples collection](https://github.com/crewAIInc/crewAI-examples).
+Optional controls: `XAI_MODEL`, `XAI_BASE_URL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
 
+**Dates stay runnable:** The default prompt calculates departure and return
+dates at runtime. Supply `COOKBOOK_PROMPT` when you want a different origin,
+destination, party, or budget.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/crewai-trip-plan.md`. Expect one recommended
+flight, one hotel, an estimated total, a compact four-day outline, source URLs,
+and assumptions that could change the price.
+
+The researcher can take up to seven iterations; the editor gets a shorter
+three-iteration pass over the collected evidence.
+
+## SerpApi tools used
+
+`flights_search` checks routes with exact airport identifiers and dates,
+`hotels_search` uses the stay dates and occupancy, and `maps_search` grounds the
+neighborhood recommendation in nearby places. Their typed inputs help the
+researcher collect options that match the trip constraints before the planner
+makes a decision.
+
+**Framework pattern:** The researcher-and-planner roles follow CrewAI's Trip
+Planner example and use SerpApi flights, hotels, and maps tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/crewai)
+- [View CrewAI's examples](https://github.com/crewAIInc/crewAI-examples)

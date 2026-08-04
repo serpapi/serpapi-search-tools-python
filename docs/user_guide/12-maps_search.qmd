@@ -37,10 +37,10 @@ An agent can then call the tool with values such as:
 
 | Field | Type | Required | Default and constraints |
 | --- | --- | --- | --- |
-| `query` | string | yes | Non-empty place, category, or business query |
-| `location` | string | no | A geographic name such as `Austin, Texas` |
-| `zoom` | integer | no | `14`; must be from `3` through `30`; used when `location` is present |
-| `nearby` | boolean | no | `False`; `True` requires `location` |
+| `query` | string | yes | Place, business name, or category; use `location` for a separate geographic search origin |
+| `location` | string | no | Search origin such as `Austin, Texas`; usually omit when `query` already names the city or area |
+| `zoom` | integer | no | `14`; `3` covers a wide area and larger values narrow it; allowed range is `3` through `30`; used with `location` |
+| `nearby` | boolean | no | `False`; set `True` for “near me” intent, leave false when `query` names a city or area, and always provide `location` when true |
 
 The package sends Google Maps `type="search"` and maps `zoom` to SerpApi's `z`
 field.
@@ -86,6 +86,8 @@ query.
 ## Common mistakes
 
 - Setting `nearby=True` without `location`.
+- Setting `nearby=True` when the query already names a city or area.
+- Repeating the same city in both `query` and `location` without a reason.
 - Passing a `zoom` outside `3` through `30`.
 - Combining the typed `location` with `ll`, `lat`, or `lon` defaults.
 - Passing `place_id` or `data_cid`; this tool supports place search rather than

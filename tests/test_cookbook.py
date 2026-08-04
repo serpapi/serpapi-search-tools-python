@@ -88,7 +88,7 @@ def test_cookbook_docs_cover_every_supported_provider() -> None:
     for provider in SUPPORTED_PROVIDERS:
         page = (COOKBOOK_DOCS / f"{provider}.qmd").read_text()
         assert f"({provider}.html)" in index
-        assert "SerpApi enhancement:" in page
+        assert "## SerpApi tools used" in page
         assert f"cookbook/{provider}/main.py" in page
 
 

@@ -36,7 +36,7 @@ agent_tools = [products]
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
 | `query` | string | yes | Product, brand, model, or category to find |
-| `engine` | enum | no | One of the marketplaces allowed by the constructor |
+| `engine` | enum | no | Product source: `google_shopping` compares merchants; `amazon`, `walmart`, and `ebay` search that marketplace directly; omit for the configured default |
 
 The package translates `query` to the marketplace's native parameter: `q` for
 Google Shopping, `k` for Amazon, `query` for Walmart, and `_nkw` for eBay.

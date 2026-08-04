@@ -5,19 +5,93 @@ description: Compare remote-work destinations with travel, web, and maps evidenc
 
 # LlamaIndex destination brief
 
-A FunctionAgent explores reachable destinations, researches practical
-remote-work facts, and checks local coworking access before recommending one
-city.
+- **Agent pattern:** `FunctionAgent` comparison
+- **Search surfaces:** Travel explore, web, and maps
+- **Saved artifact:** `llamaindex-destination-brief.md`
 
-SerpApi enhancement: three typed search surfaces replace a single generic
-function.
+## What you'll build
+
+A LlamaIndex `FunctionAgent` that discovers reachable cities for a short
+remote-work trip, researches practical context, checks local coworking access,
+and recommends one destination with explicit tradeoffs.
+
+**Default brief:** Starting from JFK, find three promising destinations for a
+four-day remote-work trip and recommend one with evidence and source URLs.
+
+## How the agent works
+
+1. **Explore reachable cities.** Travel explore search supplies indicative
+   flight options from the origin airport.
+2. **Test practical fit.** Web search checks remote-work facts and maps search
+   verifies nearby coworking access.
+3. **Compare explicitly.** The `FunctionAgent` gathers evidence from every
+   relevant tool before choosing one destination.
+
+## Core agent setup
+
+This excerpt shows the LlamaIndex `FunctionAgent` and its required first tool
+call. The complete script also configures the model, validates credentials,
+sets timeouts, and saves the destination brief.
+
+```python
+agent = FunctionAgent(
+    tools=[
+        travel_explore_search(provider="llamaindex", api_key=api_key),
+        web_search(
+            provider="llamaindex",
+            allowed_engines=["google_light", "bing"],
+            api_key=api_key,
+        ),
+        maps_search(provider="llamaindex", api_key=api_key),
+    ],
+    llm=llm,
+    initial_tool_choice="required",
+    streaming=False,
+    system_prompt=(
+        "Gather evidence from each relevant tool, make the comparison explicit, "
+        "and include source URLs."
+    ),
+)
+result = await agent.run(PROMPT)
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/llamaindex/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[llamaindex]' --with python-dotenv --with llama-index-llms-openai \
   cookbook/llamaindex/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/llamaindex)
-or LlamaIndex's official
-[agent workflow example](https://github.com/run-llama/llama_index/blob/main/docs/examples/agent/agent_workflow_basic.ipynb).
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
+
+**Tool use starts immediately:** The agent sets
+`initial_tool_choice="required"`, preventing a plausible-sounding destination
+answer before live travel evidence is collected.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/llamaindex-destination-brief.md`. Expect
+three candidate destinations, indicative travel evidence, practical
+remote-work context, coworking access, tradeoffs, one recommendation, and
+source URLs.
+
+Replace the origin, trip length, or decision criteria through `COOKBOOK_PROMPT`.
+
+## SerpApi tools used
+
+`travel_explore_search` identifies reachable destination candidates,
+`web_search` checks practical remote-work facts, and `maps_search` verifies
+local coworking access. Together they help the agent compare reachability,
+practical fit, and nearby facilities as separate decision criteria.
+
+**Framework pattern:** The `FunctionAgent` workflow follows LlamaIndex's basic
+agent example and uses three complementary SerpApi tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/llamaindex)
+- [View LlamaIndex's source example](https://github.com/run-llama/llama_index/blob/main/docs/examples/agent/agent_workflow_basic.ipynb)

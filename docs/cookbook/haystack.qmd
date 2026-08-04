@@ -5,18 +5,85 @@ description: Discover, verify, and deduplicate a weekly news briefing.
 
 # Haystack industry newsletter
 
-The agent selects a lead story and three briefs, verifies their background, and
-avoids treating syndicated copies as independent evidence.
+- **Agent pattern:** Editorial agent loop
+- **Search surfaces:** News and web
+- **Saved artifact:** `haystack-industry-newsletter.md`
 
-SerpApi enhancement: separate news and web tools support discovery and
-verification within the same agent loop.
+## What you'll build
+
+A Haystack research editor that turns a week of live industry coverage into a
+compact newsletter. It discovers stories, verifies important background, and
+avoids presenting syndicated copies as independent developments.
+
+**Default brief:** Create a warehouse-robotics newsletter with one lead story,
+three briefs, why each matters, and source URLs.
+
+## How the agent works
+
+1. **Discover the week.** News search gathers a broad set of recent
+   warehouse-robotics developments.
+2. **Verify the background.** Web search checks durable facts behind the
+   strongest or most material claims.
+3. **Edit and deduplicate.** The Haystack agent collapses syndicated coverage
+   and shapes the final issue within eight steps.
+
+## Core agent setup
+
+This excerpt keeps the Haystack generator, tools, and editorial loop together.
+The complete script also validates credentials, normalizes the final message,
+and saves the newsletter.
+
+```python
+agent = Agent(
+    chat_generator=generator,
+    system_prompt=(
+        "Use live search, deduplicate stories, verify important claims, "
+        "and include direct source URLs."
+    ),
+    tools=[
+        news_search(provider="haystack"),
+        web_search(provider="haystack", allowed_engines=["google_light", "bing"]),
+    ],
+    max_agent_steps=8,
+)
+result = agent.run(messages=[ChatMessage.from_user(PROMPT)])
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/haystack/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[haystack]' --with python-dotenv cookbook/haystack/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/haystack)
-or the official Haystack
-[newsletter agent](https://github.com/deepset-ai/haystack-cookbook/blob/main/notebooks/newsletter-agent.ipynb).
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
 
+**Change the beat, not the wiring:** Set `COOKBOOK_PROMPT` to cover another
+industry while keeping the discovery, verification, and deduplication loop
+intact.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/haystack-industry-newsletter.md`. Expect a
+lead story, three concise briefs, a “why it matters” angle for each item, and
+direct source URLs without duplicated syndicated stories.
+
+The rendered newsletter is also printed to the terminal for a quick review.
+
+## SerpApi tools used
+
+`news_search` discovers timely stories for the issue, and `web_search` verifies
+the durable background behind important claims. This two-pass use helps the
+editor reason about freshness and recognize syndicated copies of the same
+story.
+
+**Framework pattern:** The editorial workflow follows the Haystack Cookbook
+newsletter agent and uses SerpApi news and web tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/haystack)
+- [View Haystack's source example](https://github.com/deepset-ai/haystack-cookbook/blob/main/notebooks/newsletter-agent.ipynb)

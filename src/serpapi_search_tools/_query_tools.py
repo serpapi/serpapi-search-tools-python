@@ -152,6 +152,7 @@ def _multi_engine_query_definition(
     allowed_engines: Iterable[str | Enum] | str | Enum | None,
     default_engine: str | Enum | None,
     preferred_engine: str,
+    engine_purposes: Mapping[str, str],
     runtime: SearchRuntime,
     include_examples: bool,
 ) -> ToolDefinition:
@@ -199,10 +200,7 @@ def _multi_engine_query_definition(
     engines_text = ", ".join(allowed)
     complete_description = f"{description} Supported engines: {engines_text}."
     if include_examples:
-        complete_description += (
-            f" Example: query='coffee', engine='{selected_default}'. "
-            "Developers can configure optional SerpApi filters with default_params."
-        )
+        complete_description += f" Example: query='coffee', engine='{selected_default}'."
     query_tool.__annotations__ = {
         "query": str,
         "engine": allowed_engine_type,
@@ -215,7 +213,11 @@ def _multi_engine_query_definition(
                 "type": "string",
                 "enum": list(allowed),
                 "default": selected_default,
-                "description": "The search index to use.",
+                "description": (
+                    f"Engine; defaults to {selected_default}. "
+                    + "; ".join(f"{engine}: {engine_purposes[engine]}" for engine in allowed)
+                    + "."
+                ),
             },
         },
         required=["query"],
@@ -247,10 +249,7 @@ def _fixed_query_definition(
 
     complete_description = description
     if include_examples:
-        complete_description += (
-            " Example: query='coffee'. Developers can configure optional SerpApi filters "
-            "with default_params."
-        )
+        complete_description += " Example: query='coffee'."
     query_tool.__annotations__ = {"query": str, "return": str}
     schema = object_schema(
         {
@@ -307,6 +306,13 @@ def web_search(
         allowed_engines=allowed_engines,
         default_engine=default_engine,
         preferred_engine=WebSearchEngine.GOOGLE_LIGHT.value,
+        engine_purposes={
+            "google": "rich results",
+            "google_light": "fast results",
+            "bing": "web index",
+            "yahoo": "web index",
+            "duckduckgo": "web index",
+        },
         runtime=_runtime(
             api_key=api_key,
             client=client,
@@ -369,6 +375,12 @@ def shopping_search(
         allowed_engines=allowed_engines,
         default_engine=default_engine,
         preferred_engine=ShoppingSearchEngine.GOOGLE_SHOPPING.value,
+        engine_purposes={
+            "google_shopping": "merchant comparison",
+            "amazon": "listings",
+            "walmart": "listings",
+            "ebay": "listings",
+        },
         runtime=_runtime(
             api_key=api_key,
             client=client,
@@ -695,22 +707,34 @@ def maps_search(
         description += " Example: query='coffee', location='Austin, Texas', zoom=14."
     schema = object_schema(
         {
-            "query": {"type": "string", "description": "The place or business query."},
+            "query": {
+                "type": "string",
+                "description": (
+                    "Place, business, or category; use location for a separate search origin."
+                ),
+            },
             "location": {
                 "type": "string",
-                "description": "Optional geographic location used with zoom.",
+                "description": (
+                    "Geographic search origin, e.g. 'Austin, Texas'; omit when query names "
+                    "the area."
+                ),
             },
             "zoom": {
                 "type": "integer",
                 "minimum": 3,
                 "maximum": 30,
                 "default": 14,
-                "description": "Map zoom used when location is provided.",
+                "description": (
+                    "Map zoom with location; 3 is broad and larger values are narrower."
+                ),
             },
             "nearby": {
                 "type": "boolean",
                 "default": False,
-                "description": "Prefer nearby results; requires location.",
+                "description": (
+                    "True for 'near me'; requires location. Leave false when query names the area."
+                ),
             },
         },
         required=["query"],

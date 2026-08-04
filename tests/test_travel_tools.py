@@ -247,9 +247,25 @@ def test_travel_explore_infers_type_from_dates(
             "return_date must not be before outbound_date",
         ),
         (
+            flights_search,
+            {
+                "departure_id": "LAX",
+                "arrival_id": "AUS",
+                "outbound_date": "2026-08-01",
+                "adults": 1,
+                "infants_on_lap": 2,
+            },
+            "infants_on_lap cannot exceed adults",
+        ),
+        (
             travel_explore_search,
             {"departure_id": "JFK", "return_date": "2026-08-04"},
             "return_date requires outbound_date",
+        ),
+        (
+            travel_explore_search,
+            {"departure_id": "JFK", "adults": 1, "infants_on_lap": 2},
+            "infants_on_lap cannot exceed adults",
         ),
         (
             travel_explore_search,

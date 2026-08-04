@@ -24,11 +24,20 @@ export OPENAI_API_KEY="your-openai-key"
 ## Run it
 
 ```python
+import os
+
 from pydantic_ai import Agent
+from pydantic_ai.models.openai import OpenAIResponsesModel
+from pydantic_ai.providers.openai import OpenAIProvider
 from serpapi_search_tools import images_search, web_search
 
+model = OpenAIResponsesModel(
+    "gpt-5.6-luna",
+    provider=OpenAIProvider(api_key=os.getenv("OPENAI_API_KEY")),
+)
+
 agent = Agent(
-    "openai:gpt-5.4-mini",
+    model,
     instructions="Use live search when current information helps.",
     tools=[
         web_search(),

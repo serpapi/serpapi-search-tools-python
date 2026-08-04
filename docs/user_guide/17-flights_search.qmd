@@ -47,19 +47,21 @@ Example invocation:
 
 | Field | Type | Required | Default and constraints |
 | --- | --- | --- | --- |
-| `departure_id` | string | yes | Airport code or supported SerpApi location identifier |
-| `arrival_id` | string | yes | Airport code or supported SerpApi location identifier |
-| `outbound_date` | date string | yes | `YYYY-MM-DD` |
-| `return_date` | date string | no | Omit for one way; otherwise not before outbound |
+| `departure_id` | string | yes | Specific airport IATA code such as `LHR`, or a city Google Knowledge Graph location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for London; do not use metropolitan codes such as `LON`; comma-separated values are supported |
+| `arrival_id` | string | yes | Specific airport IATA code such as `CDG`, or a city KGMID beginning with `/m/` or `/g/`, such as `/m/05qtj` for Paris; do not use metropolitan codes such as `PAR`; comma-separated values are supported |
+| `outbound_date` | date string | yes | Future date in `YYYY-MM-DD` format |
+| `return_date` | date string | no | Provide for a round trip; omit for one way; must not be before outbound |
 | `travel_class` | enum | no | `economy`; also `premium_economy`, `business`, or `first` |
 | `adults` | integer | no | `1`; at least `1` |
 | `children` | integer | no | `0`; cannot be negative |
 | `infants_in_seat` | integer | no | `0`; cannot be negative |
 | `infants_on_lap` | integer | no | `0`; cannot be negative |
 
-Three-letter alphabetic airport codes are normalized to uppercase. Omitting
-`return_date` makes the request one way; supplying it makes the request a round
-trip.
+Three-letter alphabetic airport codes are normalized to uppercase. City-wide
+searches require a KGMID, such as `/m/04jpl` for London or `/m/05qtj` for Paris;
+`LON` and `PAR` are metropolitan codes rather than specific airport codes.
+Omitting `return_date` makes the request one way; supplying it makes the request
+a round trip.
 
 ## Configure the tool
 
@@ -103,6 +105,8 @@ insights, airports, or metadata.
 
 - Sending a text `q`; flight tools never use one.
 - Omitting the route or outbound date.
+- Using a metropolitan code such as `LON` or `PAR` instead of a specific airport
+  code or city KGMID.
 - Supplying a return date before outbound.
 - Asking for multi-city itineraries through this one-route schema.
 - Combining both `include_airlines` and `exclude_airlines` defaults.
