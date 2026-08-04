@@ -382,26 +382,30 @@ def flights_search(
 
     description = (
         "Search Google Flights for a known one-way or round-trip route using airport IATA "
-        "codes or Google Knowledge Graph city IDs and explicit future travel dates."
+        "codes or city KGMIDs (Freebase IDs) and explicit future travel dates. Only use a "
+        "city ID when the exact ID is supplied; for a city name, ask for a specific airport. "
+        "Never infer an ID or use a metropolitan code."
     )
     if include_examples:
         description += (
-            " Example: use LHR to CDG for specific airports, or /m/04jpl to /m/05qtj for "
-            "city-wide London-to-Paris results; do not use LON or PAR."
+            " Example format: use an airport's three-letter IATA code for a specific airport, "
+            "or a city's /m/ or /g/ KGMID/Freebase ID for city-wide results."
         )
     properties = {
         "departure_id": {
             "type": "string",
             "description": (
-                "Departure airport IATA code or city KGMID (/m/ or /g/); comma-separate "
-                "multiple values."
+                "Specific departure airport IATA code or exact user-supplied city KGMID "
+                "(Freebase ID, /m/ or /g/); never infer IDs or use metropolitan codes; "
+                "comma-separate multiple values."
             ),
         },
         "arrival_id": {
             "type": "string",
             "description": (
-                "Arrival airport IATA code or city KGMID (/m/ or /g/); comma-separate "
-                "multiple values."
+                "Specific arrival airport IATA code or exact user-supplied city KGMID "
+                "(Freebase ID, /m/ or /g/); never infer IDs or use metropolitan codes; "
+                "comma-separate multiple values."
             ),
         },
         "outbound_date": {
