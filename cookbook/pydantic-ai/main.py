@@ -6,14 +6,14 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from pydantic_ai import Agent
-from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.models.openai import OpenAIResponsesModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from serpapi_search_tools import images_search, maps_search, web_search
 
 load_dotenv()
 
-MODEL = os.getenv("OPENAI_MODEL", "gpt-5.4-mini")
+MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6-luna")
 PROMPT = os.getenv(
     "COOKBOOK_PROMPT",
     (
@@ -48,7 +48,7 @@ def _write_report(text: str) -> Path:
 def main() -> None:
     _require_serpapi_key()
     provider = OpenAIProvider(api_key=_require_env("OPENAI_API_KEY"))
-    model = OpenAIChatModel(MODEL, provider=provider)
+    model = OpenAIResponsesModel(MODEL, provider=provider)
     agent = Agent(
         model,
         instructions=(
