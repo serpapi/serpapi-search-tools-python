@@ -61,7 +61,7 @@ flights = flights_search(provider="function")
 response = flights(
     departure_id="LAX",
     arrival_id="AUS",
-    outbound_date="2026-08-01",
+    outbound_date="2030-08-01",
 )
 ```
 

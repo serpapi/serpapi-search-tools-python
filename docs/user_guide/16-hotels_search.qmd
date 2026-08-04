@@ -47,11 +47,11 @@ An agent invocation has a structured shape:
 | Field | Type | Required | Default and constraints |
 | --- | --- | --- | --- |
 | `query` | string | yes | Hotel name, city, region, or destination |
-| `check_in_date` | date string | yes | `YYYY-MM-DD` |
+| `check_in_date` | date string | yes | Future date in `YYYY-MM-DD` format |
 | `check_out_date` | date string | yes | `YYYY-MM-DD`, strictly after check-in |
 | `adults` | integer | no | `2`; at least `1` |
-| `children` | integer | no | `0`; cannot be negative |
-| `children_ages` | list of integers | no | Exactly one age from `1` through `17` for each child |
+| `children` | integer | no | `0`; when greater than zero, provide one matching `children_ages` value per child |
+| `children_ages` | list of integers | no | Required when `children > 0`; exactly one age from `1` through `17` per child; use `1` for a child under one year and omit when `children=0` |
 
 ## Configure the tool
 
@@ -97,6 +97,7 @@ metadata, or pagination.
 - Using a checkout date equal to or before check-in.
 - Providing `children=1` without one `children_ages` value.
 - Using a child age outside `1` through `17`.
+- Using age `0` for a child under one year; Google Hotels represents that age as `1`.
 - Leaving old example dates in production code. Send real future stay dates.
 - Assuming a displayed rate includes every fee; inspect the returned price
   fields and source information.

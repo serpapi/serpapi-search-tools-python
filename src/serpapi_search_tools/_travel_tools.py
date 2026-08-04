@@ -238,12 +238,14 @@ def hotels_search(
             "check_in_date": {
                 "type": "string",
                 "format": "date",
-                "description": "Check-in date in YYYY-MM-DD format.",
+                "description": "Future check-in date in YYYY-MM-DD format.",
             },
             "check_out_date": {
                 "type": "string",
                 "format": "date",
-                "description": "Check-out date in YYYY-MM-DD format.",
+                "description": (
+                    "Check-out date in YYYY-MM-DD format; must be after check_in_date."
+                ),
             },
             "adults": {
                 "type": "integer",
@@ -255,12 +257,19 @@ def hotels_search(
                 "type": "integer",
                 "minimum": 0,
                 "default": 0,
-                "description": "Number of child guests.",
+                "description": (
+                    "Number of child guests. When greater than 0, provide one matching "
+                    "children_ages value per child."
+                ),
             },
             "children_ages": {
                 "type": "array",
                 "items": {"type": "integer", "minimum": 1, "maximum": 17},
-                "description": "One age from 1 to 17 for each child guest.",
+                "description": (
+                    "Required when children is greater than 0: provide exactly one age from "
+                    "1 to 17 per child. Use 1 for a child under one year old; omit when "
+                    "children is 0."
+                ),
             },
         },
         required=["query", "check_in_date", "check_out_date"],
@@ -371,29 +380,45 @@ def flights_search(
         )
 
     description = (
-        "Search Google Flights for one-way or round-trip itineraries using explicit airports "
-        "and travel dates."
+        "Search Google Flights for a known one-way or round-trip route using airport IATA "
+        "codes or Google Knowledge Graph city IDs and explicit future travel dates."
     )
     if include_examples:
-        description += " Example: search from LAX to AUS using an explicit future outbound date."
+        description += (
+            " Example: use LHR to CDG for specific airports, or /m/04jpl to /m/05qtj for "
+            "city-wide London-to-Paris results; do not use LON or PAR."
+        )
     properties = {
         "departure_id": {
             "type": "string",
-            "description": "Departure airport code or supported location identifier.",
+            "description": (
+                "Specific departure airport IATA code such as LHR, or a city Google Knowledge "
+                "Graph location ID (KGMID) beginning with /m/ or /g/, such as /m/04jpl for "
+                "London. Do not use metropolitan city codes such as LON. Separate multiple "
+                "values with commas."
+            ),
         },
         "arrival_id": {
             "type": "string",
-            "description": "Arrival airport code or supported location identifier.",
+            "description": (
+                "Specific arrival airport IATA code such as CDG, or a city Google Knowledge "
+                "Graph location ID (KGMID) beginning with /m/ or /g/, such as /m/05qtj for "
+                "Paris. Do not use metropolitan city codes such as PAR. Separate multiple "
+                "values with commas."
+            ),
         },
         "outbound_date": {
             "type": "string",
             "format": "date",
-            "description": "Outbound date in YYYY-MM-DD format.",
+            "description": "Future outbound date in YYYY-MM-DD format.",
         },
         "return_date": {
             "type": "string",
             "format": "date",
-            "description": "Optional return date in YYYY-MM-DD format.",
+            "description": (
+                "Return date in YYYY-MM-DD format. Provide for a round trip; omit for one "
+                "way. Must not be before outbound_date."
+            ),
         },
         **_common_travel_properties(),
     }
@@ -529,39 +554,52 @@ def travel_explore_search(
         )
 
     description = (
-        "Explore destinations and fares from a departure location with optional destination "
-        "and date constraints."
+        "Explore destinations and fares from a departure airport or city with optional "
+        "specific-destination, regional, and date constraints."
     )
     if include_examples:
-        description += " Example: departure_id='JFK', arrival_area_id='/m/02j9z'."
+        description += " Example: departure_id='JFK', arrival_area_id='/m/02j9z' for Europe."
     properties = {
         "departure_id": {
             "type": "string",
-            "description": "Required departure airport or supported location identifier.",
+            "description": (
+                "Departure airport IATA code such as JFK, or a city Google Knowledge Graph "
+                "location ID (KGMID) beginning with /m/ or /g/, such as /m/04jpl for London. "
+                "Do not use metropolitan city codes such as LON. Separate multiple values "
+                "with commas."
+            ),
         },
         "arrival_id": {
             "type": "string",
             "description": (
-                "Optional arrival airport or supported location identifier; "
-                "cannot be combined with arrival_area_id."
+                "Specific arrival airport IATA code such as CDG, or a city Google Knowledge "
+                "Graph location ID (KGMID) beginning with /m/ or /g/, such as /m/05qtj for "
+                "Paris. Use arrival_area_id for a region or country. Cannot be combined with "
+                "arrival_area_id."
             ),
         },
         "arrival_area_id": {
             "type": "string",
             "description": (
-                "Optional Google Knowledge Graph area identifier; "
-                "cannot be combined with arrival_id."
+                "Destination region or country Google Knowledge Graph location ID (KGMID) "
+                "beginning with /m/ or /g/, such as /m/02j9z for Europe. Use arrival_id for "
+                "an airport or city. Cannot be combined with arrival_id."
             ),
         },
         "outbound_date": {
             "type": "string",
             "format": "date",
-            "description": "Optional outbound date in YYYY-MM-DD format.",
+            "description": (
+                "Future outbound date in YYYY-MM-DD format. Omit for flexible-date exploration."
+            ),
         },
         "return_date": {
             "type": "string",
             "format": "date",
-            "description": "Optional return date; requires outbound_date.",
+            "description": (
+                "Return date in YYYY-MM-DD format. Requires outbound_date and must not be "
+                "before it. Omit for one-way or flexible-date exploration."
+            ),
         },
         **_common_travel_properties(),
     }

@@ -213,8 +213,10 @@ tools = [
 
 `news_search` supports keyword searches in Google News. `maps_search` searches
 Google Maps and accepts optional `location`, `zoom` (`3` through `30`), and
-`nearby` fields. Place details, reviews, and directions use different SerpApi
-APIs and are not part of this search tool.
+`nearby` fields. Use `nearby=True` for “near me” intent with a separate
+`location`; leave it false when the query already names a city or area. Place
+details, reviews, and directions use different SerpApi APIs and are not part of
+this search tool.
 
 ### Shopping
 
@@ -243,8 +245,8 @@ from serpapi_search_tools import hotels_search
 hotels = hotels_search(provider="function")
 result = hotels(
     query="hotels in Kyoto",
-    check_in_date="2026-08-01",
-    check_out_date="2026-08-04",
+    check_in_date="2030-08-01",
+    check_out_date="2030-08-04",
     adults=2,
     children=1,
     children_ages=[8],
@@ -252,7 +254,8 @@ result = hotels(
 ```
 
 Hotel dates use `YYYY-MM-DD`. Checkout must be after check-in. When `children`
-is nonzero, provide exactly one age from 1 through 17 per child.
+is nonzero, provide exactly one age from 1 through 17 per child; use `1` for a
+child under one year old.
 
 ### Flights
 
@@ -263,8 +266,8 @@ flights = flights_search(provider="function")
 result = flights(
     departure_id="LAX",
     arrival_id="AUS",
-    outbound_date="2026-08-01",
-    return_date="2026-08-04",
+    outbound_date="2030-08-01",
+    return_date="2030-08-04",
     travel_class=TravelClass.BUSINESS,
     adults=1,
 )
@@ -272,7 +275,11 @@ result = flights(
 
 `flights_search` requires an origin, destination, and outbound date. Omitting
 `return_date` creates a one-way request; including it creates a round trip.
-Multi-city searches are not currently supported.
+Use specific airport IATA codes such as `LHR` and `CDG`, not metropolitan codes
+such as `LON` and `PAR`. For a city-wide search, use a Google Knowledge Graph
+location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for
+London or `/m/05qtj` for Paris. Multi-city searches are not currently
+supported.
 
 ### Explore destinations
 
@@ -286,10 +293,11 @@ result = explore(
 )
 ```
 
-Travel Explore requires only a departure identifier. It can also accept an
-arrival identifier or area, fixed outbound/return dates, cabin class, and
-passenger counts. These travel tools send their route and date fields directly
-to the matching SerpApi endpoint.
+Travel Explore requires only a departure airport IATA code or city KGMID. It
+can also accept a specific arrival airport or city through `arrival_id`, or a
+region or country KGMID through `arrival_area_id`. Fixed outbound/return dates,
+cabin class, and passenger counts are optional. These travel tools send their
+route and date fields directly to the matching SerpApi endpoint.
 
 ## Set advanced parameters in application code
 

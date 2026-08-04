@@ -37,7 +37,7 @@ Python callable, use `web_search(provider="function")`.
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
 | `query` | string | yes | The words or question to search for |
-| `engine` | enum | no | One of the engines allowed by your constructor; defaults to `google_light` when allowed |
+| `engine` | enum | no | Search source; omit for the configured default. `google_light` is fast, `google` returns richer Google result types, and the other values select that named web source |
 
 The package maps the friendly `query` field to each engine's native parameter:
 Google, Google Light, Bing, and DuckDuckGo use `q`; Yahoo uses `p`.

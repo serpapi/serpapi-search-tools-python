@@ -64,8 +64,8 @@ search = flights_search(provider="function")
 raw = search(
     departure_id="LAX",
     arrival_id="AUS",
-    outbound_date="2026-08-01",
-    return_date="2026-08-05",
+    outbound_date="2030-08-01",
+    return_date="2030-08-05",
     adults=2,
 )
 ```
@@ -81,8 +81,11 @@ maps semantic cabin names such as `business` to the numeric API value.
   tool instead of passing a vertical engine to `web_search`.
 - **Invalid travel dates:** use `YYYY-MM-DD`; checkout must follow check-in and
   a return date cannot precede departure.
+- **Invalid flight location:** use a specific airport IATA code or a city KGMID
+  beginning with `/m/` or `/g/`; metropolitan codes such as `LON` and `PAR`
+  are not airport IDs.
 - **Invalid child data:** `hotels_search.children_ages` must contain exactly one
-  age from 1 through 17 for each child.
+  age from 1 through 17 for each child; use `1` for a child under one year old.
 - **Incompatible defaults:** remove mutually exclusive engine parameters named
   by the validation error.
 - **Direct call works but the agent fails:** compare the SDK's tool name and
