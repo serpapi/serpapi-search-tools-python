@@ -26,7 +26,7 @@ When one supported agent SDK is installed, the package detects it and creates to
 
 ## Supported agent SDKs
 
-| SDK                       | Install extra / provider    | Returned tool                            |
+| SDK                       | Install extra               | Returned tool                            |
 |---------------------------|-----------------------------|------------------------------------------|
 | OpenAI Agents SDK         | `openai-agents`             | OpenAI Agents `FunctionTool`             |
 | Pydantic AI               | `pydantic-ai`               | Pydantic AI `Tool`                       |
@@ -98,7 +98,7 @@ result = Runner.run_sync(
 print(result.final_output)
 ```
 
-## Quickstart: explicit LangChain provider
+## Quickstart: LangChain
 
 Install the LangChain extra and the model backend used by this example:
 
@@ -120,9 +120,9 @@ from serpapi_search_tools import maps_search, news_search, web_search
 agent = create_agent(
     model=ChatOpenAI(model="gpt-5.4-mini", temperature=0),
     tools=[
-        web_search(provider="langchain"),
-        news_search(provider="langchain"),
-        maps_search(provider="langchain"),
+        web_search(),
+        news_search(),
+        maps_search(),
     ],
 )
 
@@ -142,10 +142,8 @@ result = agent.invoke(
 print(result["messages"][-1].content)
 ```
 
-When LangChain is the only supported SDK installed, these constructors are also auto-detected, so `web_search()` is
-enough. Supplying
-`provider="langchain"` explicitly is useful when several supported SDKs share an environment or when you want the
-integration choice to be visible in code.
+The constructors use automatic SDK detection, just as in the first quickstart. For multi-SDK environments and explicit
+selection, see [Agent SDKs](https://serpapi.github.io/serpapi-search-tools-python/user-guide/frameworks.html).
 
 For a step-by-step explanation, keys, customization, and troubleshooting, read
 the [detailed quickstart](https://serpapi.github.io/serpapi-search-tools-python/user-guide/quickstart.html).
@@ -222,43 +220,31 @@ The package routes one human `query` to each marketplace's native field:
 Google Shopping uses `q`, Amazon uses `k`, Walmart uses `query`, and eBay uses
 `_nkw`.
 
-### Hotels
+### Travel
 
 ```python
-from serpapi_search_tools import hotels_search
+from serpapi_search_tools import flights_search, hotels_search, travel_explore_search
 
-hotels = hotels_search(provider="function")
-result = hotels(
-    query="hotels in Kyoto",
-    check_in_date="2030-08-01",
-    check_out_date="2030-08-04",
-    adults=2,
-    children=1,
-    children_ages=[8],
-)
+travel_tools = [
+    hotels_search(),
+    flights_search(),
+    travel_explore_search(),
+]
 ```
 
-Hotel dates use `YYYY-MM-DD`. Checkout must be after check-in. When `children`
+These constructors create hotel, flight, and destination-discovery tools for the detected agent SDK.
+
+#### Hotels
+
+`hotels_search` lets the agent provide a destination, dates, and guest details. Hotel dates use `YYYY-MM-DD`. Checkout
+must be after check-in. When `children`
 is nonzero, provide exactly one age from 1 through 17 per child; use `1` for a
 child under one year old.
 
-### Flights
+#### Flights
 
-```python
-from serpapi_search_tools import TravelClass, flights_search
-
-flights = flights_search(provider="function")
-result = flights(
-    departure_id="LAX",
-    arrival_id="AUS",
-    outbound_date="2030-08-01",
-    return_date="2030-08-04",
-    travel_class=TravelClass.BUSINESS,
-    adults=1,
-)
-```
-
-`flights_search` requires an origin, destination, and outbound date. Omitting
+`flights_search` lets the agent provide route, date, cabin, and passenger details. It requires an origin, destination,
+and outbound date. Omitting
 `return_date` creates a one-way request; including it creates a round trip.
 Use specific airport IATA codes such as `LHR` and `CDG`, not metropolitan codes
 such as `LON` and `PAR`. For a city-wide search, use a Google Knowledge Graph
@@ -266,19 +252,10 @@ location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for
 London or `/m/05qtj` for Paris. Multi-city searches are not currently
 supported.
 
-### Explore destinations
+#### Explore destinations
 
-```python
-from serpapi_search_tools import travel_explore_search
-
-explore = travel_explore_search(provider="function")
-result = explore(
-    departure_id="JFK",
-    arrival_area_id="/m/02j9z",
-)
-```
-
-Travel Explore requires only a departure airport IATA code or city KGMID. It
+`travel_explore_search` lets the agent discover destinations and requires only a departure airport IATA code or city
+KGMID. It
 can also accept a specific arrival airport or city through `arrival_id`, or a
 region or country KGMID through `arrival_area_id`. Fixed outbound/return dates,
 cabin class, and passenger counts are optional. These travel tools send their
@@ -306,35 +283,24 @@ defaults. Reserved keys (`api_key`, `async`, `engine`, and `output`) are rejecte
 
 ## Handle search failures
 
-The built-in client raises `SerpApiSearchError` when SerpApi rejects or cannot complete a request:
-
-```python
-from serpapi_search_tools import SerpApiSearchError, web_search
-
-search = web_search(provider="function")
-try:
-    result = search(query="Python packaging")
-except SerpApiSearchError as exc:
-    print(f"Search failed: {exc}")
-```
-
-Local input errors such as invalid dates or incompatible parameters remain
-`ValueError`, so applications can distinguish validation from provider and transport failures.
+The search runtime raises `SerpApiSearchError` for SerpApi and transport failures. Invalid tool inputs raise
+`ValueError`. Agent SDKs surface or handle tool errors differently, so use your SDK's normal tool-error mechanism. See
+[Debugging](https://serpapi.github.io/serpapi-search-tools-python/user-guide/debugging.html) for detailed examples.
 
 ## Common factory options
 
 Every constructor accepts:
 
-| Option             | Purpose                                                                                                           |
-|--------------------|-------------------------------------------------------------------------------------------------------------------|
-| `provider`         | Defaults to `"auto"`; select an SDK explicitly in multi-SDK environments or use `"function"` for a plain callable |
-| `include_examples` | Include or omit a short example in the model description                                                          |
-| `api_key`          | Explicit SerpApi key                                                                                              |
-| `client`           | Custom object with `search(params)` for caching, interception, or tests                                           |
-| `default_params`   | Application-controlled SerpApi options                                                                            |
-| `timeout`          | Timeout passed to the SerpApi SDK client                                                                          |
-| `name`             | Tool name presented to the model                                                                                  |
-| `mode`             | Result detail level: `"compact"` (default) or `"full"`                                                            |
+| Option             | Purpose                                                                                               |
+|--------------------|-------------------------------------------------------------------------------------------------------|
+| `provider`         | Defaults to `"auto"`; select an SDK explicitly only when multiple supported SDKs share an environment |
+| `include_examples` | Include or omit a short example in the model description                                              |
+| `api_key`          | Explicit SerpApi key                                                                                  |
+| `client`           | Custom object with `search(params)` for caching, interception, or tests                               |
+| `default_params`   | Application-controlled SerpApi options                                                                |
+| `timeout`          | Timeout passed to the SerpApi SDK client                                                              |
+| `name`             | Tool name presented to the model                                                                      |
+| `mode`             | Result detail level: `"compact"` (default) or `"full"`                                                |
 
 `web_search` and `shopping_search` additionally accept `allowed_engines` and
 `default_engine`. The tool offers only the engine values you configured.
@@ -358,8 +324,9 @@ Every constructor accepts:
 - [Google Flights](https://serpapi.com/google-flights-api)
 - [Google Travel Explore](https://serpapi.com/google-travel-explore-api)
 
-SerpApi's complete documentation index is available in
-[`llms.txt`](https://serpapi.com/llms.txt).
+For AI coding agents that need broader SerpApi API context, use
+[SerpApi's agent-friendly documentation index (`llms.txt`)](https://serpapi.com/llms.txt). It links directly to Markdown
+API references, including APIs beyond those wrapped by this package.
 
 ## More guides
 
