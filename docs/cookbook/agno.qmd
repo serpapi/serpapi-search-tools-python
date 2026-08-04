@@ -5,18 +5,93 @@ description: Combine category facts, launches, and live price signals.
 
 # Agno market research
 
-This agent analyzes a product category using durable facts, recent launches,
-and current shopping listings, then writes a market report.
+- **Agent pattern:** Bounded tool loop
+- **Search surfaces:** Web, news, and shopping
+- **Saved artifact:** `agno-market-research.md`
 
-SerpApi enhancement: web, news, and shopping tools replace the upstream search
-dependency while preserving the decision-focused market research goal.
+## What you'll build
+
+An Agno agent that assesses the US market for home espresso grinders under
+USD 800. It separates durable category and manufacturer facts from recent
+launches and time-sensitive marketplace signals, then writes a decision-ready
+market report.
+
+**Default brief:** Map the category, representative products, gaps, and risks.
+Treat live price and availability as signals—not permanent product facts—and
+include source URLs.
+
+## How the agent works
+
+1. **Frame the category.** Web search establishes segments, manufacturers, and
+   durable product facts.
+2. **Check current signals.** News finds launches while shopping search captures
+   live prices and availability.
+3. **Reconcile the market.** The agent compares the evidence, calls out gaps,
+   and stays within a ten-call tool budget.
+
+## Core agent setup
+
+This abridged excerpt keeps the Agno agent and tool boundary in view. The full
+script also handles model configuration, environment validation, and Markdown
+output.
+
+```python
+agent = Agent(
+    name="SerpApi market researcher",
+    model=model,
+    instructions=[
+        "Search before making market claims.",
+        "Use the most specific SerpApi tool for each question.",
+        "Separate live listing signals from durable category facts.",
+    ],
+    tools=[
+        web_search(provider="agno", allowed_engines=["google_light", "bing"]),
+        news_search(provider="agno"),
+        shopping_search(provider="agno"),
+    ],
+    markdown=True,
+    tool_call_limit=10,
+)
+response = agent.run(PROMPT)
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/agno/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `XAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[agno]' --with python-dotenv cookbook/agno/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/agno)
-or Agno's official
-[market research cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/91_tools/parallel/market_research.py).
+Optional controls: `XAI_MODEL`, `XAI_BASE_URL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
 
+**Portable environment:** `--isolated --no-project` runs the local recipe
+against the published `serpapi-search-tools[agno]` package instead of importing
+this checkout.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/agno-market-research.md`. Expect category
+segments, representative products, current price signals, market gaps, risks,
+and direct source URLs.
+
+The same report is printed to the terminal. Set `COOKBOOK_OUTPUT_DIR` to move
+the saved artifact, or `COOKBOOK_PROMPT` to research another category.
+
+## SerpApi tools used
+
+`web_search` supplies category and manufacturer facts, `news_search` tracks
+recent launches, and `shopping_search` captures current prices and
+availability. Keeping these result types separate helps the agent label which
+signals are durable and which may change quickly.
+
+**Framework pattern:** The agent structure is inspired by Agno's parallel
+market research cookbook; this recipe applies it to three SerpApi evidence
+surfaces.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/agno)
+- [View Agno's source example](https://github.com/agno-agi/agno/blob/main/cookbook/91_tools/parallel/market_research.py)

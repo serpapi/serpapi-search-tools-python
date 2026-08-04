@@ -5,18 +5,91 @@ description: Reconcile evidence through in-process SerpApi MCP tools.
 
 # Claude Agent SDK source verification
 
-The agent receives web and news search as an in-process SDK MCP server and uses
-them to turn a broad public claim into a verification memo.
+- **Agent pattern:** In-process MCP
+- **Search surfaces:** Web and news
+- **Saved artifact:** `claude-source-verification.md`
 
-SerpApi enhancement: the SDK's custom-tool pattern now searches live evidence
-and distinguishes confirmed facts, overstatements, and jurisdictional gaps.
+## What you'll build
+
+A Claude Agent SDK workflow that turns a broad public-policy claim into a
+source-verification memo. SerpApi tools are exposed as an in-process SDK MCP
+server, so the agent can search without running a separate service.
+
+**Default brief:** Test whether right-to-repair rules are rapidly converging
+across the United States. Separate confirmed facts, overstatements, and
+jurisdictional differences.
+
+## How the agent works
+
+1. **Mount the tools.** The recipe registers typed web and news searches on a
+   local `serpapi` MCP server.
+2. **Split the evidence.** Web search finds primary or durable sources; news
+   search checks recent developments.
+3. **Reconcile the claim.** Claude exposes conflicts and jurisdictional gaps
+   before returning a final memo within sixteen turns.
+
+## Core agent setup
+
+This excerpt shows how the SerpApi tools become an in-process SDK MCP server.
+The complete script also validates credentials, collects the final SDK result,
+and writes the memo.
+
+```python
+serpapi_server = create_sdk_mcp_server(
+    name="serpapi",
+    version="1.0.0",
+    tools=[
+        web_search(provider="claude-agent-sdk"),
+        news_search(provider="claude-agent-sdk"),
+    ],
+)
+options = ClaudeAgentOptions(
+    model=MODEL,
+    system_prompt="Search before concluding and expose conflicting evidence.",
+    mcp_servers={"serpapi": serpapi_server},
+    allowed_tools=["mcp__serpapi__web_search", "mcp__serpapi__news_search"],
+    max_turns=16,
+)
+
+async for message in query(prompt=PROMPT, options=options):
+    ...
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/claude-agent-sdk/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `ANTHROPIC_API_KEY` in the repository-root `.env`,
+then run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[claude-agent-sdk]' --with python-dotenv cookbook/claude-agent-sdk/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/claude-agent-sdk)
-or Anthropic's official
-[SDK MCP tool example](https://github.com/anthropics/claude-agent-sdk-python#custom-tools-as-in-process-sdk-mcp-servers).
+Optional controls: `ANTHROPIC_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
 
+**No separate MCP process:** The SDK creates the MCP server in-process and
+allows only the two SerpApi tools declared by the recipe.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/claude-source-verification.md`. Expect
+confirmed facts, overstatements, jurisdiction differences, conflicting
+evidence, and direct source URLs.
+
+The recipe saves the final result emitted by the SDK and also prints it to the
+terminal.
+
+## SerpApi tools used
+
+`web_search` finds primary and durable policy sources, while `news_search`
+tracks recent right-to-repair developments. Both tools are exposed through the
+in-process MCP server, helping the agent compare established rules with current
+reporting before it classifies the claim.
+
+**Framework pattern:** The in-process MCP setup follows Anthropic's custom-tools
+example and provides SerpApi web and news tools to the agent.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/claude-agent-sdk)
+- [View Anthropic's source example](https://github.com/anthropics/claude-agent-sdk-python#custom-tools-as-in-process-sdk-mcp-servers)

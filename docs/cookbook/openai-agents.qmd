@@ -5,18 +5,92 @@ description: Delegate live research while retaining editorial ownership.
 
 # OpenAI Agents managed research
 
-A report editor calls a SerpApi research specialist as a tool, requests focused
-follow-up investigations, and owns the final report.
+- **Agent pattern:** Agent-as-tool delegation
+- **Search surfaces:** Web and news
+- **Saved artifact:** `openai-agents-research-report.md`
 
-SerpApi enhancement: the specialist uses separate web and news tools and must
-return URLs and uncertainty with its research notes.
+## What you'll build
+
+A research-report editor that delegates focused investigations to a SerpApi
+specialist exposed as a tool. The editor can request follow-ups when evidence
+is missing and remains responsible for the final structure and conclusions.
+
+**Default brief:** Assess the near-term outlook for US heat-pump adoption across
+policy, consumer economics, and manufacturer activity. End with three signals
+to monitor.
+
+## How the agent works
+
+1. **Delegate focused questions.** The editor calls a research specialist with
+   a narrow question instead of receiving raw search tools directly.
+2. **Search and annotate.** The specialist uses web for durable sources and news
+   for recent reporting, returning URLs and uncertainty.
+3. **Edit the final report.** The editor requests follow-ups as needed and
+   separates facts, analysis, and open questions within ten turns.
+
+## Core agent setup
+
+This excerpt shows the specialist-as-tool handoff. The full script also
+validates credentials, configures the model and prompt, and saves the editor's
+final report.
+
+```python
+researcher = Agent(
+    name="SerpApi research specialist",
+    instructions="Return compact research notes with URLs and label uncertainty.",
+    model=MODEL,
+    tools=[
+        web_search(provider="openai-agents", allowed_engines=["google_light", "bing"]),
+        news_search(provider="openai-agents"),
+    ],
+)
+editor = Agent(
+    name="Research report editor",
+    instructions="Delegate searches, request follow-ups, and own the final report.",
+    model=MODEL,
+    tools=[
+        researcher.as_tool(
+            tool_name="research_with_serpapi",
+            tool_description="Research a focused question with live web and news data.",
+        )
+    ],
+)
+result = await Runner.run(editor, PROMPT, max_turns=10)
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/openai-agents/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[openai-agents]' --with python-dotenv cookbook/openai-agents/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/openai-agents)
-or OpenAI's official
-[research bot](https://github.com/openai/openai-agents-python/tree/main/examples/research_bot).
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
 
+**Editorial ownership stays explicit:** The specialist returns compact
+research notes. It never replaces the editor as the owner of the final report.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/openai-agents-research-report.md`. Expect
+sourced findings on policy, economics, and manufacturer activity;
+disagreements and open questions; and three forward-looking signals.
+
+The final editor output is printed and saved as Markdown.
+
+## SerpApi tools used
+
+The research specialist uses `web_search` for durable sources and `news_search`
+for recent reporting. Returning both as compact notes with URLs and uncertainty
+helps the editor identify missing evidence and request focused follow-up work.
+
+**Framework pattern:** The editor-and-specialist delegation follows the OpenAI
+Agents SDK research bot and gives the specialist SerpApi web and news tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/openai-agents)
+- [View OpenAI's source example](https://github.com/openai/openai-agents-python/tree/main/examples/research_bot)

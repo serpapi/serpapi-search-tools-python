@@ -5,18 +5,94 @@ description: Apply a plan-and-execute loop to live competitor research.
 
 # Semantic Kernel competitor brief
 
-The agent states a research plan, resolves it with search plugins, inspects
-evidence gaps, and writes a competitor brief.
+- **Agent pattern:** Plan-and-execute agent
+- **Search surfaces:** Web and news
+- **Saved artifact:** `semantic-kernel-competitor-brief.md`
 
-SerpApi enhancement: provider-native search is replaced with typed web and news
-plugins.
+## What you'll build
+
+A Semantic Kernel `ChatCompletionAgent` that states a research plan, resolves
+each open question with search plugins, checks the evidence quality, and writes
+a competitor brief with visible gaps.
+
+**Default brief:** Compare three US residential solar-financing platforms using
+company and product facts plus recent developments. Include source URLs and
+unresolved evidence gaps.
+
+## How the agent works
+
+1. **State the plan.** The agent identifies the comparison questions before
+   searching, making the intended research path visible.
+2. **Resolve each question.** Web and news functions are registered as a
+   `serpapi` plugin and selected automatically.
+3. **Inspect the gaps.** The agent reviews evidence quality before writing the
+   final competitor comparison.
+
+## Core agent setup
+
+This excerpt shows how the SerpApi functions become one Semantic Kernel
+plugin. The complete script also configures the chat service, consumes the
+agent response stream, and saves the competitor brief.
+
+```python
+kernel = Kernel()
+plugin = kernel.add_functions(
+    "serpapi",
+    [
+        web_search(
+            provider="semantic-kernel",
+            allowed_engines=["google_light", "bing"],
+        ),
+        news_search(provider="semantic-kernel"),
+    ],
+)
+agent = ChatCompletionAgent(
+    name="competitor_research_agent",
+    instructions="Plan, search each open question, and inspect evidence quality.",
+    service=OpenAIChatCompletion(ai_model_id=MODEL, api_key=api_key),
+    plugins=[plugin],
+    function_choice_behavior=FunctionChoiceBehavior.Auto(),
+)
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/semantic-kernel/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[semantic-kernel]' --with python-dotenv \
   cookbook/semantic-kernel/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/semantic-kernel)
-or Semantic Kernel's official
-[plan-and-execute sample](https://github.com/microsoft/semantic-kernel/blob/main/python/samples/concepts/processes/plan_and_execute.py).
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
+
+**Native plugin shape:** The two search functions are registered with the
+Kernel as one plugin, while automatic function choice lets the agent select
+the right evidence surface.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/semantic-kernel-competitor-brief.md`. Expect
+the research plan, a three-company comparison, product and market evidence,
+recent developments, source URLs, and unresolved gaps.
+
+Replace the default solar-financing task through `COOKBOOK_PROMPT` while
+retaining the plan-and-execute process.
+
+## SerpApi tools used
+
+`web_search` supplies company and product facts, while `news_search` tracks
+recent competitor developments. Both functions are registered in the
+`serpapi` plugin, helping the agent resolve stable facts and current signals
+through separate tool contracts.
+
+**Framework pattern:** The research process follows Semantic Kernel's Python
+plan-and-execute example and registers SerpApi web and news functions as
+plugins.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/semantic-kernel)
+- [View Semantic Kernel's source example](https://github.com/microsoft/semantic-kernel/blob/main/python/samples/concepts/processes/plan_and_execute.py)

@@ -5,18 +5,91 @@ description: Loop through web, news, and shopping evidence in a stateful graph.
 
 # LangGraph launch intelligence
 
-This graph alternates between an analyst model and specialized search nodes
-until it can produce a product-launch intelligence brief.
+- **Agent pattern:** Analyst-to-tool graph
+- **Search surfaces:** Web, news, and shopping
+- **Saved artifact:** `langgraph-launch-intelligence.md`
 
-SerpApi enhancement: web, news, and shopping searches expose distinct evidence
-surfaces in the graph's tool node.
+## What you'll build
 
-```bash
-uv run --isolated --no-project --with 'serpapi-search-tools[langgraph]' --with python-dotenv --with langchain-openai cookbook/langgraph/main.py
+A stateful LangGraph research loop that alternates between an analyst model and
+specialized search nodes until it can produce a product-launch intelligence
+brief grounded in facts, reporting, and live marketplace signals.
+
+**Default brief:** Investigate compact AI voice recorders. Reconcile official
+product facts, launches and reviews, current prices, disagreements, and a
+recommendation.
+
+## How the agent works
+
+1. **Route from shared state.** The analyst chooses a search tool from the
+   current message state; the graph routes the call to a tool node.
+2. **Collect three signal types.** Web, news, and shopping searches return
+   complementary product, coverage, and price evidence.
+3. **Loop until sufficient.** Tool results return to the analyst, which either
+   searches again or writes the final intelligence memo.
+
+## Core agent setup
+
+This excerpt highlights LangGraph's explicit analyst-to-tools cycle. The full
+script also creates the model, validates keys, supplies the prompt, and saves
+the final message.
+
+```python
+tools = [
+    web_search(provider="langgraph", allowed_engines=["google_light", "bing"]),
+    news_search(provider="langgraph"),
+    shopping_search(provider="langgraph"),
+]
+model = ChatOpenAI(model=MODEL, api_key=api_key, temperature=0).bind_tools(tools)
+
+def call_model(state: MessagesState) -> dict[str, list[Any]]:
+    return {"messages": [model.invoke(state["messages"])]}
+
+graph_builder = StateGraph(MessagesState)
+graph_builder.add_node("research", call_model)
+graph_builder.add_node("tools", ToolNode(tools))
+graph_builder.add_edge(START, "research")
+graph_builder.add_conditional_edges("research", tools_condition)
+graph_builder.add_edge("tools", "research")
+agent = graph_builder.compile()
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/langgraph)
-or the official
-[Agentic RAG example](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_agentic_rag.ipynb).
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/langgraph/main.py)
 
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
+
+```bash
+uv run --isolated --no-project --with 'serpapi-search-tools[langgraph]' --with python-dotenv --with langchain-openai \
+  cookbook/langgraph/main.py
+```
+
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
+
+**Visible control flow:** The graph has explicit `research` and `tools` nodes.
+Use it when you want the tool-routing loop to be inspectable rather than hidden
+inside a high-level agent.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/langgraph-launch-intelligence.md`. Expect
+product facts, recent launch evidence, live price signals, disagreements
+between sources, a recommendation, and direct URLs.
+
+The final assistant message is both printed and saved as the artifact.
+
+## SerpApi tools used
+
+`web_search` finds official product facts, `news_search` tracks launches and
+reviews, and `shopping_search` returns current price and availability signals.
+These distinct tools give the graph clear routes for each open question before
+the evidence returns to the analyst node.
+
+**Framework pattern:** The explicit state and tool loop follows LangGraph's
+Agentic RAG notebook and routes across three SerpApi search tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/langgraph)
+- [View LangGraph's source example](https://github.com/langchain-ai/langgraph/blob/main/examples/rag/langgraph_agentic_rag.ipynb)

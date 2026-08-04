@@ -5,18 +5,88 @@ description: Cross-check visual references with maps and web evidence.
 
 # Pydantic AI visual location scout
 
-The agent finds visually distinct campaign locations, verifies place details,
-and checks practical restrictions before writing a scouting brief.
+- **Agent pattern:** Typed cross-verification
+- **Search surfaces:** Images, maps, and web
+- **Saved artifact:** `pydantic-ai-location-scout.md`
 
-SerpApi enhancement: typed image, maps, and web tools replace the demonstration
-weather and geocoding functions.
+## What you'll build
+
+A Pydantic AI location scout that finds visually distinct campaign locations,
+verifies the actual places, and checks practical access or restriction details
+before it makes a recommendation.
+
+**Default brief:** Scout three Portland, Oregon locations for an outdoor
+lifestyle campaign. Return visual motifs, logistics, risks, and source URLs.
+
+## How the agent works
+
+1. **Find visual directions.** Image search supplies candidate locations and
+   the visual motifs that make them distinct.
+2. **Verify the place.** Maps search confirms location details, access context,
+   and nearby landmarks.
+3. **Check practical claims.** Web search validates restrictions or logistics
+   so the agent never infers permission from an image.
+
+## Core agent setup
+
+This excerpt shows Pydantic AI's typed, cross-verification tool set. The full
+script also configures the OpenAI model, validates keys, handles the result,
+and saves the scouting brief.
+
+```python
+agent = Agent(
+    model,
+    instructions=(
+        "Use image search for visual evidence, maps for place facts, "
+        "and web search for practical verification."
+    ),
+    tools=[
+        images_search(provider="pydantic-ai"),
+        maps_search(provider="pydantic-ai"),
+        web_search(
+            provider="pydantic-ai",
+            allowed_engines=["google_light", "bing"],
+        ),
+    ],
+)
+result = agent.run_sync(PROMPT)
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/pydantic-ai/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[pydantic-ai]' --with python-dotenv cookbook/pydantic-ai/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/pydantic-ai)
-or Pydantic AI's official
-[weather agent](https://github.com/pydantic/pydantic-ai/blob/main/docs/examples/weather-agent.md).
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
 
+**Typed tools do different jobs:** The instructions prevent visual search from
+becoming a proxy for place facts or access permission; every important claim
+must cross the appropriate tool boundary.
+
+## Inspect the result
+
+The recipe writes `cookbook-output/pydantic-ai-location-scout.md`. Expect three
+candidate locations with visual motifs, verified place details, nearby
+landmarks, logistics, restrictions or risks, and source URLs.
+
+Set `COOKBOOK_PROMPT` to scout a different city, campaign, or creative brief.
+
+## SerpApi tools used
+
+`images_search` finds visual directions, `maps_search` verifies place details
+and nearby landmarks, and `web_search` checks restrictions or practical
+context. Using the tools together helps the agent avoid treating an image as
+proof of access, dimensions, or permission.
+
+**Framework pattern:** The focused typed-tool setup follows Pydantic AI's
+weather agent example and uses SerpApi image, maps, and web search.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/pydantic-ai)
+- [View Pydantic AI's source example](https://github.com/pydantic/pydantic-ai/blob/main/docs/examples/weather-agent.md)

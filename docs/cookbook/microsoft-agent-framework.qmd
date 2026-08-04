@@ -5,18 +5,91 @@ description: Discover and verify current technology claims.
 
 # Microsoft Agent Framework technology due diligence
 
-The agent discovers recent warehouse-robotics developments, verifies material
-company claims, labels uncertainty, and writes a decision-ready memo.
+- **Agent pattern:** Discover-and-verify loop
+- **Search surfaces:** News and web
+- **Saved artifact:** `microsoft-agent-framework-due-diligence.md`
 
-SerpApi enhancement: typed news and web tools replace the original local
-demonstration function and turn tool use into a source-backed research loop.
+## What you'll build
+
+A Microsoft Agent Framework analyst that discovers current warehouse-robotics
+developments, verifies material company claims, labels uncertainty, and turns
+the evidence into a technology due-diligence memo.
+
+**Default brief:** Find five recent developments, verify the strongest company
+claims, separate verified facts from vendor claims and analyst inference, and
+finish with adoption risks.
+
+## How the agent works
+
+1. **Discover developments.** News search gathers a focused set of recent
+   warehouse-robotics signals.
+2. **Verify material claims.** Web search checks durable sources behind the
+   most consequential company statements.
+3. **Label the evidence.** The agent separates facts, vendor claims, and
+   inference before evaluating adoption risk.
+
+## Core agent setup
+
+This excerpt keeps Microsoft Agent Framework's client, instructions, and tools
+together. The full script also validates credentials and writes the resulting
+due-diligence memo.
+
+```python
+agent = Agent(
+    client=OpenAIChatClient(model=MODEL, api_key=api_key),
+    name="technology_due_diligence_agent",
+    instructions=(
+        "Use live SerpApi tools, cross-check material claims, "
+        "label uncertainty, and include direct source URLs."
+    ),
+    tools=[
+        news_search(provider="microsoft-agent-framework"),
+        web_search(
+            provider="microsoft-agent-framework",
+            allowed_engines=["google_light", "bing"],
+        ),
+    ],
+)
+report = str(await agent.run(PROMPT))
+```
+
+[View the complete `main.py` →](https://github.com/serpapi/serpapi-search-tools-python/blob/main/cookbook/microsoft-agent-framework/main.py)
+
+## Run the recipe
+
+Set `SERPAPI_API_KEY` and `OPENAI_API_KEY` in the repository-root `.env`, then
+run:
 
 ```bash
 uv run --isolated --no-project --with 'serpapi-search-tools[microsoft-agent-framework]' --with python-dotenv \
   cookbook/microsoft-agent-framework/main.py
 ```
 
-Read the
-[complete cookbook entry](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/microsoft-agent-framework)
-or Microsoft Agent Framework's official Python
-[tool-use example](https://github.com/microsoft/Agent-Framework-Samples/blob/main/00.ForBeginners/04-tool-use/code_samples/python-agent-framework-ghmodel-tools.ipynb).
+Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
+`COOKBOOK_OUTPUT_DIR`.
+
+**One agent, two evidence passes:** The framework controls tool use, while the
+instructions make discovery and verification separate responsibilities.
+
+## Inspect the result
+
+The recipe writes
+`cookbook-output/microsoft-agent-framework-due-diligence.md`. Expect five
+current developments, cross-checked claims, explicit evidence labels, adoption
+risks, and direct source URLs.
+
+Use `COOKBOOK_PROMPT` to apply the same diligence pattern to another technology
+or market.
+
+## SerpApi tools used
+
+`news_search` discovers recent warehouse-robotics developments, and
+`web_search` checks durable sources behind the strongest company claims. This
+sequence helps the agent label verified facts, vendor statements, and analyst
+inference separately.
+
+**Framework pattern:** The agent tool loop follows Microsoft Agent Framework's
+Python tool-use example and uses SerpApi news and web tools.
+
+- [Open the runnable recipe](https://github.com/serpapi/serpapi-search-tools-python/tree/main/cookbook/microsoft-agent-framework)
+- [View Microsoft's source example](https://github.com/microsoft/Agent-Framework-Samples/blob/main/00.ForBeginners/04-tool-use/code_samples/python-agent-framework-ghmodel-tools.ipynb)
