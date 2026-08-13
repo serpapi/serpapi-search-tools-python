@@ -40,7 +40,8 @@ def main() -> None:
         tools=[
             videos_search(
                 provider="smolagents",
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=3,
                 include_examples=False,
             )
         ],

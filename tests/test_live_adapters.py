@@ -29,7 +29,8 @@ def test_native_sdk_adapter_executes_a_real_google_light_search() -> None:
     tool = web_search(
         provider=PROVIDER,
         allowed_engines=["google_light"],
-        default_params={"num": 3, "hl": "en", "gl": "us"},
+        default_params={"hl": "en", "gl": "us"},
+        result_limit=3,
     )
 
     encoded = _invoke_native(PROVIDER, tool, {"query": "SerpApi Python"})
@@ -41,6 +42,7 @@ def test_native_sdk_adapter_executes_a_real_google_light_search() -> None:
     assert "search_metadata" not in result
     assert "search_parameters" not in result
     assert result["organic_results"]
+    assert len(result["organic_results"]) <= 3
     first = result["organic_results"][0]
     assert first["title"]
     assert first["link"]

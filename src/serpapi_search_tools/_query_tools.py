@@ -77,6 +77,7 @@ def _runtime(
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
     mode: SearchResultMode | str,
+    result_limit: int | None,
 ) -> SearchRuntime:
     return SearchRuntime(
         api_key=api_key,
@@ -84,6 +85,7 @@ def _runtime(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
     )
 
 
@@ -271,6 +273,7 @@ def web_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 10,
     name: str = "web_search",
 ) -> Any:
     """Create a general-web search tool.
@@ -289,6 +292,9 @@ def web_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -319,6 +325,7 @@ def web_search(
             default_params=default_params,
             timeout=timeout,
             mode=mode,
+            result_limit=result_limit,
         ),
         include_examples=include_examples,
     )
@@ -339,6 +346,7 @@ def shopping_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 60,
     name: str = "shopping_search",
 ) -> Any:
     """Create a multi-marketplace product search tool.
@@ -356,6 +364,9 @@ def shopping_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -387,6 +398,7 @@ def shopping_search(
             default_params=default_params,
             timeout=timeout,
             mode=mode,
+            result_limit=result_limit,
         ),
         include_examples=include_examples,
     )
@@ -405,6 +417,7 @@ def _fixed_query_factory(
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
     mode: SearchResultMode | str,
+    result_limit: int | None,
     name: str,
     validator: Any = None,
 ) -> Any:
@@ -419,6 +432,7 @@ def _fixed_query_factory(
             default_params=default_params,
             timeout=timeout,
             mode=mode,
+            result_limit=result_limit,
         ),
         include_examples=include_examples,
         validator=validator,
@@ -484,6 +498,7 @@ def news_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 20,
     name: str = "news_search",
 ) -> Any:
     """Create a Google News query-mode tool for current articles and stories.
@@ -497,6 +512,9 @@ def news_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -517,6 +535,7 @@ def news_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
         name=name,
         validator=_validate_news_query_mode,
     )
@@ -531,6 +550,7 @@ def images_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 50,
     name: str = "images_search",
 ) -> Any:
     """Create a Google Images tool for image URLs and metadata.
@@ -544,6 +564,9 @@ def images_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -564,6 +587,7 @@ def images_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
         name=name,
         validator=_validate_images_query_mode,
     )
@@ -578,6 +602,7 @@ def videos_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 10,
     name: str = "videos_search",
 ) -> Any:
     """Create a YouTube tool for videos, channels, and playlists.
@@ -591,6 +616,9 @@ def videos_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -611,6 +639,7 @@ def videos_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
         name=name,
     )
 
@@ -624,6 +653,7 @@ def maps_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 10,
     name: str = "maps_search",
 ) -> Any:
     """Create a Google Maps search-mode tool for places and businesses.
@@ -641,6 +671,9 @@ def maps_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -656,6 +689,7 @@ def maps_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
     )
 
     def maps_tool(

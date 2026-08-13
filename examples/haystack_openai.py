@@ -43,7 +43,8 @@ def main() -> None:
         tools=[
             maps_search(
                 provider="haystack",
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=3,
             ),
             web_search(provider="haystack", allowed_engines=["google_light"]),
         ],

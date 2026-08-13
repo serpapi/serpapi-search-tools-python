@@ -1,0 +1,113 @@
+---
+title: Manage LLM context
+guide-section: Advanced Usage
+---
+
+# Manage search response size
+
+Search responses can contain many results and supporting sections. Use `mode` and `result_limit` to control what the tool returns to the model.
+
+Two constructor options work together:
+
+| Option | What it controls | Default |
+| --- | --- | --- |
+| `mode` | Which response sections and fields are kept | `SearchResultMode.COMPACT` |
+| `result_limit` | Maximum items kept in each result list | Tool-specific |
+
+## Start with compact mode
+
+Compact mode is the default:
+
+```python
+from serpapi_search_tools import web_search
+
+search = web_search()
+```
+
+It keeps the main result and answer sections while omitting metadata, request parameters, pagination, filters, and other supporting sections. It does not summarize, rewrite, or rank results.
+
+## Set the number of results separately
+
+`result_limit` applies in both compact and full mode:
+
+```python
+from serpapi_search_tools import SearchResultMode, web_search
+
+compact_search = web_search(result_limit=5)
+full_search = web_search(
+    mode=SearchResultMode.FULL,
+    result_limit=5,
+)
+```
+
+Both tools keep at most five items in each supported result list. The full tool also keeps the response sections and fields omitted by compact mode.
+
+The option is application configuration. It is not visible to the model and does not change the number of results requested from SerpApi.
+
+## Understand per-list limits
+
+The limit applies independently when a response contains more than one result list:
+
+- Google Flights keeps up to the limit from both `best_flights` and
+  `other_flights`.
+- YouTube keeps up to the limit from videos, shorts, channels, playlists,
+  movies, and categories.
+- Google Light applies it to organic results, related questions, related
+  searches, and top stories.
+
+Nested data such as flight legs, layovers, hotel amenities, and product offers is not shortened.
+
+## Default result limits
+
+Each tool has a default suited to its result type:
+
+| Tool | Default `result_limit` |
+| --- | ---: |
+| `web_search` | `10` |
+| `news_search` | `20` |
+| `maps_search` | `10` |
+| `images_search` | `50` |
+| `shopping_search` | `60` |
+| `videos_search` | `10` |
+| `hotels_search` | `20` |
+| `flights_search` | `10` per flight list |
+| `travel_explore_search` | `50` |
+
+These are maximums. If SerpApi returns fewer results, the tool returns the available results.
+
+## Keep every returned result
+
+Set `result_limit=None` to keep all returned results:
+
+```python
+from serpapi_search_tools import SearchResultMode, images_search
+
+all_compact_images = images_search(result_limit=None)
+
+full_images_response = images_search(
+    mode=SearchResultMode.FULL,
+    result_limit=None,
+)
+```
+
+The first tool keeps every image result while still omitting the supporting sections removed by compact mode. The second keeps all response sections, fields, and returned results.
+
+## Choose a practical budget
+
+Start with the tool default. Lower it when results contain long snippets or when several search tools can run in one turn:
+
+```python
+from serpapi_search_tools import images_search, news_search, web_search
+
+tools = [
+    web_search(result_limit=5),
+    news_search(result_limit=5),
+    images_search(result_limit=20),
+]
+```
+
+Raise a limit when the task benefits from more choices, such as image search, product comparison, or destination discovery. Create separately named tool instances when agent tasks need different limits.
+
+Continue with [Common configuration](configuration.html) for constructor
+options or [Debug search responses](debugging.html) when application code needs
+to inspect full provider data.

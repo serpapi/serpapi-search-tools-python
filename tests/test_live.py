@@ -230,7 +230,11 @@ def test_each_public_tool_returns_nonempty_compact_results_live(
         "flights_search": flights_search,
         "travel_explore_search": travel_explore_search,
     }
-    tool = factories[case.factory](provider="function", default_params=case.default_params)
+    tool = factories[case.factory](
+        provider="function",
+        default_params=case.default_params,
+        result_limit=case.result_limit,
+    )
     result = _decode_success(tool(**arguments), f"docs-{case.id}")
 
     if case.factory == "flights_search":
@@ -238,7 +242,7 @@ def test_each_public_tool_returns_nonempty_compact_results_live(
     else:
         primary_results = _primary_results(result, case.result_key)
     assert primary_results, f"{case.id} returned no {case.result_key}"
-    assert len(primary_results) <= 5
+    assert len(primary_results) <= case.result_limit
 
 
 def test_invalid_api_key_returns_an_actionable_error_contract() -> None:

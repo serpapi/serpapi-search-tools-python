@@ -46,12 +46,13 @@ def main() -> None:
             web_search(
                 provider="agno",
                 allowed_engines=["google_light", "google"],
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=3,
                 include_examples=False,
             ),
             shopping_search(
                 provider="agno",
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                result_limit=3,
                 include_examples=False,
             ),
         ],

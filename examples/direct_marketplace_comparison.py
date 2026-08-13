@@ -43,7 +43,7 @@ def main() -> None:
         search = shopping_search(
             provider="function",
             allowed_engines=[engine],
-            default_params={"num": 3},
+            result_limit=3,
         )
         result = json.loads(search(query="noise cancelling headphones"))
         products.append(_first_product(engine, result))

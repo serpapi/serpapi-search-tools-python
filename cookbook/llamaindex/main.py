@@ -79,7 +79,7 @@ async def main() -> None:
             web_search(
                 provider="llamaindex",
                 allowed_engines=["google_light", "bing"],
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
                 api_key=api_key,
             ),
             maps_search(

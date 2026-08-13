@@ -11,13 +11,15 @@ class LiveParameterCase:
     default_params: dict[str, Any]
     arguments: dict[str, Any]
     result_key: str
+    result_limit: int = 10
 
 
 LIVE_PARAMETER_CASES = (
     LiveParameterCase(
         id="readme-web-localized",
         factory="web_search",
-        default_params={"num": 3, "hl": "en", "gl": "us"},
+        default_params={"hl": "en", "gl": "us"},
+        result_limit=3,
         arguments={"query": "Python packaging"},
         result_key="organic_results",
     ),
@@ -25,6 +27,7 @@ LIVE_PARAMETER_CASES = (
         id="readme-news-localized",
         factory="news_search",
         default_params={"hl": "en", "gl": "us"},
+        result_limit=20,
         arguments={"query": "Python releases"},
         result_key="news_results",
     ),
@@ -45,7 +48,8 @@ LIVE_PARAMETER_CASES = (
     LiveParameterCase(
         id="examples-shopping-bounded",
         factory="shopping_search",
-        default_params={"num": 3},
+        default_params={},
+        result_limit=3,
         arguments={"query": "coffee grinder"},
         result_key="shopping_results",
     ),

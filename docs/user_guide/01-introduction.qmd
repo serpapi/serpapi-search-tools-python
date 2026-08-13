@@ -70,10 +70,7 @@ response = json.loads(search(query="Python packaging"))
 print(response.get("organic_results", []))
 ```
 
-Every tool returns compact JSON text by default: only its primary result
-families, bounded to five entries, plus useful web answer sections. Application
-code can opt into the untouched response with
-`mode=SearchResultMode.FULL`.
+Every tool returns compact JSON text by default, including its main result sections and useful web answer sections. `result_limit` controls how many items are kept in each result list in compact and full modes. Set `mode=SearchResultMode.FULL` and `result_limit=None` when application code needs every response section, field, and returned result.
 
 ## Next steps
 

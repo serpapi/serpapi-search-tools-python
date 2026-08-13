@@ -7,7 +7,8 @@ guide-section: Start Here
 
 You rarely need every search capability. Give the agent the smallest useful
 set, name specialized configurations clearly, and keep policy choices such as
-locale, currency, safe search, and result count in `default_params`.
+locale, currency, and safe search in `default_params`. Use `result_limit` for
+the number of results returned by the tool.
 
 The examples below use automatic SDK detection. They work as written when one
 supported agent SDK is installed. If multiple SDKs share the environment, add
@@ -24,7 +25,7 @@ tools = [
     web_search(
         allowed_engines=["google_light", "bing"],
         default_engine="google_light",
-        default_params={"num": 5},
+        result_limit=5,
     )
 ]
 ```
@@ -85,12 +86,13 @@ from serpapi_search_tools import shopping_search
 tools = [
     shopping_search(
         allowed_engines=["google_shopping"],
-        default_params={"num": 5, "gl": "us", "hl": "en"},
+        default_params={"gl": "us", "hl": "en"},
+        result_limit=5,
         name="google_products",
     ),
     shopping_search(
         allowed_engines=["amazon"],
-        default_params={"num": 5},
+        result_limit=5,
         name="amazon_products",
     ),
 ]
@@ -225,11 +227,7 @@ preferences.
 
 ## Keep agent payloads manageable
 
-Every tool returns a compact response by default, keeping only a bounded number
-of primary results before the JSON reaches the model. Use a custom `client=`
-for application-specific logging or caching, and opt into
-`SearchResultMode.FULL` only outside model context when auxiliary sections are
-required.
+Every tool returns a compact response by default. Set `result_limit` on the tool constructor to control how many items are kept in each result list. Use a custom `client=` for application-specific logging or caching. Choose `SearchResultMode.FULL` when application code needs supporting response sections or additional result fields.
 
 Continue with [Runnable examples](examples.html),
 [Common configuration](configuration.html), or

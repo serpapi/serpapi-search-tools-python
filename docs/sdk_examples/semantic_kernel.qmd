@@ -66,7 +66,6 @@ first three Google results.
 privacy_search = web_search(
     allowed_engines=["duckduckgo", "bing"],
     default_engine="duckduckgo",
-    default_params={"hl": "en"},
     include_examples=False,
     name="privacy_search",
 )

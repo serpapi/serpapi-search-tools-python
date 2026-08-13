@@ -7,10 +7,9 @@
 
 Give Python AI agents live web, news, maps, image, shopping, video, hotel, and flight search with easy-to-use, customizable tools.
 
-[Read the full documentation](https://serpapi.github.io/serpapi-search-tools-python/)
-for guides, SDK examples, recipes, and the API reference.
+[Read the full documentation](https://serpapi.github.io/serpapi-search-tools-python/) for guides, SDK examples, recipes, and the API reference.
 
-`serpapi-search-tools` connects [SerpApi](https://serpapi.com) to popular Python agent SDKs. Enhance your AI agent with real-time search data across the capabilities it needs:
+The package creates native [SerpApi](https://serpapi.com) tools for popular Python agent SDKs:
 
 ```python
 from serpapi_search_tools import maps_search, news_search, web_search
@@ -23,6 +22,30 @@ tools = [
 ```
 
 When one supported agent SDK is installed, the package detects it and creates tools ready for that SDK.
+
+## Install
+
+If your agent SDK is already installed, add only the base package:
+
+```bash
+pip install serpapi-search-tools
+```
+
+If you want this package to install a compatible agent SDK too, choose its extra. For example:
+
+```bash
+pip install "serpapi-search-tools[openai-agents]"
+```
+
+Extras are available for all supported SDKs listed below.
+
+Set a SerpApi key:
+
+```bash
+export SERPAPI_API_KEY="your-key"
+```
+
+`SERPAPI_KEY` is also supported. A directly supplied `api_key=` takes precedence over environment variables.
 
 ## Supported agent SDKs
 
@@ -43,42 +66,15 @@ When one supported agent SDK is installed, the package detects it and creates to
 | smolagents                | `smolagents`                | smolagents `Tool`                        |
 | Google ADK                | `google-adk`                | Google ADK `FunctionTool`                |
 
-## Install
-
-If your agent SDK is already installed, add only the base package:
-
-```bash
-pip install serpapi-search-tools
-```
-
-If you want this package to install a compatible agent SDK too, choose its extra. For example:
-
-```bash
-pip install "serpapi-search-tools[openai-agents]"
-```
-
-Extras are available for all supported SDKs listed above.
-
-Set a SerpApi key:
-
-```bash
-export SERPAPI_API_KEY="your-key"
-```
-
-`SERPAPI_KEY` is also supported. A directly supplied `api_key=` takes precedence over environment variables.
-
 ## Quickstart: automatic SDK detection
 
-This quickstart uses OpenAI Agents SDK to demonstrate automatic detection. It assumes the SDK is already installed in
-your environment (install it with
-`pip install openai-agents` if needed). Then add the base package:
+This quickstart uses OpenAI Agents SDK to demonstrate automatic detection. It assumes the SDK is already installed in your environment (install it with `pip install openai-agents` if needed). Then add the base package:
 
 ```bash
 pip install serpapi-search-tools
 ```
 
-With one supported SDK installed, create the tool without any configuration. The package detects OpenAI Agents SDK and
-returns its native `FunctionTool`. This example also expects the `OPENAI_API_KEY` used by your agent.
+With one supported SDK installed, create the tool without any configuration. The package detects OpenAI Agents SDK and returns its native `FunctionTool`. This example also expects the `OPENAI_API_KEY` used by your agent.
 
 ```python
 from agents import Agent, Runner
@@ -106,10 +102,7 @@ Install the LangChain extra and the model backend used by this example:
 pip install "serpapi-search-tools[langchain]" langchain-openai
 ```
 
-The `langchain` extra installs a compatible LangChain version.
-`langchain-openai` provides this example's model integration; replace it with the backend your LangChain application
-uses. With `langchain-openai`, set
-`OPENAI_API_KEY` before running the agent.
+The `langchain` extra installs a compatible LangChain version. `langchain-openai` provides this example's model integration; replace it with the backend your LangChain application uses. With `langchain-openai`, set `OPENAI_API_KEY` before running the agent.
 
 ```python
 from langchain.agents import create_agent
@@ -142,15 +135,11 @@ result = agent.invoke(
 print(result["messages"][-1].content)
 ```
 
-The constructors use automatic SDK detection, just as in the first quickstart. For multi-SDK environments and explicit
-selection, see [Agent SDKs](https://serpapi.github.io/serpapi-search-tools-python/user-guide/frameworks.html).
+The constructors use automatic SDK detection, just as in the first quickstart. For multi-SDK environments and explicit selection, see [Agent SDKs](https://serpapi.github.io/serpapi-search-tools-python/user-guide/frameworks.html).
 
-For a step-by-step explanation, keys, customization, and troubleshooting, read
-the [detailed quickstart](https://serpapi.github.io/serpapi-search-tools-python/user-guide/quickstart.html).
+For a step-by-step explanation, keys, customization, and troubleshooting, read the [detailed quickstart](https://serpapi.github.io/serpapi-search-tools-python/user-guide/quickstart.html).
 
-Browse the [runnable examples](https://github.com/serpapi/serpapi-search-tools-python/tree/main/examples)
-for focused integrations or the [agent cookbook](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/)
-for complete, task-oriented agents built with every supported SDK.
+Browse the [runnable examples](https://github.com/serpapi/serpapi-search-tools-python/tree/main/examples) for focused integrations or the [agent cookbook](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/) for complete, task-oriented agents built with every supported SDK.
 
 ## Choose the right tool
 
@@ -177,9 +166,7 @@ tool = web_search(
 )
 ```
 
-SerpApi supports multiple general web search engines, including Google Light, Google, Bing, Yahoo, and DuckDuckGo.
-Google Light is the default because it provides fast, general-purpose web results. Use `allowed_engines` to choose which
-engines are available and `default_engine` to select the initial one.
+SerpApi supports multiple general web search engines, including Google Light, Google, Bing, Yahoo, and DuckDuckGo. Google Light is the default because it provides fast, general-purpose web results. Use `allowed_engines` to choose which engines are available and `default_engine` to select the initial one.
 
 ### News, maps, images, and videos
 
@@ -194,12 +181,9 @@ tools = [
 ]
 ```
 
-`news_search` supports keyword searches in Google News. `maps_search` searches
-Google Maps and accepts optional `location`, `zoom` (`3` through `30`), and
-`nearby` fields. Use `nearby=True` for “near me” intent with a separate
-`location`; leave it false when the query already names a city or area. Place
-details, reviews, and directions use different SerpApi APIs and are not part of
-this search tool.
+`news_search` supports keyword searches in Google News. `maps_search` searches Google Maps and accepts optional `location`, `zoom` (`3` through `30`), and `nearby` fields. Use `nearby=True` for “near me” intent with a separate `location`; leave it false when the query already names a city or area. Place details, reviews, and directions use different SerpApi APIs and are not part of this search tool.
+
+`images_search` returns images and their source pages. `videos_search` searches YouTube videos, Shorts, channels, playlists, movies, and categories.
 
 ### Shopping
 
@@ -216,9 +200,7 @@ tool = shopping_search(
 )
 ```
 
-The package routes one human `query` to each marketplace's native field:
-Google Shopping uses `q`, Amazon uses `k`, Walmart uses `query`, and eBay uses
-`_nkw`.
+Use the same `query` input for every marketplace. The package translates it to the selected engine's request format.
 
 ### Travel
 
@@ -232,62 +214,9 @@ travel_tools = [
 ]
 ```
 
-These constructors create hotel, flight, and destination-discovery tools for the detected agent SDK.
+These constructors create hotel, flight, and destination-discovery tools for the detected agent SDK. Read the [Hotels](https://serpapi.github.io/serpapi-search-tools-python/user-guide/hotels_search.html), [Flights](https://serpapi.github.io/serpapi-search-tools-python/user-guide/flights_search.html), and [Travel Explore](https://serpapi.github.io/serpapi-search-tools-python/user-guide/travel_explore_search.html) guides for their date, occupancy, location ID, and trip rules.
 
-#### Hotels
-
-`hotels_search` lets the agent provide a destination, dates, and guest details. Hotel dates use `YYYY-MM-DD`. Checkout
-must be after check-in. When `children`
-is nonzero, provide exactly one age from 1 through 17 per child; use `1` for a
-child under one year old.
-
-#### Flights
-
-`flights_search` lets the agent provide route, date, cabin, and passenger details. It requires an origin, destination,
-and outbound date. Omitting
-`return_date` creates a one-way request; including it creates a round trip.
-Use specific airport IATA codes such as `LHR` and `CDG`, not metropolitan codes
-such as `LON` and `PAR`. For a city-wide search, use a Google Knowledge Graph
-location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for
-London or `/m/05qtj` for Paris. Multi-city searches are not currently
-supported.
-
-#### Explore destinations
-
-`travel_explore_search` lets the agent discover destinations and requires only a departure airport IATA code or city
-KGMID. It
-can also accept a specific arrival airport or city through `arrival_id`, or a
-region or country KGMID through `arrival_area_id`. Fixed outbound/return dates,
-cabin class, and passenger counts are optional. These travel tools send their
-route and date fields directly to the matching SerpApi endpoint.
-
-## Set advanced parameters in application code
-
-Use `default_params` for documented SerpApi settings that should stay under your application's control, such as locale,
-currency, safe search, or result count. The agent continues to supply only the inputs described by its search tool.
-
-Applications can supply documented advanced options at construction time:
-
-```python
-tool = news_search(
-    default_params={"hl": "en", "gl": "us"},
-)
-```
-
-Typed fields and the constructor-controlled engine override colliding entries in `default_params`. Known incompatible
-combinations are rejected locally, such as Google News query plus topic tokens, Amazon keyword search plus `node`, or
-flight airline include plus exclude filters. For a multi-engine tool, the same defaults are sent to every allowed
-engine. Use only parameters shared by those engines, or create separate tool instances when each engine needs different
-defaults. Reserved keys (`api_key`, `async`, `engine`, and `output`) are rejected in
-`default_params`; use the constructor options documented below instead.
-
-## Handle search failures
-
-The search runtime raises `SerpApiSearchError` for SerpApi and transport failures. Invalid tool inputs raise
-`ValueError`. Agent SDKs surface or handle tool errors differently, so use your SDK's normal tool-error mechanism. See
-[Debugging](https://serpapi.github.io/serpapi-search-tools-python/user-guide/debugging.html) for detailed examples.
-
-## Common factory options
+## Configure tools
 
 Every constructor accepts:
 
@@ -300,12 +229,31 @@ Every constructor accepts:
 | `default_params`   | Application-controlled SerpApi options                                                                |
 | `timeout`          | Timeout passed to the SerpApi SDK client                                                              |
 | `name`             | Tool name presented to the model                                                                      |
-| `mode`             | Result detail level: `"compact"` (default) or `"full"`                                                |
+| `mode`             | Result detail level; compact mode is the default, while full mode keeps supporting sections and all fields on retained results |
+| `result_limit`     | Maximum items kept in each result list in either mode; defaults vary by tool; use `None` for all results |
 
-`web_search` and `shopping_search` additionally accept `allowed_engines` and
-`default_engine`. The tool offers only the engine values you configured.
+`web_search` and `shopping_search` also accept `allowed_engines` and `default_engine`. The tool offers only the engine values you configure.
 
-## Supported engine documentation
+Use `default_params` for documented SerpApi settings that should stay under your application's control, such as locale, currency, safe search, or pagination. Use `result_limit` to control how many results the tool returns. The agent continues to supply only the inputs described by its search tool.
+
+```python
+tool = news_search(
+    default_params={"hl": "en", "gl": "us"},
+)
+```
+
+Typed tool inputs override matching values in `default_params`, and the constructor always controls `engine`. The package rejects known incompatible combinations, such as a Google News query with a topic token, an Amazon keyword search with `node`, or flight airline include and exclude filters. A multi-engine tool sends the same defaults to every allowed engine, so use parameters shared by those engines or create separate tool instances. Reserved keys (`api_key`, `async`, `engine`, and `output`) are rejected in `default_params`; use the constructor options above instead.
+
+Read [Manage LLM context](https://serpapi.github.io/serpapi-search-tools-python/user-guide/managing_llm_context.html) for compact and full response behavior, default result limits, and unlimited responses.
+
+## Handle search failures
+
+The search runtime raises `SerpApiSearchError` for SerpApi and transport failures. Invalid tool inputs raise `ValueError`. Agent SDKs surface or handle tool errors differently, so use your SDK's normal tool-error mechanism. See [Debugging](https://serpapi.github.io/serpapi-search-tools-python/user-guide/debugging.html) for detailed examples.
+
+## Engine API references
+
+<details>
+<summary>Show supported SerpApi engines</summary>
 
 - [Google Search](https://serpapi.com/search-api)
 - [Google Light](https://serpapi.com/google-light-api)
@@ -324,18 +272,12 @@ Every constructor accepts:
 - [Google Flights](https://serpapi.com/google-flights-api)
 - [Google Travel Explore](https://serpapi.com/google-travel-explore-api)
 
-For AI coding agents that need broader SerpApi API context, use
-[SerpApi's agent-friendly documentation index (`llms.txt`)](https://serpapi.com/llms.txt). It links directly to Markdown
-API references, including APIs beyond those wrapped by this package.
+</details>
+
+For AI coding agents that need broader SerpApi API context, use [SerpApi's agent-friendly documentation index (`llms.txt`)](https://serpapi.com/llms.txt). It links directly to Markdown API references, including APIs beyond those wrapped by this package.
 
 ## More guides
 
-- [Introduction](https://serpapi.github.io/serpapi-search-tools-python/user-guide/introduction.html)
-- [Quickstart](https://serpapi.github.io/serpapi-search-tools-python/user-guide/quickstart.html)
-- [Choose a search tool](https://serpapi.github.io/serpapi-search-tools-python/user-guide/search_tools.html)
-- [Usage and composition](https://serpapi.github.io/serpapi-search-tools-python/user-guide/usage.html)
-- [Configuration](https://serpapi.github.io/serpapi-search-tools-python/user-guide/configuration.html)
-- [Recipes](https://serpapi.github.io/serpapi-search-tools-python/user-guide/recipes.html)
-- [Agent SDKs](https://serpapi.github.io/serpapi-search-tools-python/user-guide/frameworks.html)
+- [Full documentation](https://serpapi.github.io/serpapi-search-tools-python/)
+- [SDK examples](https://serpapi.github.io/serpapi-search-tools-python/docs/sdk-examples/)
 - [Agent cookbook](https://serpapi.github.io/serpapi-search-tools-python/docs/cookbook/)
-- [Runnable examples](https://serpapi.github.io/serpapi-search-tools-python/docs/sdk-examples/)

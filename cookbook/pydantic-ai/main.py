@@ -59,7 +59,8 @@ def main() -> None:
         tools=[
             images_search(
                 provider="pydantic-ai",
-                default_params={"num": "5", "hl": "en", "gl": "us", "safe": "active"},
+                default_params={"hl": "en", "gl": "us", "safe": "active"},
+                result_limit=5,
             ),
             maps_search(
                 provider="pydantic-ai",
@@ -68,7 +69,7 @@ def main() -> None:
             web_search(
                 provider="pydantic-ai",
                 allowed_engines=["google_light", "bing"],
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
             ),
         ],
     )

@@ -45,10 +45,12 @@ def test_runtime_merges_parameters_in_documented_precedence_order() -> None:
 
     encoded = runtime.execute(
         engine="google",
-        typed_params={"q": "coffee", "num": 3, "location": None},
+        typed_params={"q": "coffee", "start": 10, "location": None},
     )
 
-    assert client.calls == [{"hl": "en", "gl": "gb", "q": "coffee", "num": 3, "engine": "google"}]
+    assert client.calls == [
+        {"hl": "en", "gl": "gb", "q": "coffee", "start": 10, "engine": "google"}
+    ]
     assert json.loads(encoded)["params"] == client.calls[0]
 
 
@@ -478,7 +480,7 @@ def test_compact_mode_keeps_web_answers_and_bounds_organic_results() -> None:
                 "answer_box": {"answer": "Coffee is a brewed drink."},
                 "knowledge_graph": {"title": "Coffee"},
                 "ai_overview": {"text": "A compact overview."},
-                "organic_results": [{"position": position} for position in range(1, 9)],
+                "organic_results": [{"position": position} for position in range(1, 13)],
                 "related_searches": [{"query": "tea"}],
                 "serpapi_pagination": {"next": "https://example.test/next"},
             }
@@ -493,7 +495,7 @@ def test_compact_mode_keeps_web_answers_and_bounds_organic_results() -> None:
         "answer_box": {"answer": "Coffee is a brewed drink."},
         "knowledge_graph": {"title": "Coffee"},
         "ai_overview": {"text": "A compact overview."},
-        "organic_results": [{"position": position} for position in range(1, 6)],
+        "organic_results": [{"position": position} for position in range(1, 11)],
     }
 
 
@@ -511,9 +513,9 @@ def test_compact_mode_keeps_web_answers_and_bounds_organic_results() -> None:
                 "top_stories",
             },
         ),
-        ("bing", {"answer_box", "knowledge_graph", "ai_overview", "organic_results"}),
-        ("yahoo", {"answer_box", "knowledge_graph", "ai_overview", "organic_results"}),
-        ("duckduckgo", {"answer_box", "knowledge_graph", "ai_overview", "organic_results"}),
+        ("bing", {"answer_box", "knowledge_graph", "copilot_answer", "organic_results"}),
+        ("yahoo", {"answer_box", "knowledge_graph", "organic_results"}),
+        ("duckduckgo", {"knowledge_graph", "organic_results"}),
         ("google_news", {"news_results"}),
         ("google_maps", {"local_results"}),
         ("google_images", {"images_results"}),
@@ -521,7 +523,17 @@ def test_compact_mode_keeps_web_answers_and_bounds_organic_results() -> None:
         ("amazon", {"organic_results"}),
         ("walmart", {"organic_results"}),
         ("ebay", {"organic_results"}),
-        ("youtube", {"video_results"}),
+        (
+            "youtube",
+            {
+                "video_results",
+                "shorts_results",
+                "channel_results",
+                "playlist_results",
+                "movie_results",
+                "category_results",
+            },
+        ),
         ("google_hotels", {"properties"}),
         ("google_flights", {"best_flights", "other_flights"}),
         ("google_travel_explore", {"destinations"}),
@@ -535,12 +547,18 @@ def test_compact_mode_selects_primary_result_families(
         "answer_box",
         "knowledge_graph",
         "ai_overview",
+        "copilot_answer",
         "organic_results",
         "news_results",
         "local_results",
         "images_results",
         "shopping_results",
         "video_results",
+        "shorts_results",
+        "channel_results",
+        "playlist_results",
+        "movie_results",
+        "category_results",
         "properties",
         "best_flights",
         "other_flights",
@@ -565,6 +583,7 @@ def test_compact_mode_selects_primary_result_families(
                         "answer_box",
                         "knowledge_graph",
                         "ai_overview",
+                        "copilot_answer",
                     }
                     else [{"value": key}]
                 )
@@ -585,9 +604,9 @@ def test_google_light_compact_mode_uses_only_supported_result_families() -> None
         def search(self, params: dict[str, object]) -> dict[str, object]:
             return {
                 "ai_overview": {"text": "Not a Google Light response section."},
-                "related_questions": [{"question": str(index)} for index in range(7)],
-                "related_searches": [{"query": str(index)} for index in range(7)],
-                "top_stories": [{"title": str(index)} for index in range(7)],
+                "related_questions": [{"question": str(index)} for index in range(12)],
+                "related_searches": [{"query": str(index)} for index in range(12)],
+                "top_stories": [{"title": str(index)} for index in range(12)],
             }
 
     result = json.loads(
@@ -599,7 +618,162 @@ def test_google_light_compact_mode_uses_only_supported_result_families() -> None
 
     assert "ai_overview" not in result
     assert set(result) == {"related_questions", "related_searches", "top_stories"}
-    assert all(len(result[key]) == 5 for key in result)
+    assert all(len(result[key]) == 10 for key in result)
+
+
+def test_result_limit_applies_independently_to_each_result_family() -> None:
+    class FlightsClient:
+        def search(self, params: dict[str, object]) -> dict[str, object]:
+            return {
+                "best_flights": [{"position": position} for position in range(6)],
+                "other_flights": [{"position": position} for position in range(6)],
+            }
+
+    result = json.loads(
+        SearchRuntime(client=FlightsClient(), result_limit=3).execute(
+            engine="google_flights",
+            typed_params={"departure_id": "LAX", "arrival_id": "AUS"},
+        )
+    )
+
+    assert result == {
+        "best_flights": [{"position": position} for position in range(3)],
+        "other_flights": [{"position": position} for position in range(3)],
+    }
+
+
+@pytest.mark.parametrize(
+    ("engine", "result_key", "item", "expected"),
+    [
+        (
+            "google_images",
+            "images_results",
+            {
+                "title": "Latte art",
+                "original": "https://images.test/latte.jpg",
+                "source_logo": "data:image/png;base64,large",
+                "related_content_id": "token",
+                "serpapi_related_content_link": "https://serpapi.test/related",
+            },
+            {"title": "Latte art", "original": "https://images.test/latte.jpg"},
+        ),
+        (
+            "google_shopping",
+            "shopping_results",
+            {
+                "title": "Grinder",
+                "price": "$25",
+                "product_link": "https://shopping.test/product",
+                "immersive_product_page_token": "large-token",
+                "serpapi_immersive_product_api": "https://serpapi.test/product",
+                "serpapi_thumbnail": "https://serpapi.test/thumbnail",
+                "source_icon": "data:image/png;base64,large",
+            },
+            {
+                "title": "Grinder",
+                "price": "$25",
+                "product_link": "https://shopping.test/product",
+            },
+        ),
+        (
+            "amazon",
+            "organic_results",
+            {
+                "title": "Grinder",
+                "link": "https://amazon.test/tracked",
+                "link_clean": "https://amazon.test/product",
+                "serpapi_link": "https://serpapi.test/product",
+                "more_buying_choices_link": "https://amazon.test/offers",
+                "purchase_options": [{"price": "$25"}],
+            },
+            {
+                "title": "Grinder",
+                "link": "https://amazon.test/product",
+                "more_buying_choices_link": "https://amazon.test/offers",
+            },
+        ),
+        (
+            "walmart",
+            "organic_results",
+            {
+                "title": "Grinder",
+                "product_page_url": "https://walmart.test/product",
+                "serpapi_product_page_url": "https://serpapi.test/product",
+                "seller_id": "seller",
+                "variant_swatches": [{"name": "Black"}],
+                "muliple_options_available": False,
+            },
+            {"title": "Grinder", "product_page_url": "https://walmart.test/product"},
+        ),
+        (
+            "ebay",
+            "organic_results",
+            {
+                "title": "Grinder",
+                "link": "https://ebay.test/product?tracking=large",
+                "serpapi_link": "https://serpapi.test/product",
+                "watchers": "18 watchers",
+                "extracted_watchers": 18,
+                "buying_format": "buy_it_now",
+                "buying_format_text": "Buy It Now",
+            },
+            {
+                "title": "Grinder",
+                "link": "https://ebay.test/product?tracking=large",
+                "extracted_watchers": 18,
+                "buying_format": "buy_it_now",
+            },
+        ),
+        (
+            "google_hotels",
+            "properties",
+            {
+                "name": "Hotel",
+                "rate_per_night": {"lowest": "$100"},
+                "images": [{"thumbnail": "one"}, {"thumbnail": "two"}],
+                "reviews_breakdown": [{"name": "Rooms"}],
+                "nearby_places": [{"name": "Airport"}],
+                "serpapi_property_details_link": "https://serpapi.test/property",
+                "serpapi_google_hotels_reviews_link": "https://serpapi.test/reviews",
+                "serpapi_google_hotels_photos_link": "https://serpapi.test/photos",
+            },
+            {
+                "name": "Hotel",
+                "rate_per_night": {"lowest": "$100"},
+                "images": [{"thumbnail": "one"}],
+            },
+        ),
+        (
+            "google_travel_explore",
+            "destinations",
+            {
+                "name": "Paris",
+                "flight_price": 622,
+                "link": "https://google.test/travel",
+                "serpapi_link": "https://serpapi.test/travel",
+            },
+            {"name": "Paris", "flight_price": 622, "link": "https://google.test/travel"},
+        ),
+    ],
+)
+def test_compact_mode_projects_large_vertical_result_objects(
+    engine: str,
+    result_key: str,
+    item: dict[str, object],
+    expected: dict[str, object],
+) -> None:
+    class ProjectionClient:
+        def search(self, params: dict[str, object]) -> dict[str, object]:
+            return {result_key: [item]}
+
+    result = json.loads(
+        SearchRuntime(client=ProjectionClient()).execute(
+            engine=engine,
+            typed_params={"q": "coffee"},
+        )
+    )
+
+    assert result == {result_key: [expected]}
 
 
 def test_compact_mode_returns_bounded_status_when_no_result_family_is_present() -> None:
@@ -652,11 +826,19 @@ def test_compact_mode_preserves_returned_api_errors() -> None:
 
 
 @pytest.mark.parametrize("mode", [SearchResultMode.FULL, "full"])
-def test_full_mode_preserves_every_response_section(mode: SearchResultMode | str) -> None:
+def test_full_mode_limits_results_but_preserves_every_other_section(
+    mode: SearchResultMode | str,
+) -> None:
     response = {
         "search_metadata": {"status": "Success"},
-        "organic_results": [{"title": "Coffee"}],
-        "related_searches": [{"query": "tea"}],
+        "organic_results": [
+            {"title": "Coffee"},
+            {"title": "Tea"},
+        ],
+        "related_searches": [
+            {"query": "tea"},
+            {"query": "coffee beans"},
+        ],
     }
 
     class FullClient:
@@ -666,11 +848,22 @@ def test_full_mode_preserves_every_response_section(mode: SearchResultMode | str
     encoded = SearchRuntime(
         client=FullClient(),
         mode=mode,
+        result_limit=1,
     ).execute(engine="google_light", typed_params={"q": "coffee"})
 
-    assert json.loads(encoded) == response
+    assert json.loads(encoded) == {
+        "search_metadata": {"status": "Success"},
+        "organic_results": [{"title": "Coffee"}],
+        "related_searches": [{"query": "tea"}],
+    }
 
 
 def test_invalid_result_mode_fails_when_the_tool_is_created() -> None:
     with pytest.raises(ValueError, match=r"mode must be one of: compact, full"):
         SearchRuntime(client=FakeClient(), mode="summary")
+
+
+@pytest.mark.parametrize("result_limit", [0, True, "5"])
+def test_invalid_result_limit_fails_when_the_tool_is_created(result_limit: object) -> None:
+    with pytest.raises(ValueError, match="result_limit must be a positive integer or None"):
+        SearchRuntime(client=FakeClient(), result_limit=result_limit)  # type: ignore[arg-type]

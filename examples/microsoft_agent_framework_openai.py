@@ -44,12 +44,13 @@ async def main() -> None:
         tools=[
             news_search(
                 provider="microsoft-agent-framework",
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=5,
             ),
             web_search(
                 provider="microsoft-agent-framework",
                 allowed_engines=["google_light", "bing"],
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
             ),
         ],
     )

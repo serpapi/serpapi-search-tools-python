@@ -58,7 +58,8 @@ themes.”
 
 ```python
 image_search = images_search(
-    default_params={"num": 5, "hl": "en", "gl": "us"},
+    default_params={"hl": "en", "gl": "us"},
+    result_limit=5,
     include_examples=False,
 )
 ```

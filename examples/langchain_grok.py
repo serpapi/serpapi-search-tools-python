@@ -44,7 +44,8 @@ def main() -> None:
         tools=[
             maps_search(
                 provider="langchain",
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=3,
                 include_examples=False,
             ),
             web_search(

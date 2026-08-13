@@ -43,6 +43,7 @@ def _runtime(
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
     mode: SearchResultMode | str,
+    result_limit: int | None,
 ) -> SearchRuntime:
     return SearchRuntime(
         api_key=api_key,
@@ -50,6 +51,7 @@ def _runtime(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
     )
 
 
@@ -162,6 +164,7 @@ def hotels_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 20,
     name: str = "hotels_search",
 ) -> Any:
     """Create a Google Hotels tool with explicit stay dates.
@@ -178,6 +181,9 @@ def hotels_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -193,6 +199,7 @@ def hotels_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
     )
 
     def hotels_tool(
@@ -296,6 +303,7 @@ def flights_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 10,
     name: str = "flights_search",
 ) -> Any:
     """Create a Google Flights tool for one-way and round-trip routes.
@@ -313,6 +321,9 @@ def flights_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -328,6 +339,7 @@ def flights_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
     )
 
     def flights_tool(
@@ -450,6 +462,7 @@ def travel_explore_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    result_limit: int | None = 50,
     name: str = "travel_explore_search",
 ) -> Any:
     """Create a Google Travel Explore destination-discovery tool.
@@ -467,6 +480,9 @@ def travel_explore_search(
     api_key, client, default_params, timeout, mode
         Runtime authentication, custom client, application filters, timeout, and
         compact or full response selection.
+    result_limit
+        Maximum items kept in each result list in both response modes; use
+        ``None`` to keep all returned results.
     name
         Tool name presented to the model.
 
@@ -482,6 +498,7 @@ def travel_explore_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        result_limit=result_limit,
     )
 
     def travel_explore_tool(

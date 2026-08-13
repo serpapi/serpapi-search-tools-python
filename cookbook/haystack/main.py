@@ -73,12 +73,13 @@ def main() -> None:
         tools=[
             news_search(
                 provider="haystack",
-                default_params={"num": "7", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=7,
             ),
             web_search(
                 provider="haystack",
                 allowed_engines=["google_light", "bing"],
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
             ),
         ],
         max_agent_steps=8,

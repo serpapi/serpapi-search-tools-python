@@ -51,7 +51,8 @@ async def main() -> None:
             tools=[
                 news_search(
                     provider="autogen",
-                    default_params={"num": "3", "hl": "en", "gl": "us"},
+                    default_params={"hl": "en", "gl": "us"},
+                    result_limit=3,
                 ),
                 web_search(provider="autogen", allowed_engines=["google_light"]),
             ],

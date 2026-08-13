@@ -64,7 +64,8 @@ async def main() -> None:
             web_search(
                 provider="llamaindex",
                 allowed_engines=["google_light"],
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=3,
                 api_key=_serpapi_api_key(),
             ),
         ],

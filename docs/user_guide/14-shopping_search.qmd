@@ -48,8 +48,9 @@ Google Shopping, `k` for Amazon, `query` for Walmart, and `_nkw` for eBay.
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `allowed_engines` | all four engines | Limit the marketplaces visible to the model |
 | `default_engine` | `google_shopping` when allowed | Select the marketplace used when `engine` is omitted |
-| `default_params` | `None` | Fix result count or engine-specific marketplace filters |
-| `mode` | `compact` | Return up to five primary product results; use `SearchResultMode.FULL` for the untouched response |
+| `default_params` | `None` | Fix engine-specific marketplace filters or pagination |
+| `mode` | `compact` | Return the main product result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `60` | Maximum primary product results retained in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add result normalization, caching, logging, or tests |
@@ -63,22 +64,20 @@ from serpapi_search_tools import shopping_search
 
 google_products = shopping_search(
     allowed_engines=["google_shopping"],
-    default_params={"gl": "us", "hl": "en", "num": 5},
+    default_params={"gl": "us", "hl": "en"},
+    result_limit=5,
     name="google_products",
 )
 amazon_products = shopping_search(
     allowed_engines=["amazon"],
-    default_params={"num": 5},
+    result_limit=5,
     name="amazon_products",
 )
 ```
 
 ## Useful SerpApi parameters
 
-`num` is useful for bounding a first result page. Locale, sorting, category,
-condition, delivery, and price-filter parameters are marketplace-specific.
-Follow the matching official reference rather than assuming a Google Shopping
-parameter will work on Amazon, Walmart, or eBay.
+Use `result_limit` for a consistent limit across marketplaces. An eBay-only tool can also use `_ipg` to set the retrieved page size. Locale, sorting, category, condition, delivery, price, and pagination parameters differ by marketplace. See the [Google Shopping](https://serpapi.com/google-shopping-api), [Amazon](https://serpapi.com/amazon-search-api), [Walmart](https://serpapi.com/walmart-search-api), and [eBay](https://serpapi.com/ebay-search-api) references for supported values.
 
 For a multi-engine tool, the same `default_params` dictionary is sent to every
 allowed engine. Restrict `allowed_engines` or use separate named tools before
@@ -86,9 +85,7 @@ adding engine-specific values.
 
 ## What comes back
 
-Compact mode returns up to five primary product results. Google Shopping uses
-`shopping_results`; Amazon, Walmart, and eBay use `organic_results`. Titles,
-prices, links, ratings, delivery details, and seller fields also vary.
+Both modes return up to `result_limit` primary product results (60 by default). Google Shopping uses `shopping_results`; Amazon, Walmart, and eBay use `organic_results`. Compact mode keeps useful product details such as titles, prices, links, ratings, delivery information, and seller data while omitting supporting response sections and redundant fields. Use `result_limit=None` to keep every returned product.
 
 Normalize only fields your application needs and keep the original engine in
 the normalized record.

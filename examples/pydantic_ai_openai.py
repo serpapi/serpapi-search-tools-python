@@ -41,7 +41,8 @@ def main() -> None:
         tools=[
             images_search(
                 provider="pydantic-ai",
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=3,
             ),
             web_search(provider="pydantic-ai", allowed_engines=["google_light"]),
         ],
