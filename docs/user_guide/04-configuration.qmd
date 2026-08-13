@@ -29,7 +29,7 @@ It helps to keep three layers separate:
 2. **Constructor options** control how the Python tool is created, such as
    `provider`, `name`, `timeout`, and web-engine choices.
 3. **`default_params`** are SerpApi engine parameters fixed by your application,
-   such as language, country, currency, safe search, or result count.
+   such as language, country, currency, safe search, or pagination.
 
 This separation keeps the agent's search inputs short while your application
 retains control of service-level settings.
@@ -43,9 +43,10 @@ All nine constructors accept these options:
 | `provider` | `"auto"` | Usually omit it. Select an SDK explicitly when multiple supported SDKs are installed, or use `"function"` for a callable. |
 | `api_key` | `None` | Pass a SerpApi key from a secret manager instead of using an environment variable. |
 | `client` | `None` | Replace the built-in client for tests, caching, logging, retries, or response reduction. |
-| `default_params` | `None` | Set supported SerpApi options such as locale, currency, or result count in application code. |
+| `default_params` | `None` | Set supported SerpApi options such as locale, currency, filters, or pagination in application code. |
 | `timeout` | `None` | Set a request timeout on the built-in SerpApi client. |
-| `mode` | `SearchResultMode.COMPACT` | Return focused, bounded result families for agents, or opt into the untouched response with `SearchResultMode.FULL`. |
+| `mode` | `SearchResultMode.COMPACT` | Return the main result data; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results. |
+| `result_limit` | tool-specific | Set the maximum number of items kept in each result list in either mode. Use `None` to keep all returned items. |
 | `include_examples` | `True` | Keep or remove the short invocation hint in the tool description. |
 | `name` | constructor name | Give separately configured tools distinct names the model can understand. |
 
@@ -53,7 +54,8 @@ All nine constructors accept these options:
 from serpapi_search_tools import news_search
 
 current_us_news = news_search(
-    default_params={"hl": "en", "gl": "us", "num": 5},
+    default_params={"hl": "en", "gl": "us"},
+    result_limit=5,
     timeout=20.0,
     name="current_us_news",
 )
@@ -95,7 +97,7 @@ The search inputs and useful SerpApi parameters depend on the capability:
 | Tool | Tool-specific configuration |
 | --- | --- |
 | [`web_search`](web_search.html) | `allowed_engines`, `default_engine`, plus per-engine web defaults |
-| [`news_search`](news_search.html) | Google News query-mode locale and result settings |
+| [`news_search`](news_search.html) | Google News query-mode locale and query filters |
 | [`maps_search`](maps_search.html) | Typed location/zoom/nearby inputs plus Maps defaults |
 | [`images_search`](images_search.html) | Safe search and image filters |
 | [`shopping_search`](shopping_search.html) | `allowed_engines`, `default_engine`, and marketplace-specific defaults |
@@ -108,27 +110,46 @@ Read the dedicated page before adding engine-specific `default_params`.
 
 ## Choose compact or full results
 
-All tools default to `SearchResultMode.COMPACT`. Compact mode normally removes
-response metadata, parameters, pagination, filters, and other auxiliary
-sections. It keeps errors and at most five entries from each primary result
-family. If a successful response contains no recognized result family, it
-returns `no_results: true` plus only safe status and search-information fields
-instead of an ambiguous empty object.
+All tools default to `SearchResultMode.COMPACT`. Compact mode keeps the main result sections and omits metadata, request parameters, pagination, filters, and other supporting sections. Non-list answer sections such as `answer_box` are kept whole. If a successful response has no supported result section, the tool returns `no_results: true` with available status and search information.
+
+| Tool | Default `result_limit` |
+| --- | ---: |
+| `web_search`, `maps_search`, `videos_search`, `flights_search` | `10` |
+| `news_search` | `20` |
+| `images_search` | `50` |
+| `shopping_search` | `60` |
+| `hotels_search` | `20` |
+| `travel_explore_search` | `50` |
 
 | Tool | Compact result families |
 | --- | --- |
-| `web_search` except Google Light | `answer_box`, `knowledge_graph`, `ai_overview`, `organic_results` |
+| `web_search` with Google | `answer_box`, `knowledge_graph`, `ai_overview`, `organic_results` |
 | `web_search` with Google Light | `answer_box`, `knowledge_graph`, `organic_results`, `related_questions`, `related_searches`, `top_stories` |
+| `web_search` with Bing | `answer_box`, `knowledge_graph`, `copilot_answer`, `organic_results` |
+| `web_search` with Yahoo | `answer_box`, `knowledge_graph`, `organic_results` |
+| `web_search` with DuckDuckGo | `knowledge_graph`, `organic_results` |
 | `news_search` | `news_results` |
 | `maps_search` | `local_results` |
 | `images_search` | `images_results` |
 | `shopping_search` | `shopping_results` for Google Shopping; `organic_results` for Amazon, Walmart, and eBay |
-| `videos_search` | `video_results` |
+| `videos_search` | `video_results`, `shorts_results`, `channel_results`, `playlist_results`, `movie_results`, `category_results` |
 | `hotels_search` | `properties` |
 | `flights_search` | `best_flights`, `other_flights` |
 | `travel_explore_search` | `destinations` |
 
-Use full mode in application code that needs an auxiliary response section:
+`result_limit` is application configuration rather than a model input:
+
+```python
+from serpapi_search_tools import web_search
+
+broader_web_search = web_search(
+    result_limit=20,
+)
+```
+
+`result_limit` changes the returned JSON, not the SerpApi request. It applies independently to each supported result list and does not shorten nested data such as flight legs, hotel amenities, or product offers. See the [`web_search`](web_search.html) and [`shopping_search`](shopping_search.html) pages for engine-specific retrieval and pagination options.
+
+Use full mode when application code needs supporting response sections or additional result fields. The tool's default result limit still applies:
 
 ```python
 from serpapi_search_tools import SearchResultMode, web_search
@@ -136,11 +157,16 @@ from serpapi_search_tools import SearchResultMode, web_search
 debug_search = web_search(
     provider="function",
     mode=SearchResultMode.FULL,
+    result_limit=10,
 )
 ```
 
+To keep the complete SerpApi response, including all returned results, set both `mode=SearchResultMode.FULL` and `result_limit=None`.
+
 `mode` is a constructor option, not a model input. An agent cannot expand its
 own tool response and unexpectedly consume more context.
+
+See [Manage LLM context](managing_llm_context.html) for examples using compact, full, limited, and unlimited responses.
 
 ## Restrict web and shopping engines
 
@@ -190,12 +216,14 @@ from serpapi_search_tools import web_search
 
 us_google = web_search(
     allowed_engines=["google_light"],
-    default_params={"hl": "en", "gl": "us", "num": 5},
+    default_params={"hl": "en", "gl": "us"},
+    result_limit=5,
     name="us_google",
 )
 german_google = web_search(
     allowed_engines=["google_light"],
-    default_params={"hl": "de", "gl": "de", "num": 5},
+    default_params={"hl": "de", "gl": "de"},
+    result_limit=5,
     name="german_google",
 )
 ```

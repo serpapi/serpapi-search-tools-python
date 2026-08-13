@@ -38,11 +38,13 @@ def main() -> None:
         web_search(
             provider="langgraph",
             allowed_engines=["google_light", "google"],
-            default_params={"num": "3", "hl": "en", "gl": "us"},
+            default_params={"hl": "en", "gl": "us"},
+            result_limit=3,
         ),
         news_search(
             provider="langgraph",
-            default_params={"num": "3", "hl": "en", "gl": "us"},
+            default_params={"hl": "en", "gl": "us"},
+            result_limit=3,
         ),
     ]
     model = ChatOpenAI(

@@ -59,7 +59,8 @@ important company claims, and cite the original sources.”
 ```python
 current_news = news_search(
     provider="microsoft-agent-framework",
-    default_params={"num": 5, "hl": "en", "gl": "us"},
+    default_params={"hl": "en", "gl": "us"},
+    result_limit=5,
     include_examples=False,
 )
 ```

@@ -59,12 +59,13 @@ def main() -> None:
             web_search(
                 provider="langchain",
                 allowed_engines=["google_light", "bing"],
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
                 include_examples=False,
             ),
             news_search(
                 provider="langchain",
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=5,
                 include_examples=False,
             ),
         ],

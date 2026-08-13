@@ -60,7 +60,7 @@ practical impact of each.
 products = shopping_search(
     allowed_engines=["google_shopping", "amazon"],
     default_engine="google_shopping",
-    default_params={"num": 3, "hl": "en", "gl": "us"},
+    result_limit=3,
 )
 ```
 

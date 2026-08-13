@@ -49,8 +49,9 @@ Google, Google Light, Bing, and DuckDuckGo use `q`; Yahoo uses `p`.
 | `provider` | `"auto"` | Detect the installed SDK; use `"function"` for a callable or an explicit SDK name in multi-SDK environments |
 | `allowed_engines` | all five engines | Restrict the enum visible to the model |
 | `default_engine` | `google_light` when allowed | Choose the engine used when the model omits `engine` |
-| `default_params` | `None` | Fix engine parameters such as locale or result count in application code |
-| `mode` | `compact` | Return focused web results; use `SearchResultMode.FULL` for the untouched response |
+| `default_params` | `None` | Fix engine parameters such as locale, filters, or pagination in application code |
+| `mode` | `compact` | Return the main web result sections; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `10` | Maximum items kept in each web result list in either mode |
 | `api_key` | `None` | Override the environment-based SerpApi key |
 | `timeout` | `None` | Set the built-in client's request timeout |
 | `client` | `None` | Supply a testing, caching, logging, or custom HTTP client |
@@ -72,15 +73,16 @@ tool = web_search(
 ## Useful SerpApi parameters
 
 `default_params` is forwarded to the selected engine and is not editable by
-the model. This Google Light-only tool fixes country, language, and result
-count:
+the model. This Google Light-only tool fixes country and language while
+`result_limit` bounds the returned result list:
 
 ```python
 from serpapi_search_tools import web_search
 
 us_web = web_search(
     allowed_engines=["google_light"],
-    default_params={"gl": "us", "hl": "en", "num": 5},
+    default_params={"gl": "us", "hl": "en"},
+    result_limit=5,
     name="us_web_search",
 )
 ```
@@ -90,15 +92,13 @@ and date filters. Parameter names and accepted values differ by engine. If you
 need engine-specific defaults, create separate tool instances instead of
 sending one `default_params` dictionary to several incompatible engines.
 
+Use `result_limit` for a consistent limit across web engines. A DuckDuckGo-only tool can also use `default_params={"m": 20}` to control how many results DuckDuckGo retrieves. Pagination parameters differ by engine; see the linked API references for supported values.
+
 ## What comes back
 
-Compact mode returns up to five `organic_results` and, when present, the
-`answer_box`, `knowledge_graph`, and `ai_overview`. It omits related searches,
-pagination, metadata, parameters, and other auxiliary sections.
+Both modes keep up to `result_limit` items in each web result list (10 by default). Compact mode returns `organic_results` and available answer sections. Google Light may also return related questions, related searches, and top stories. Metadata, parameters, pagination, and other supporting sections are omitted.
 
-Treat sections as optional: a valid search may not contain every result family.
-Use `mode=SearchResultMode.FULL` when application code needs the untouched
-SerpApi response.
+Result sections are optional. Use `mode=SearchResultMode.FULL` when application code needs supporting response sections or additional result fields. Add `result_limit=None` to keep every returned result.
 
 ## Common mistakes
 

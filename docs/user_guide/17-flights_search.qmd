@@ -47,8 +47,8 @@ Example invocation:
 
 | Field | Type | Required | Default and constraints |
 | --- | --- | --- | --- |
-| `departure_id` | string | yes | Specific airport IATA code such as `LHR`, or a city Google Knowledge Graph location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for London; do not use metropolitan codes such as `LON`; comma-separated values are supported |
-| `arrival_id` | string | yes | Specific airport IATA code such as `CDG`, or a city KGMID beginning with `/m/` or `/g/`, such as `/m/05qtj` for Paris; do not use metropolitan codes such as `PAR`; comma-separated values are supported |
+| `departure_id` | string | yes | Specific airport IATA code such as `LHR`, or an exact city Google Knowledge Graph location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for London; metropolitan codes such as `LON` are unsupported; see the [Google Flights API](https://serpapi.com/google-flights-api); comma-separated values are supported |
+| `arrival_id` | string | yes | Specific airport IATA code such as `CDG`, or an exact city KGMID beginning with `/m/` or `/g/`, such as `/m/05qtj` for Paris; metropolitan codes such as `PAR` are unsupported; see the [Google Flights API](https://serpapi.com/google-flights-api); comma-separated values are supported |
 | `outbound_date` | date string | yes | Future date in `YYYY-MM-DD` format |
 | `return_date` | date string | no | Provide for a round trip; omit for one way; must not be before outbound |
 | `travel_class` | enum | no | `economy`; also `premium_economy`, `business`, or `first` |
@@ -69,7 +69,8 @@ a round trip.
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix currency, locale, stops, airline, bag, or time filters supported by SerpApi |
-| `mode` | `compact` | Return up to five best and five other itineraries; use `SearchResultMode.FULL` for the untouched response |
+| `mode` | `compact` | Return the main flight result sections; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `10` | Maximum entries retained independently from `best_flights` and `other_flights` in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add caching, logging, testing, or response compaction |
@@ -96,21 +97,18 @@ filters need a round trip, and bag counts cannot exceed eligible passengers.
 
 ## What comes back
 
-Compact mode returns up to five `best_flights` and five `other_flights`.
-Itinerary objects can contain one or more flight legs, layovers, total duration,
-carbon emissions, price, airline, and booking tokens. Use full mode for price
-insights, airports, or metadata.
+Both modes apply `result_limit` independently to `best_flights` and `other_flights`, keeping up to 10 itineraries in each list by default. Flight legs and layovers within an itinerary are not shortened. Use full mode for supporting sections such as price insights, airports, and metadata. Add `result_limit=None` to keep every returned itinerary.
 
 ## Common mistakes
 
-- Sending a text `q`; flight tools never use one.
+- Flight searches use structured route and date fields; there is no `q` input.
 - Omitting the route or outbound date.
 - Using a metropolitan code such as `LON` or `PAR` instead of a specific airport
   code or city KGMID.
 - Supplying a return date before outbound.
 - Asking for multi-city itineraries through this one-route schema.
 - Combining both `include_airlines` and `exclude_airlines` defaults.
-- Using stale dates copied from documentation.
+- Travel dates must be in the future.
 
 ## Official SerpApi documentation
 

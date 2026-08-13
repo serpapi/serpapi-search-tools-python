@@ -16,7 +16,7 @@ def main() -> None:
     web = web_search(
         provider="function",
         allowed_engines=["google_light", "bing"],
-        default_params={"num": 3, "hl": "en", "gl": "us"},
+        result_limit=3,
     )
     news = news_search(
         provider="function",

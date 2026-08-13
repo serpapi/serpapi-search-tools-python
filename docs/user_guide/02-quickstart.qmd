@@ -134,7 +134,8 @@ from serpapi_search_tools import web_search
 
 tool = web_search(
     allowed_engines=["google_light"],
-    default_params={"num": 5, "hl": "en", "gl": "us"},
+    default_params={"hl": "en", "gl": "us"},
+    result_limit=5,
     name="current_web_research",
 )
 ```

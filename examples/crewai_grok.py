@@ -46,7 +46,7 @@ def main() -> None:
         tools=[
             shopping_search(
                 provider="crewai",
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                result_limit=3,
             )
         ],
         max_iter=3,

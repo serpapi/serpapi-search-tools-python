@@ -39,7 +39,7 @@ Example broad invocation:
 
 | Field | Type | Required | Default and constraints |
 | --- | --- | --- | --- |
-| `departure_id` | string | yes | Airport IATA code such as `JFK`, or a city Google Knowledge Graph location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for London; do not use metropolitan codes such as `LON`; comma-separated values are supported |
+| `departure_id` | string | yes | Airport IATA code such as `JFK`, or an exact city Google Knowledge Graph location ID (KGMID) beginning with `/m/` or `/g/`, such as `/m/04jpl` for London; metropolitan codes such as `LON` are unsupported; see the [Google Travel Explore API](https://serpapi.com/google-travel-explore-api); comma-separated values are supported |
 | `arrival_id` | string | no | Specific arrival airport IATA code or city KGMID beginning with `/m/` or `/g/`, such as `/m/05qtj` for Paris; use `arrival_area_id` for a region or country; mutually exclusive with it |
 | `arrival_area_id` | string | no | Region or country KGMID beginning with `/m/` or `/g/`, such as `/m/02j9z` for Europe; use `arrival_id` for an airport or city; mutually exclusive with it |
 | `outbound_date` | date string | no | Future date in `YYYY-MM-DD` format; omit for flexible-date exploration |
@@ -56,7 +56,8 @@ Example broad invocation:
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix currency, locale, price, stops, duration, or supported interest filters |
-| `mode` | `compact` | Return up to five destinations; use `SearchResultMode.FULL` for the untouched response |
+| `mode` | `compact` | Return the main destination result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `50` | Maximum `destinations` retained in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add caching, logging, testing, or response reduction |
@@ -83,18 +84,16 @@ those modes are incompatible.
 
 ## What comes back
 
-Compact mode returns up to five `destinations`. Destination entries may include
-city or place names, country, airport information, flight price, duration,
-stops, dates, image, and location data. Use full mode for supporting sections.
+Both modes return up to `result_limit` `destinations` (50 by default). Destination entries may include place names, countries, airports, flight prices, durations, stops, dates, images, and location data. Use full mode when application code needs supporting response sections or additional result fields. Add `result_limit=None` to keep every returned destination.
 
 ## Common mistakes
 
-- Sending a text `query` or `q`; this tool starts from `departure_id`.
+- Travel Explore starts from `departure_id` and has no text-query input.
 - Using a metropolitan code such as `LON` instead of an airport IATA code or
   city KGMID.
 - Supplying `return_date` without `outbound_date`.
-- Treating `arrival_area_id` as ordinary text; it is a Google Knowledge Graph
-  identifier beginning with `/m/` or `/g/` for a region or country.
+- `arrival_area_id` accepts a region or country Google Knowledge Graph location
+  ID beginning with `/m/` or `/g/`.
 - Combining `travel_mode` and `interest` in `default_params`.
 - Using Explore for a route that is already known; use `flights_search` for a
   tighter schema.

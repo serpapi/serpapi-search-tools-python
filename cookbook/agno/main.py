@@ -65,17 +65,18 @@ def main() -> None:
             web_search(
                 provider="agno",
                 allowed_engines=["google_light", "bing"],
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
                 include_examples=False,
             ),
             news_search(
                 provider="agno",
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=5,
                 include_examples=False,
             ),
             shopping_search(
                 provider="agno",
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
                 include_examples=False,
             ),
         ],

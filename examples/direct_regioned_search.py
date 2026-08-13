@@ -21,14 +21,16 @@ def main() -> None:
     search_us = web_search(
         provider="function",
         allowed_engines=["google_light"],
-        default_params={"gl": "us", "hl": "en", "num": 3},
+        default_params={"gl": "us", "hl": "en"},
+        result_limit=3,
         include_examples=False,
         name="web_search_us",
     )
     search_de = web_search(
         provider="function",
         allowed_engines=["google_light"],
-        default_params={"gl": "de", "hl": "de", "num": 3},
+        default_params={"gl": "de", "hl": "de"},
+        result_limit=3,
         include_examples=False,
         name="web_search_de",
     )

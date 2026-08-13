@@ -45,8 +45,9 @@ field or SerpApi's native `q` name.
 | Constructor option | Default | Use it for |
 | --- | --- | --- |
 | `provider` | `"auto"` | Auto-detect one installed SDK or select one explicitly |
-| `default_params` | `None` | Fix locale, country, or bounded result settings |
-| `mode` | `compact` | Return up to five news results; use `SearchResultMode.FULL` for the untouched response |
+| `default_params` | `None` | Fix locale, country, or supported query filters |
+| `mode` | `compact` | Return the main news result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `20` | Maximum `news_results` retained in either mode |
 | `api_key` | `None` | Override `SERPAPI_API_KEY` / `SERPAPI_KEY` |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Provide a custom search client |
@@ -61,7 +62,8 @@ Keep locale and country decisions in the application:
 from serpapi_search_tools import news_search
 
 us_news = news_search(
-    default_params={"hl": "en", "gl": "us", "num": 5},
+    default_params={"hl": "en", "gl": "us"},
+    result_limit=5,
     name="us_news",
 )
 ```
@@ -72,9 +74,10 @@ token fields such as `topic_token`, `publication_token`, `section_token`, and
 
 ## What comes back
 
-Compact mode returns up to five `news_results`. Items commonly include a title,
-source, date, snippet, thumbnail, and link. Metadata and parameters are omitted;
-use `mode=SearchResultMode.FULL` when application code needs them.
+Both modes return up to `result_limit` `news_results` (20 by default). Items
+commonly include a title, source, date, snippet, thumbnail, and link. Compact
+mode omits metadata and parameters; use `mode=SearchResultMode.FULL` when
+application code needs them, and add `result_limit=None` to keep every result.
 
 ## Common mistakes
 

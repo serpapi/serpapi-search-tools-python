@@ -40,7 +40,8 @@ async def main() -> None:
         tools=[
             news_search(
                 provider="claude-agent-sdk",
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=3,
                 client=client,
             ),
             web_search(

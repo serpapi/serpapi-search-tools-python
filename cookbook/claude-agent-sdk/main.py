@@ -54,11 +54,12 @@ async def main() -> None:
             web_search(
                 provider="claude-agent-sdk",
                 allowed_engines=["google_light", "bing"],
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
             ),
             news_search(
                 provider="claude-agent-sdk",
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=5,
             ),
         ],
     )

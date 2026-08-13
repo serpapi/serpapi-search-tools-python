@@ -19,7 +19,8 @@ from serpapi_search_tools import SearchResultMode, web_search
 search = web_search(
     provider="function",
     allowed_engines=["google_light"],
-    default_params={"num": 3, "hl": "en", "gl": "us"},
+    default_params={"hl": "en", "gl": "us"},
+    result_limit=None,
     mode=SearchResultMode.FULL,
 )
 response = json.loads(search(query="Python packaging tutorials"))
@@ -43,7 +44,7 @@ Compact mode returns these common result sections:
 | `maps_search` | `local_results` |
 | `images_search` | `images_results` |
 | `shopping_search` | `shopping_results` or engine-specific product results |
-| `videos_search` | `video_results` |
+| `videos_search` | `video_results`, `shorts_results`, `channel_results`, `playlist_results`, `movie_results`, or `category_results` |
 | `hotels_search` | `properties` |
 | `flights_search` | `best_flights`, `other_flights` |
 | `travel_explore_search` | `destinations` |

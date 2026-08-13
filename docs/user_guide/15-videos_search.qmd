@@ -42,7 +42,8 @@ YouTube's `search_query` parameter.
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix locale or supported YouTube search filters |
-| `mode` | `compact` | Return up to five video results; use `SearchResultMode.FULL` for the untouched response |
+| `mode` | `compact` | Return the main YouTube result sections; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `10` | Maximum entries retained from each supported YouTube result list in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add caching, logging, tests, or response reduction |
@@ -68,10 +69,7 @@ valid token rather than inventing filter fields.
 
 ## What comes back
 
-Compact mode returns up to five `video_results`. Entries commonly include
-title, link, thumbnail, channel, duration, views, and publication information.
-Use full mode when application code needs auxiliary channel or playlist
-sections.
+Both modes apply `result_limit` independently to videos, Shorts, channels, playlists, movies, and categories, keeping up to 10 items in each list by default. Entries commonly include a title, link, thumbnail, channel, duration, views, and publication information. Use full mode when application code needs supporting response sections or additional result fields. Add `result_limit=None` to keep every returned item.
 
 ## Common mistakes
 

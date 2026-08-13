@@ -56,11 +56,12 @@ async def main() -> None:
             web_search(
                 provider="semantic-kernel",
                 allowed_engines=["google_light", "bing"],
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
             ),
             news_search(
                 provider="semantic-kernel",
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=5,
             ),
         ],
     )

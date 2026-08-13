@@ -61,6 +61,4 @@ The examples default to `gpt-5.4-mini`, `claude-sonnet-5`,
 `gemini-flash-lite-latest`, and `grok-4.5`. Override the corresponding model
 environment variable when needed.
 
-The two multi-tool OpenAI Agents scenarios use `_logging_client.py` to log safe
-request metadata and response shape. The package's default compact mode keeps
-at most five primary results.
+The two multi-tool OpenAI Agents scenarios use `_logging_client.py` to log safe request metadata and response structure. `result_limit` controls how many items are kept in each result list. Compact mode omits supporting response sections.

@@ -59,7 +59,8 @@ An agent invocation has a structured shape:
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix currency, locale, country, or supported property filters |
-| `mode` | `compact` | Return up to five properties; use `SearchResultMode.FULL` for the untouched response |
+| `mode` | `compact` | Return the main property result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `20` | Maximum `properties` retained in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add caching, request logging, or deterministic tests |
@@ -86,10 +87,7 @@ not duplicate values in `default_params`.
 
 ## What comes back
 
-Compact mode returns up to five `properties`. Entries may include property
-names, links, GPS coordinates, ratings, amenities, images, extracted prices,
-rate-per-night details, and nearby places. Use full mode for brands, filters,
-metadata, or pagination.
+Both modes return up to `result_limit` `properties` (20 by default). Compact entries include useful property details such as names, links, coordinates, ratings, amenities, prices, rates, and a preview image. Use full mode when application code needs supporting response sections or additional property fields. Add `result_limit=None` to keep every returned property.
 
 ## Common mistakes
 

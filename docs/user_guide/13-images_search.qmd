@@ -42,7 +42,8 @@ image query.
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect the installed agent SDK |
 | `default_params` | `None` | Fix safe search, locale, or other supported image filters |
-| `mode` | `compact` | Return up to five image results; use `SearchResultMode.FULL` for the untouched response |
+| `mode` | `compact` | Return the main image result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `50` | Maximum `images_results` retained in either mode; use `None` for all returned images |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Provide a custom client for logging, caching, or tests |
@@ -69,10 +70,7 @@ with explicit start/end dates.
 
 ## What comes back
 
-Compact mode returns up to five `images_results`. Items can include title,
-original image URL, thumbnail, source page, dimensions, source name, and
-position. Your application should not assume every result contains every
-optional field.
+Both modes return up to `result_limit` `images_results` (50 by default). Compact mode keeps the image URLs, thumbnails, source pages, dimensions, titles, and other useful result data while omitting supporting response sections and redundant navigation fields. Use `result_limit=None` to keep all returned images. Result fields are optional, so normalization should handle missing values.
 
 ## Common mistakes
 

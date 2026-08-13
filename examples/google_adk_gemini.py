@@ -54,7 +54,7 @@ async def main() -> None:
         tools=[
             shopping_search(
                 provider="google-adk",
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                result_limit=3,
                 include_examples=False,
             ),
             web_search(

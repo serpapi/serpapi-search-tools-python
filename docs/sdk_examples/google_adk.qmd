@@ -77,7 +77,7 @@ useful features.”
 products = shopping_search(
     allowed_engines=["google_shopping", "walmart"],
     default_engine="google_shopping",
-    default_params={"num": 3, "hl": "en", "gl": "us"},
+    result_limit=3,
     include_examples=False,
 )
 ```

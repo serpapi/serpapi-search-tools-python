@@ -43,16 +43,17 @@ async def main() -> None:
             web_search(
                 provider="openai-agents",
                 allowed_engines=["google_light", "google"],
-                default_params={"num": "3", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=3,
                 client=client,
             ),
-            news_search(provider="openai-agents", default_params={"num": "3"}, client=client),
+            news_search(provider="openai-agents", result_limit=3, client=client),
             maps_search(
                 provider="openai-agents",
                 default_params={"hl": "en", "gl": "us"},
                 client=client,
             ),
-            shopping_search(provider="openai-agents", default_params={"num": "3"}, client=client),
+            shopping_search(provider="openai-agents", result_limit=3, client=client),
         ],
     )
     result = await Runner.run(agent, PROMPT)

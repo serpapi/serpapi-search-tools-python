@@ -51,7 +51,8 @@ field.
 | --- | --- | --- |
 | `provider` | `"auto"` | Detect one installed SDK or choose an SDK explicitly |
 | `default_params` | `None` | Fix Google Maps locale or supported search filters |
-| `mode` | `compact` | Return up to five local results; use `SearchResultMode.FULL` for the untouched response |
+| `mode` | `compact` | Return the main local result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `result_limit` | `10` | Maximum `local_results` retained in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add deterministic tests, caching, or request logging |
@@ -78,10 +79,7 @@ this search-mode tool.
 
 ## What comes back
 
-Compact mode returns up to five `local_results`. Place entries may include a
-title, address, rating, review count, category, phone, website, hours,
-coordinates, thumbnail, and identifiers. Availability varies by place and
-query.
+Both modes return up to `result_limit` `local_results` (10 by default). Place entries may include a title, address, rating, review count, category, phone, website, hours, coordinates, thumbnail, and identifiers. Compact mode omits supporting sections. Use `result_limit=None` to keep every returned place. Availability varies by place and query.
 
 ## Common mistakes
 

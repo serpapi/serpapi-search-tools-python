@@ -27,8 +27,50 @@ __all__ = [
 
 ToolFunction: TypeAlias = Callable[..., str]
 _RESERVED_DEFAULT_PARAMS = frozenset({"api_key", "async", "engine", "output"})
-_COMPACT_RESULT_LIMIT = 5
-_WEB_RESULT_KEYS = ("answer_box", "knowledge_graph", "ai_overview", "organic_results")
+_DEFAULT_RESULT_LIMIT = 10
+_COMPACT_DROPPED_RESULT_KEYS_BY_ENGINE: Mapping[str, frozenset[str]] = {
+    "google_images": frozenset(
+        {
+            "related_content_id",
+            "serpapi_related_content_link",
+            "source_logo",
+        }
+    ),
+    "google_shopping": frozenset(
+        {
+            "immersive_product_page_token",
+            "serpapi_immersive_product_api",
+            "serpapi_thumbnail",
+            "source_icon",
+        }
+    ),
+    "amazon": frozenset(
+        {
+            "link_clean",
+            "purchase_options",
+            "serpapi_link",
+        }
+    ),
+    "walmart": frozenset(
+        {
+            "muliple_options_available",
+            "seller_id",
+            "serpapi_product_page_url",
+            "variant_swatches",
+        }
+    ),
+    "ebay": frozenset({"buying_format_text", "serpapi_link", "watchers"}),
+    "google_hotels": frozenset(
+        {
+            "nearby_places",
+            "reviews_breakdown",
+            "serpapi_google_hotels_photos_link",
+            "serpapi_google_hotels_reviews_link",
+            "serpapi_property_details_link",
+        }
+    ),
+    "google_travel_explore": frozenset({"serpapi_link"}),
+}
 _GOOGLE_LIGHT_RESULT_KEYS = (
     "answer_box",
     "knowledge_graph",
@@ -44,11 +86,11 @@ _SAFE_SEARCH_INFORMATION_KEYS = (
     "organic_results_state",
 )
 _COMPACT_RESULT_KEYS_BY_ENGINE: Mapping[str, tuple[str, ...]] = {
-    "google": _WEB_RESULT_KEYS,
+    "google": ("answer_box", "knowledge_graph", "ai_overview", "organic_results"),
     "google_light": _GOOGLE_LIGHT_RESULT_KEYS,
-    "bing": _WEB_RESULT_KEYS,
-    "yahoo": _WEB_RESULT_KEYS,
-    "duckduckgo": _WEB_RESULT_KEYS,
+    "bing": ("answer_box", "knowledge_graph", "copilot_answer", "organic_results"),
+    "yahoo": ("answer_box", "knowledge_graph", "organic_results"),
+    "duckduckgo": ("knowledge_graph", "organic_results"),
     "google_news": ("news_results",),
     "google_maps": ("local_results",),
     "google_images": ("images_results",),
@@ -56,7 +98,14 @@ _COMPACT_RESULT_KEYS_BY_ENGINE: Mapping[str, tuple[str, ...]] = {
     "amazon": ("organic_results",),
     "walmart": ("organic_results",),
     "ebay": ("organic_results",),
-    "youtube": ("video_results",),
+    "youtube": (
+        "video_results",
+        "shorts_results",
+        "channel_results",
+        "playlist_results",
+        "movie_results",
+        "category_results",
+    ),
     "google_hotels": ("properties",),
     "google_flights": ("best_flights", "other_flights"),
     "google_travel_explore": ("destinations",),
@@ -99,6 +148,7 @@ class SearchRuntime:
     default_params: Mapping[str, Any] | None = None
     timeout: float | None = None
     mode: SearchResultMode | str = SearchResultMode.COMPACT
+    result_limit: int | None = _DEFAULT_RESULT_LIMIT
     _builtin_clients: Any = field(init=False, default_factory=local, repr=False)
     _builtin_client_lock: Any = field(init=False, default_factory=RLock, repr=False)
 
@@ -114,6 +164,11 @@ class SearchRuntime:
         except ValueError as exc:
             choices = ", ".join(member.value for member in SearchResultMode)
             raise ValueError(f"mode must be one of: {choices}.") from exc
+        if self.result_limit is not None:
+            if isinstance(self.result_limit, bool) or not isinstance(self.result_limit, int):
+                raise ValueError("result_limit must be a positive integer or None.")
+            if self.result_limit < 1:
+                raise ValueError("result_limit must be a positive integer or None.")
 
     def execute(
         self,
@@ -142,6 +197,11 @@ class SearchRuntime:
                 raise SerpApiSearchError(f"SerpApi request failed: {message}") from None
             raise SerpApiSearchError("Custom search client request failed.") from None
         plain_result = dict(result)
+        plain_result = _limit_result_lists(
+            plain_result,
+            engine=engine,
+            result_limit=self.result_limit,
+        )
         if self.mode is SearchResultMode.COMPACT:
             plain_result = _compact_result(plain_result, engine=engine)
         return json.dumps(plain_result, default=str, separators=(",", ":"))
@@ -204,14 +264,21 @@ def _sanitized_provider_error(exc: Exception, *, api_key: str | None) -> str:
     return message
 
 
-def _compact_result(result: Mapping[str, Any], *, engine: str) -> dict[str, Any]:
+def _compact_result(
+    result: Mapping[str, Any],
+    *,
+    engine: str,
+) -> dict[str, Any]:
     compact = {"error": result["error"]} if "error" in result else {}
     included_result = False
     for key in _COMPACT_RESULT_KEYS_BY_ENGINE.get(engine, ()):
         if key not in result:
             continue
         value = result[key]
-        compact[key] = value[:_COMPACT_RESULT_LIMIT] if isinstance(value, list) else value
+        if isinstance(value, list):
+            compact[key] = [_compact_result_item(item, engine=engine) for item in value]
+        else:
+            compact[key] = value
         included_result = True
     if "error" in compact or included_result:
         return compact
@@ -230,6 +297,41 @@ def _compact_result(result: Mapping[str, Any], *, engine: str) -> dict[str, Any]
         compact["search_metadata"] = {"status": search_metadata["status"]}
     compact["no_results"] = True
     return compact
+
+
+def _compact_result_item(item: Any, *, engine: str) -> Any:
+    if not isinstance(item, Mapping):
+        return item
+
+    dropped_keys = _COMPACT_DROPPED_RESULT_KEYS_BY_ENGINE.get(engine, frozenset())
+    compact_item = {key: value for key, value in item.items() if key not in dropped_keys}
+
+    if engine == "amazon":
+        clean_link = item.get("link_clean")
+        if isinstance(clean_link, str) and clean_link:
+            compact_item["link"] = clean_link
+    elif engine == "google_hotels":
+        images = compact_item.get("images")
+        if isinstance(images, list):
+            compact_item["images"] = images[:1]
+
+    return compact_item
+
+
+def _limit_result_lists(
+    result: Mapping[str, Any],
+    *,
+    engine: str,
+    result_limit: int | None,
+) -> dict[str, Any]:
+    limited = dict(result)
+    if result_limit is None:
+        return limited
+    for key in _COMPACT_RESULT_KEYS_BY_ENGINE.get(engine, ()):
+        value = limited.get(key)
+        if isinstance(value, list):
+            limited[key] = value[:result_limit]
+    return limited
 
 
 def object_schema(

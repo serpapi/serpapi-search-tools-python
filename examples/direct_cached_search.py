@@ -48,7 +48,8 @@ def main() -> None:
         provider="function",
         client=client,
         allowed_engines=["google_light"],
-        default_params={"num": 3, "hl": "en"},
+        default_params={"hl": "en"},
+        result_limit=3,
     )
 
     first = json.loads(search(query="Python packaging"))

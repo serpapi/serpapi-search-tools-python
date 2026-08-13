@@ -54,17 +54,19 @@ def main() -> None:
         tools=[
             shopping_search(
                 provider="smolagents",
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                result_limit=5,
                 include_examples=False,
             ),
             images_search(
                 provider="smolagents",
-                default_params={"num": "5", "hl": "en", "gl": "us", "safe": "active"},
+                default_params={"hl": "en", "gl": "us", "safe": "active"},
+                result_limit=5,
                 include_examples=False,
             ),
             videos_search(
                 provider="smolagents",
-                default_params={"num": "5", "hl": "en", "gl": "us"},
+                default_params={"hl": "en", "gl": "us"},
+                result_limit=5,
                 include_examples=False,
             ),
         ],
