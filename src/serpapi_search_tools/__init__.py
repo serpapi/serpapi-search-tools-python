@@ -10,7 +10,11 @@ from serpapi_search_tools._query_tools import (
     videos_search,
     web_search,
 )
-from serpapi_search_tools._shared import SearchResultMode, SerpApiSearchError
+from serpapi_search_tools._shared import (
+    SearchResultFormat,
+    SearchResultMode,
+    SerpApiSearchError,
+)
 from serpapi_search_tools._travel_tools import (
     TravelClass,
     flights_search,
@@ -31,6 +35,7 @@ _SUPPORTED_ENGINES_BY_TOOL: dict[str, tuple[str, ...]] = {
 }
 
 __all__ = [
+    "SearchResultFormat",
     "SearchResultMode",
     "SerpApiSearchError",
     "ShoppingSearchEngine",

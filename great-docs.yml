@@ -26,15 +26,15 @@ parser: numpy
 
 # Logo & Favicon
 # ---------------
-# Point to a single logo file (replaces the text title in the navbar):
-# logo: assets/logo.svg
-#
-# For light/dark variants:
-# logo:
-#   light: assets/logo-light.svg
-#   dark: assets/logo-dark.svg
-#
-# To show the text title alongside the logo, add: show_title: true
+# Show the project title beside the official SerpApi mark.
+logo:
+  light: assets/serpapi-logo.svg
+  dark: assets/serpapi-logo.svg
+  show_title: true
+favicon: assets/serpapi-logo.svg
+
+# Keep the authored user-guide homepage instead of generating a logo hero.
+hero: false
 
 # Author Information
 # ------------------
@@ -57,37 +57,6 @@ authors:
 #     - funder
 #   homepage: https://posit.co
 #   ror: https://ror.org/03wc8by49
-
-# API Reference Structure
-# -----------------------
-# Customize the sections below to organize your API documentation.
-# - Reorder items within a section to change their display order
-# - Move items between sections or create new sections
-# - Use 'members: false' to exclude methods from documentation
-# - Add 'desc:' to sections for descriptions
-
-reference:
-  - title: Enumerations and errors
-    desc: Supported engines, response modes, semantic travel values, and search failures
-    contents:
-      - WebSearchEngine
-      - ShoppingSearchEngine
-      - SearchResultMode
-      - TravelClass
-      - SerpApiSearchError
-
-  - title: Functions
-    desc: Create capability-specific search tools for Python and agent SDKs
-    contents:
-      - web_search
-      - news_search
-      - maps_search
-      - images_search
-      - shopping_search
-      - videos_search
-      - hotels_search
-      - flights_search
-      - travel_explore_search
 
 # Site URL
 # --------
@@ -128,9 +97,9 @@ site:
 # so the same assets work from the homepage and nested documentation pages.
 include_in_header:
   - text: >-
-      <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'assets/docs-mobile.css'}));</script>
+      <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'assets/docs-mobile.css?v=3'}));</script>
   - text: >-
-      <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'assets/docs-mobile.js?v=2';s.defer=true;document.head.appendChild(s);})();</script>
+      <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'assets/docs-mobile.js?v=4';s.defer=true;document.head.appendChild(s);})();</script>
 
 # Jupyter Kernel
 # --------------

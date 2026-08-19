@@ -4,7 +4,7 @@ from enum import Enum
 
 import pytest
 
-from serpapi_search_tools import SearchResultMode
+from serpapi_search_tools import SearchResultFormat, SearchResultMode
 from serpapi_search_tools._query_tools import (
     ShoppingSearchEngine,
     WebSearchEngine,
@@ -21,9 +21,12 @@ class FakeClient:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
 
-    def search(self, params: dict[str, object]) -> dict[str, object]:
-        self.calls.append(params)
-        return {"params": params}
+    def search(self, params: dict[str, object]) -> dict[str, object] | str:
+        recorded = {key: value for key, value in params.items() if key != "output"}
+        self.calls.append(recorded)
+        if params.get("output") == "md":
+            return "## Organic Results\n\n| Title |\n| --- |\n| Coffee |\n"
+        return {"params": recorded}
 
 
 class FailIfCalledClient:
@@ -73,6 +76,7 @@ def test_multi_engine_tools_route_query_to_native_parameter(
         allowed_engines=[engine],
         client=client,
         mode=SearchResultMode.FULL,
+        response_format=SearchResultFormat.JSON,
     )
 
     payload = json.loads(tool(query="coffee"))

@@ -4,6 +4,7 @@ import json
 import pytest
 
 from serpapi_search_tools import (
+    SearchResultFormat,
     SearchResultMode,
     flights_search,
     hotels_search,
@@ -91,6 +92,7 @@ def test_every_factory_applies_the_result_limit_to_each_retained_list(
     factory_kwargs: dict[str, object] = {
         "provider": "function",
         "client": ResultClient(),
+        "response_format": SearchResultFormat.JSON,
     }
     if result_limit_override is not USE_FACTORY_DEFAULT:
         factory_kwargs["result_limit"] = result_limit_override
@@ -129,6 +131,7 @@ def test_result_limit_does_not_truncate_nested_hotel_amenities(
         provider="function",
         client=HotelsClient(),
         mode=mode,
+        response_format=SearchResultFormat.JSON,
         result_limit=2,
     )
     result = json.loads(
@@ -151,6 +154,7 @@ def test_result_limit_none_keeps_every_returned_result(mode: SearchResultMode) -
         provider="function",
         client=ResultClient(),
         mode=mode,
+        response_format=SearchResultFormat.JSON,
         result_limit=None,
     )
 
@@ -224,6 +228,7 @@ def test_compact_shopping_limit_preserves_engine_purchase_links(
         client=MultiEngineClient(),
         allowed_engines=[engine],
         default_engine=engine,
+        response_format=SearchResultFormat.JSON,
         result_limit=3,
     )
 
@@ -278,6 +283,7 @@ def test_result_limit_is_independent_from_valid_upstream_count_parameters(
     tool = factory(
         provider="function",
         client=client,
+        response_format=SearchResultFormat.JSON,
         result_limit=3,
         **factory_kwargs,
     )

@@ -57,6 +57,7 @@ Example broad invocation:
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix currency, locale, price, stops, duration, or supported interest filters |
 | `mode` | `compact` | Return the main destination result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `response_format` | `markdown` | Return Markdown by default, or use `SearchResultFormat.JSON` for structured fields |
 | `result_limit` | `50` | Maximum `destinations` retained in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |

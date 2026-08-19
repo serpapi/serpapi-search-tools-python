@@ -46,6 +46,7 @@ All nine constructors accept these options:
 | `default_params` | `None` | Set supported SerpApi options such as locale, currency, filters, or pagination in application code. |
 | `timeout` | `None` | Set a request timeout on the built-in SerpApi client. |
 | `mode` | `SearchResultMode.COMPACT` | Return the main result data; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results. |
+| `response_format` | `SearchResultFormat.MARKDOWN` | Return readable Markdown by default, or use `SearchResultFormat.JSON` for structured application data. |
 | `result_limit` | tool-specific | Set the maximum number of items kept in each result list in either mode. Use `None` to keep all returned items. |
 | `include_examples` | `True` | Keep or remove the short invocation hint in the tool description. |
 | `name` | constructor name | Give separately configured tools distinct names the model can understand. |
@@ -108,9 +109,37 @@ The search inputs and useful SerpApi parameters depend on the capability:
 
 Read the dedicated page before adding engine-specific `default_params`.
 
+## Choose Markdown or JSON
+
+Markdown is the default response format. It gives agents readable headings, links, and tables without JSON syntax overhead:
+
+```python
+from serpapi_search_tools import web_search
+
+search = web_search(provider="function")
+print(search(query="Python packaging"))
+```
+
+Use JSON when application code needs named fields:
+
+```python
+import json
+
+from serpapi_search_tools import SearchResultFormat, web_search
+
+search = web_search(
+    provider="function",
+    response_format=SearchResultFormat.JSON,
+)
+response = json.loads(search(query="Python packaging"))
+print(response.get("organic_results", []))
+```
+
+`response_format` is fixed when the tool is created. It is not exposed to the model.
+
 ## Choose compact or full results
 
-All tools default to `SearchResultMode.COMPACT`. Compact mode keeps the main result sections and omits metadata, request parameters, pagination, filters, and other supporting sections. Non-list answer sections such as `answer_box` are kept whole. If a successful response has no supported result section, the tool returns `no_results: true` with available status and search information.
+All tools default to `SearchResultMode.COMPACT`. Compact mode keeps the main result sections and omits metadata, request parameters, pagination, filters, and other supporting sections. Markdown keeps the corresponding result headings and tables. JSON also keeps non-list answer sections such as `answer_box` whole. If a successful JSON response has no supported result section, the tool returns `no_results: true` with available status and search information.
 
 | Tool | Default `result_limit` |
 | --- | ---: |
@@ -129,7 +158,7 @@ All tools default to `SearchResultMode.COMPACT`. Compact mode keeps the main res
 | `web_search` with Yahoo | `answer_box`, `knowledge_graph`, `organic_results` |
 | `web_search` with DuckDuckGo | `knowledge_graph`, `organic_results` |
 | `news_search` | `news_results` |
-| `maps_search` | `local_results` |
+| `maps_search` | `local_results`; exact-place responses use `place_results` |
 | `images_search` | `images_results` |
 | `shopping_search` | `shopping_results` for Google Shopping; `organic_results` for Amazon, Walmart, and eBay |
 | `videos_search` | `video_results`, `shorts_results`, `channel_results`, `playlist_results`, `movie_results`, `category_results` |
@@ -147,7 +176,7 @@ broader_web_search = web_search(
 )
 ```
 
-`result_limit` changes the returned JSON, not the SerpApi request. It applies independently to each supported result list and does not shorten nested data such as flight legs, hotel amenities, or product offers. See the [`web_search`](web_search.html) and [`shopping_search`](shopping_search.html) pages for engine-specific retrieval and pagination options.
+`result_limit` changes the returned result, not the SerpApi request. It applies independently to each supported JSON result list or Markdown result table. It does not shorten nested data such as flight legs, hotel amenities, product offers, or a single exact-place result. See the [`web_search`](web_search.html) and [`shopping_search`](shopping_search.html) pages for engine-specific retrieval and pagination options.
 
 Use full mode when application code needs supporting response sections or additional result fields. The tool's default result limit still applies:
 
@@ -253,7 +282,7 @@ HTTP wrapper. The object needs one synchronous `search(params)` method:
 ```python
 import json
 
-from serpapi_search_tools import SearchResultMode, hotels_search
+from serpapi_search_tools import SearchResultFormat, SearchResultMode, hotels_search
 
 
 class RecordingClient:
@@ -270,6 +299,7 @@ search = hotels_search(
     provider="function",
     client=client,
     mode=SearchResultMode.FULL,
+    response_format=SearchResultFormat.JSON,
 )
 result = json.loads(
     search(

@@ -6,9 +6,12 @@ import os
 
 from dotenv import load_dotenv
 from semantic_kernel import Kernel
-from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+)
+from semantic_kernel.functions import KernelArguments
 
 from serpapi_search_tools import maps_search, web_search
 
@@ -30,26 +33,29 @@ async def main() -> None:
         raise RuntimeError("Set SERPAPI_API_KEY or SERPAPI_KEY before running this example.")
 
     kernel = Kernel()
-    plugin = kernel.add_functions(
+    kernel.add_service(
+        OpenAIChatCompletion(
+            ai_model_id=MODEL,
+            api_key=_require_env("OPENAI_API_KEY"),
+        )
+    )
+    kernel.add_functions(
         "serpapi",
         [
             maps_search(provider="semantic-kernel"),
             web_search(provider="semantic-kernel", allowed_engines=["google_light"]),
         ],
     )
-    agent = ChatCompletionAgent(
-        name="serpapi_search_agent",
-        instructions="Use the SerpApi tools for current search data.",
-        service=OpenAIChatCompletion(
-            ai_model_id=MODEL,
-            api_key=_require_env("OPENAI_API_KEY"),
-        ),
-        plugins=[plugin],
+    settings = OpenAIChatPromptExecutionSettings(
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
-
-    async for response in agent.invoke(messages=PROMPT):
-        print(response)
+    response = await kernel.invoke_prompt(
+        f"Use the SerpApi tools for current search data.\n\n{PROMPT}",
+        arguments=KernelArguments(settings=settings),
+    )
+    if response is None:
+        raise RuntimeError("Semantic Kernel completed without a response.")
+    print(response)
 
 
 if __name__ == "__main__":

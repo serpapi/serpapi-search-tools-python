@@ -15,9 +15,12 @@ class FakeClient:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
 
-    def search(self, params: dict[str, object]) -> dict[str, object]:
-        self.calls.append(params)
-        return {"params": params}
+    def search(self, params: dict[str, object]) -> dict[str, object] | str:
+        recorded = {key: value for key, value in params.items() if key != "output"}
+        self.calls.append(recorded)
+        if params.get("output") == "md":
+            return "## Destinations\n\n| Name |\n| --- |\n| Austin |\n"
+        return {"params": recorded}
 
 
 class FailIfCalledClient:

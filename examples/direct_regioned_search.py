@@ -7,7 +7,7 @@ import json
 
 from dotenv import load_dotenv
 
-from serpapi_search_tools import web_search
+from serpapi_search_tools import SearchResultFormat, web_search
 
 load_dotenv()
 
@@ -22,6 +22,7 @@ def main() -> None:
         provider="function",
         allowed_engines=["google_light"],
         default_params={"gl": "us", "hl": "en"},
+        response_format=SearchResultFormat.JSON,
         result_limit=3,
         include_examples=False,
         name="web_search_us",
@@ -30,6 +31,7 @@ def main() -> None:
         provider="function",
         allowed_engines=["google_light"],
         default_params={"gl": "de", "hl": "de"},
+        response_format=SearchResultFormat.JSON,
         result_limit=3,
         include_examples=False,
         name="web_search_de",

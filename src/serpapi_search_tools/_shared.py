@@ -3,11 +3,15 @@ from __future__ import annotations
 import json
 import os
 from collections.abc import Callable, Iterable, Mapping
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
 from threading import RLock, local
 from typing import Any, Protocol, TypeAlias, cast
+
+import mistune
+from mistune.renderers.markdown import MarkdownRenderer
 
 from serpapi_search_tools._providers import (
     PROVIDER_ALIASES,
@@ -19,6 +23,7 @@ from serpapi_search_tools._providers import (
 __all__ = [
     "PROVIDER_ALIASES",
     "ProviderName",
+    "SearchResultFormat",
     "SearchResultMode",
     "SerpApiSearchError",
     "detect_provider",
@@ -92,7 +97,7 @@ _COMPACT_RESULT_KEYS_BY_ENGINE: Mapping[str, tuple[str, ...]] = {
     "yahoo": ("answer_box", "knowledge_graph", "organic_results"),
     "duckduckgo": ("knowledge_graph", "organic_results"),
     "google_news": ("news_results",),
-    "google_maps": ("local_results",),
+    "google_maps": ("local_results", "place_results"),
     "google_images": ("images_results",),
     "google_shopping": ("shopping_results",),
     "amazon": ("organic_results",),
@@ -110,6 +115,72 @@ _COMPACT_RESULT_KEYS_BY_ENGINE: Mapping[str, tuple[str, ...]] = {
     "google_flights": ("best_flights", "other_flights"),
     "google_travel_explore": ("destinations",),
 }
+_COMPACT_MARKDOWN_HEADINGS_BY_ENGINE: Mapping[str, tuple[str, ...]] = {
+    "google": ("Answer Box", "Knowledge Graph", "AI Overview", "Organic Results"),
+    "google_light": (
+        "Answer Box",
+        "Knowledge Graph",
+        "Organic Results",
+        "Related Questions",
+        "Related Searches",
+        "Top Stories",
+    ),
+    "bing": ("Answer Box", "Knowledge Graph", "Copilot Answer", "Organic Results"),
+    "yahoo": ("Answer Box", "Knowledge Graph", "Organic Results"),
+    "duckduckgo": ("Knowledge Graph", "Organic Results"),
+    "google_news": ("News Results",),
+    "google_maps": ("Local Results", "Place Results"),
+    "google_images": ("Images Results",),
+    "google_shopping": ("Shopping Results",),
+    "amazon": ("Organic Results",),
+    "walmart": ("Organic Results",),
+    "ebay": ("Organic Results",),
+    "youtube": (
+        "Video Results",
+        "Shorts Results",
+        "Channel Results",
+        "Playlist Results",
+        "Movie Results",
+        "Category Results",
+    ),
+    "google_hotels": ("Properties",),
+    "google_flights": ("Best Flights", "Other Flights"),
+    "google_travel_explore": ("Destinations",),
+}
+_LIMITED_MARKDOWN_HEADINGS_BY_ENGINE: Mapping[str, frozenset[str]] = {
+    "google": frozenset({"Organic Results"}),
+    "google_light": frozenset(
+        {"Organic Results", "Related Questions", "Related Searches", "Top Stories"}
+    ),
+    "bing": frozenset({"Organic Results"}),
+    "yahoo": frozenset({"Organic Results"}),
+    "duckduckgo": frozenset({"Organic Results"}),
+    "google_news": frozenset({"News Results"}),
+    "google_maps": frozenset({"Local Results"}),
+    "google_images": frozenset({"Images Results"}),
+    "google_shopping": frozenset({"Shopping Results"}),
+    "amazon": frozenset({"Organic Results"}),
+    "walmart": frozenset({"Organic Results"}),
+    "ebay": frozenset({"Organic Results"}),
+    "youtube": frozenset(
+        {
+            "Video Results",
+            "Shorts Results",
+            "Channel Results",
+            "Playlist Results",
+            "Movie Results",
+            "Category Results",
+        }
+    ),
+    "google_hotels": frozenset({"Properties"}),
+    "google_flights": frozenset({"Best Flights", "Other Flights"}),
+    "google_travel_explore": frozenset({"Destinations"}),
+}
+_COMPACT_MARKDOWN_DROPPED_COLUMNS_BY_ENGINE: Mapping[str, frozenset[str]] = {
+    "google_images": frozenset({"Related Content Id"}),
+    "walmart": frozenset({"Seller Id"}),
+    "ebay": frozenset({"Buying Format Text"}),
+}
 
 
 class SerpApiSearchError(RuntimeError):
@@ -123,10 +194,17 @@ class SearchResultMode(str, Enum):
     FULL = "full"
 
 
+class SearchResultFormat(str, Enum):
+    """Select the serialization returned by SerpApi and the tool."""
+
+    MARKDOWN = "markdown"
+    JSON = "json"
+
+
 class SearchClient(Protocol):
     """Small client contract accepted by every search-tool factory."""
 
-    def search(self, params: dict[str, Any]) -> Mapping[str, Any]: ...
+    def search(self, params: dict[str, Any]) -> Mapping[str, Any] | str: ...
 
 
 @dataclass(frozen=True)
@@ -148,6 +226,7 @@ class SearchRuntime:
     default_params: Mapping[str, Any] | None = None
     timeout: float | None = None
     mode: SearchResultMode | str = SearchResultMode.COMPACT
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN
     result_limit: int | None = _DEFAULT_RESULT_LIMIT
     _builtin_clients: Any = field(init=False, default_factory=local, repr=False)
     _builtin_client_lock: Any = field(init=False, default_factory=RLock, repr=False)
@@ -164,6 +243,11 @@ class SearchRuntime:
         except ValueError as exc:
             choices = ", ".join(member.value for member in SearchResultMode)
             raise ValueError(f"mode must be one of: {choices}.") from exc
+        try:
+            self.response_format = SearchResultFormat(self.response_format)
+        except ValueError as exc:
+            choices = ", ".join(member.value for member in SearchResultFormat)
+            raise ValueError(f"response_format must be one of: {choices}.") from exc
         if self.result_limit is not None:
             if isinstance(self.result_limit, bool) or not isinstance(self.result_limit, int):
                 raise ValueError("result_limit must be a positive integer or None.")
@@ -186,6 +270,8 @@ class SearchRuntime:
         params["engine"] = engine
         if validator is not None:
             validator(params)
+        if self.response_format is SearchResultFormat.MARKDOWN:
+            params["output"] = "md"
 
         client = self._client()
         try:
@@ -196,6 +282,17 @@ class SearchRuntime:
                 message = _sanitized_provider_error(exc, api_key=api_key)
                 raise SerpApiSearchError(f"SerpApi request failed: {message}") from None
             raise SerpApiSearchError("Custom search client request failed.") from None
+        if self.response_format is SearchResultFormat.MARKDOWN:
+            if not isinstance(result, str):
+                raise TypeError("Search client must return str when response_format='markdown'.")
+            return _format_markdown_result(
+                result,
+                engine=engine,
+                mode=cast(SearchResultMode, self.mode),
+                result_limit=self.result_limit,
+            )
+        if not isinstance(result, Mapping):
+            raise TypeError("Search client must return a mapping when response_format='json'.")
         plain_result = dict(result)
         plain_result = _limit_result_lists(
             plain_result,
@@ -262,6 +359,145 @@ def _sanitized_provider_error(exc: Exception, *, api_key: str | None) -> str:
     if api_key:
         message = message.replace(api_key, "[REDACTED]")
     return message
+
+
+def _format_markdown_result(
+    result: str,
+    *,
+    engine: str,
+    mode: SearchResultMode,
+    result_limit: int | None,
+) -> str:
+    if mode is SearchResultMode.FULL and result_limit is None:
+        return result
+
+    frontmatter, body = _split_markdown_frontmatter(result)
+    parser = mistune.create_markdown(renderer=None, plugins=["table"])
+    tokens, state = parser.parse(body)
+    if not isinstance(tokens, list):
+        raise TypeError("Markdown parser returned an unsupported token stream.")
+
+    transformed, found_compact_section = _transform_markdown_tokens(
+        tokens,
+        engine=engine,
+        compact=mode is SearchResultMode.COMPACT,
+        result_limit=result_limit,
+    )
+    if mode is SearchResultMode.COMPACT and not found_compact_section:
+        return body.lstrip("\n")
+
+    rendered = MarkdownRenderer()(transformed, state)
+    if mode is SearchResultMode.COMPACT:
+        compact = rendered.strip()
+        return f"{compact}\n" if compact else ""
+    return f"{frontmatter}{rendered}"
+
+
+def _split_markdown_frontmatter(result: str) -> tuple[str, str]:
+    if not result.startswith("---\n"):
+        return "", result
+    closing = result.find("\n---\n", 4)
+    if closing < 0:
+        return "", result
+    body_start = closing + len("\n---\n")
+    return result[:body_start], result[body_start:]
+
+
+def _transform_markdown_tokens(
+    source_tokens: list[dict[str, Any]],
+    *,
+    engine: str,
+    compact: bool,
+    result_limit: int | None,
+) -> tuple[list[dict[str, Any]], bool]:
+    wanted_headings = set(_COMPACT_MARKDOWN_HEADINGS_BY_ENGINE.get(engine, ()))
+    limited_headings = _LIMITED_MARKDOWN_HEADINGS_BY_ENGINE.get(engine, frozenset())
+    dropped_columns = _COMPACT_MARKDOWN_DROPPED_COLUMNS_BY_ENGINE.get(engine, frozenset())
+    transformed: list[dict[str, Any]] = []
+    current_heading: str | None = None
+    result_table_limited = False
+    inside_detail_section = False
+    keep = not compact
+    found_compact_section = False
+
+    for source_token in source_tokens:
+        token = deepcopy(source_token)
+        if token.get("type") == "heading":
+            heading_level = token.get("attrs", {}).get("level")
+            if heading_level == 2:
+                current_heading = _markdown_inline_text(token)
+                result_table_limited = False
+                inside_detail_section = False
+                if compact:
+                    keep = current_heading in wanted_headings or current_heading == "Error"
+                    found_compact_section = found_compact_section or keep
+            elif isinstance(heading_level, int) and heading_level > 2:
+                inside_detail_section = True
+        if not keep:
+            continue
+        if token.get("type") == "table":
+            if (
+                result_limit is not None
+                and current_heading in limited_headings
+                and not result_table_limited
+                and not inside_detail_section
+            ):
+                _limit_markdown_table(token, result_limit=result_limit)
+                result_table_limited = True
+            if compact and dropped_columns:
+                _drop_markdown_table_columns(token, dropped_columns=dropped_columns)
+        transformed.append(token)
+
+    return transformed, found_compact_section
+
+
+def _markdown_inline_text(token: Mapping[str, Any]) -> str:
+    raw = token.get("raw")
+    if raw is not None:
+        return str(raw)
+    children = token.get("children", [])
+    if not isinstance(children, list):
+        return ""
+    return "".join(_markdown_inline_text(child) for child in children if isinstance(child, Mapping))
+
+
+def _limit_markdown_table(token: dict[str, Any], *, result_limit: int) -> None:
+    for child in token.get("children", []):
+        if child.get("type") == "table_body":
+            child["children"] = child.get("children", [])[:result_limit]
+
+
+def _drop_markdown_table_columns(
+    token: dict[str, Any],
+    *,
+    dropped_columns: frozenset[str],
+) -> None:
+    children = token.get("children", [])
+    head = next(
+        (child for child in children if child.get("type") == "table_head"),
+        None,
+    )
+    if head is None:
+        return
+    dropped_indices = {
+        index
+        for index, cell in enumerate(head.get("children", []))
+        if _markdown_inline_text(cell) in dropped_columns
+    }
+    if not dropped_indices:
+        return
+    head["children"] = [
+        cell for index, cell in enumerate(head.get("children", [])) if index not in dropped_indices
+    ]
+    for child in children:
+        if child.get("type") != "table_body":
+            continue
+        for row in child.get("children", []):
+            row["children"] = [
+                cell
+                for index, cell in enumerate(row.get("children", []))
+                if index not in dropped_indices
+            ]
 
 
 def _compact_result(

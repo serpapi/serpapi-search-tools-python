@@ -9,7 +9,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from serpapi_search_tools import shopping_search
+from serpapi_search_tools import SearchResultFormat, shopping_search
 
 load_dotenv()
 
@@ -43,6 +43,7 @@ def main() -> None:
         search = shopping_search(
             provider="function",
             allowed_engines=[engine],
+            response_format=SearchResultFormat.JSON,
             result_limit=3,
         )
         result = json.loads(search(query="noise cancelling headphones"))

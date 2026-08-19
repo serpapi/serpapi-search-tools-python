@@ -12,14 +12,16 @@ import pytest
 import serpapi_search_tools._adapters as adapters
 from serpapi_search_tools import flights_search, hotels_search, maps_search, web_search
 
+MARKDOWN_RESULT = "## Result\n\nNo fixture data.\n"
+
 
 class FakeClient:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
 
-    def search(self, params: dict[str, object]) -> dict[str, object]:
-        self.calls.append(params)
-        return {"params": params}
+    def search(self, params: dict[str, object]) -> str:
+        self.calls.append({key: value for key, value in params.items() if key != "output"})
+        return MARKDOWN_RESULT
 
 
 class CoordinatedClient:
@@ -33,11 +35,11 @@ class CoordinatedClient:
         self.search_started = search_started
         self.release_search = release_search
 
-    def search(self, params: dict[str, object]) -> dict[str, object]:
+    def search(self, params: dict[str, object]) -> str:
         self.search_started.set()
         self.release_search.wait(timeout=1)
         self.events.append("search-finished")
-        return {"params": params}
+        return MARKDOWN_RESULT
 
 
 class StructuredTool:
@@ -323,7 +325,7 @@ def test_claude_adapter_uses_explicit_hotel_schema_and_forwards_arbitrary_fields
         "check_out_date",
     ]
     assert tool_value["schema"]["properties"]["children_ages"]["type"] == "array"
-    assert json.loads(result["content"][0]["text"]) == {"no_results": True}
+    assert result["content"][0]["text"] == MARKDOWN_RESULT
     assert client.calls[0]["children_ages"] == "8"
 
 
@@ -503,7 +505,7 @@ def test_smolagents_converts_flight_schema_and_forwards_fields(
     ]
     assert tool.inputs["return_date"]["nullable"] is True
     assert tool.inputs["travel_class"]["nullable"] is True
-    assert json.loads(encoded) == {"no_results": True}
+    assert encoded == MARKDOWN_RESULT
     assert client.calls[0]["type"] == 2
 
 

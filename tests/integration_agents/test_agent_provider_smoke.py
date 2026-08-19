@@ -42,6 +42,15 @@ PROVIDER_CASES = {
         {"query": "Python releases", "engine": "google_light"},
         "google_light",
     ),
+    "semantic-kernel": (
+        "flights_search",
+        {
+            "departure_id": "LAX",
+            "arrival_id": "AUS",
+            "outbound_date": "2026-08-01",
+        },
+        "google_flights",
+    ),
     "haystack": ("maps_search", {"query": "coffee", "location": "Austin, Texas"}, "google_maps"),
     "llamaindex": ("travel_explore_search", {"departure_id": "JFK"}, "google_travel_explore"),
     "google-adk": ("web_search", {"query": "coffee", "engine": "google_light"}, "google_light"),
@@ -56,13 +65,14 @@ def test_each_agent_sdk_invokes_a_dedicated_public_tool(
 ) -> None:
     import_optional(PROVIDER_IMPORTS[provider])
     tool_name, arguments, expected_engine = PROVIDER_CASES[provider]
+    model_tool_name = f"serpapi-{tool_name}" if provider == "semantic-kernel" else tool_name
 
     result = run_agent_provider(
         provider,
         base_url=f"{fake_openai_server.url}/v1",
         api_key="fake-key",
         model="gpt-4o-mini",
-        prompt=prompt_for_tool(tool_name, arguments),
+        prompt=prompt_for_tool(model_tool_name, arguments),
         tool_names=[tool_name],
         client=serpapi_client,
     )

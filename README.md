@@ -230,11 +230,26 @@ Every constructor accepts:
 | `timeout`          | Timeout passed to the SerpApi SDK client                                                              |
 | `name`             | Tool name presented to the model                                                                      |
 | `mode`             | Result detail level; compact mode is the default, while full mode keeps supporting sections and all fields on retained results |
+| `response_format`  | Output serialization; Markdown is the default, while `SearchResultFormat.JSON` returns compact or full JSON text |
 | `result_limit`     | Maximum items kept in each result list in either mode; defaults vary by tool; use `None` for all results |
 
 `web_search` and `shopping_search` also accept `allowed_engines` and `default_engine`. The tool offers only the engine values you configure.
 
 Use `default_params` for documented SerpApi settings that should stay under your application's control, such as locale, currency, safe search, or pagination. Use `result_limit` to control how many results the tool returns. The agent continues to supply only the inputs described by its search tool.
+
+Tools return Markdown by default. Markdown keeps links and tables readable without JSON syntax overhead. Application code that needs structured fields can opt into JSON:
+
+```python
+import json
+
+from serpapi_search_tools import SearchResultFormat, web_search
+
+search = web_search(
+    provider="function",
+    response_format=SearchResultFormat.JSON,
+)
+result = json.loads(search(query="Python packaging"))
+```
 
 ```python
 tool = news_search(

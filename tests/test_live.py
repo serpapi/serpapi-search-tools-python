@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 from serpapi_search_tools import (
+    SearchResultFormat,
     SearchResultMode,
     SerpApiSearchError,
     TravelClass,
@@ -125,6 +126,25 @@ RESULT_FIELD_GROUPS: dict[str, tuple[tuple[str, ...], ...]] = {
     "travel-explore": (("name",), ("destination_id", "flight_price")),
 }
 
+MARKDOWN_RESULT_HEADINGS: dict[str, tuple[str, ...]] = {
+    "web-google": ("Organic Results",),
+    "web-google-light": ("Organic Results",),
+    "web-bing": ("Organic Results",),
+    "web-yahoo": ("Organic Results",),
+    "web-duckduckgo": ("Organic Results",),
+    "news": ("News Results",),
+    "maps": ("Local Results",),
+    "images": ("Images Results",),
+    "shopping-google": ("Shopping Results",),
+    "shopping-amazon": ("Organic Results",),
+    "shopping-walmart": ("Organic Results",),
+    "shopping-ebay": ("Organic Results",),
+    "videos": ("Video Results", "Shorts Results"),
+    "hotels": ("Properties",),
+    "flights": ("Best Flights", "Other Flights"),
+    "travel-explore": ("Destinations",),
+}
+
 
 @pytest.fixture(scope="session", autouse=True)
 def _write_response_key_inventory() -> Iterable[None]:
@@ -178,9 +198,72 @@ def test_live_public_tool_request_contracts(
         assert parameters["arrival_area_id"] == "/m/0852h"
 
 
+@pytest.mark.parametrize(
+    ("case", "engine", "native_field", "native_value", "result_key"), ENGINE_CASES
+)
+def test_live_default_compact_markdown_honors_result_limit(
+    case: str,
+    engine: str,
+    native_field: str,
+    native_value: str,
+    result_key: str,
+) -> None:
+    del engine, native_field, native_value, result_key
+    markdown = _call_live_case(
+        case,
+        response_format=None,
+        mode=SearchResultMode.COMPACT,
+        result_limit=2,
+    )
+
+    assert isinstance(markdown, str)
+    assert markdown.strip()
+    assert not markdown.lstrip().startswith("---")
+    present_headings = [
+        heading for heading in MARKDOWN_RESULT_HEADINGS[case] if f"## {heading}" in markdown
+    ]
+    assert present_headings, (case, markdown[:500])
+    for heading in present_headings:
+        row_count = _markdown_table_row_count(markdown, heading)
+        assert 1 <= row_count <= 2, (case, heading, row_count)
+
+
+@pytest.mark.parametrize(
+    ("case", "engine", "native_field", "native_value", "result_key"), ENGINE_CASES
+)
+def test_live_full_markdown_honors_result_limit_and_preserves_context(
+    case: str,
+    engine: str,
+    native_field: str,
+    native_value: str,
+    result_key: str,
+) -> None:
+    del engine, native_field, native_value, result_key
+    markdown = _call_live_case(
+        case,
+        response_format=None,
+        mode=SearchResultMode.FULL,
+        result_limit=2,
+    )
+
+    assert isinstance(markdown, str)
+    assert markdown.startswith("---\n")
+    present_headings = [
+        heading for heading in MARKDOWN_RESULT_HEADINGS[case] if f"## {heading}" in markdown
+    ]
+    assert present_headings, (case, markdown[:500])
+    for heading in present_headings:
+        row_count = _markdown_table_row_count(markdown, heading)
+        assert 1 <= row_count <= 2, (case, heading, row_count)
+
+
 def test_live_one_way_flight_uses_type_two() -> None:
     outbound, _ = _future_dates()
-    encoded = flights_search(provider="function", mode=SearchResultMode.FULL)(
+    encoded = flights_search(
+        provider="function",
+        mode=SearchResultMode.FULL,
+        response_format=SearchResultFormat.JSON,
+    )(
         departure_id="lax",
         arrival_id="aus",
         outbound_date=outbound,
@@ -201,11 +284,31 @@ def test_live_unicode_query_round_trips() -> None:
         provider="function",
         allowed_engines=["google_light"],
         mode=SearchResultMode.FULL,
+        response_format=SearchResultFormat.JSON,
     )(query=UNICODE_QUERY)
     result = _decode_success(encoded, "unicode-google-light", expect_full=True)
 
     assert result["search_parameters"]["q"] == UNICODE_QUERY
     assert result["organic_results"]
+
+
+def test_live_exact_maps_place_is_preserved_in_both_compact_formats() -> None:
+    json_encoded = maps_search(
+        provider="function",
+        response_format=SearchResultFormat.JSON,
+        result_limit=1,
+    )(query="Eiffel Tower")
+    json_result = _decode_success(json_encoded, "maps-exact-place")
+
+    assert set(json_result) == {"place_results"}
+    assert isinstance(json_result["place_results"], dict)
+    assert json_result["place_results"]["title"] == "Eiffel Tower"
+
+    markdown = maps_search(provider="function", result_limit=1)(query="Eiffel Tower")
+
+    assert markdown.startswith("## Place Results")
+    assert "Eiffel Tower" in markdown
+    assert "search_metadata" not in markdown
 
 
 @pytest.mark.parametrize("case", LIVE_PARAMETER_CASES, ids=lambda case: case.id)
@@ -233,6 +336,7 @@ def test_each_public_tool_returns_nonempty_compact_results_live(
     tool = factories[case.factory](
         provider="function",
         default_params=case.default_params,
+        response_format=SearchResultFormat.JSON,
         result_limit=case.result_limit,
     )
     result = _decode_success(tool(**arguments), f"docs-{case.id}")
@@ -325,99 +429,103 @@ def _future_dates() -> tuple[str, str]:
     return outbound.isoformat(), returning.isoformat()
 
 
-def _call_live_case(case: str) -> str:
+def _call_live_case(
+    case: str,
+    *,
+    response_format: SearchResultFormat | None = SearchResultFormat.JSON,
+    mode: SearchResultMode = SearchResultMode.FULL,
+    result_limit: int | None = None,
+) -> str:
     outbound, returning = _future_dates()
+    options: dict[str, Any] = {
+        "provider": "function",
+        "mode": mode,
+        "result_limit": result_limit,
+    }
+    if response_format is not None:
+        options["response_format"] = response_format
     calls: dict[str, tuple[Any, dict[str, Any]]] = {
         "web-google": (
             web_search(
-                provider="function",
                 allowed_engines=["google"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "SerpApi"},
         ),
         "web-google-light": (
             web_search(
-                provider="function",
                 allowed_engines=["google_light"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "SerpApi"},
         ),
         "web-yahoo": (
             web_search(
-                provider="function",
                 allowed_engines=["yahoo"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "SerpApi"},
         ),
         "web-bing": (
             web_search(
-                provider="function",
                 allowed_engines=["bing"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "SerpApi"},
         ),
         "web-duckduckgo": (
             web_search(
-                provider="function",
                 allowed_engines=["duckduckgo"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "SerpApi"},
         ),
         "news": (
-            news_search(provider="function", mode=SearchResultMode.FULL),
+            news_search(**options),
             {"query": "technology"},
         ),
         "maps": (
-            maps_search(provider="function", mode=SearchResultMode.FULL),
+            maps_search(**options),
             {"query": "coffee", "location": "Austin, Texas", "zoom": 12, "nearby": True},
         ),
         "images": (
-            images_search(provider="function", mode=SearchResultMode.FULL),
+            images_search(**options),
             {"query": "latte art"},
         ),
         "shopping-google": (
             shopping_search(
-                provider="function",
                 allowed_engines=["google_shopping"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "coffee grinder"},
         ),
         "shopping-amazon": (
             shopping_search(
-                provider="function",
                 allowed_engines=["amazon"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "coffee grinder"},
         ),
         "shopping-walmart": (
             shopping_search(
-                provider="function",
                 allowed_engines=["walmart"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "coffee grinder"},
         ),
         "shopping-ebay": (
             shopping_search(
-                provider="function",
                 allowed_engines=["ebay"],
-                mode=SearchResultMode.FULL,
+                **options,
             ),
             {"query": "coffee grinder"},
         ),
         "videos": (
-            videos_search(provider="function", mode=SearchResultMode.FULL),
+            videos_search(**options),
             {"query": "latte art"},
         ),
         "hotels": (
-            hotels_search(provider="function", mode=SearchResultMode.FULL),
+            hotels_search(**options),
             {
                 "query": "hotels in Austin",
                 "check_in_date": outbound,
@@ -428,7 +536,7 @@ def _call_live_case(case: str) -> str:
             },
         ),
         "flights": (
-            flights_search(provider="function", mode=SearchResultMode.FULL),
+            flights_search(**options),
             {
                 "departure_id": "lax",
                 "arrival_id": "aus",
@@ -438,7 +546,7 @@ def _call_live_case(case: str) -> str:
             },
         ),
         "travel-explore": (
-            travel_explore_search(provider="function", mode=SearchResultMode.FULL),
+            travel_explore_search(**options),
             {
                 "departure_id": "LAX",
                 "arrival_area_id": "/m/0852h",
@@ -447,3 +555,11 @@ def _call_live_case(case: str) -> str:
     }
     tool, arguments = calls[case]
     return tool(**arguments)
+
+
+def _markdown_table_row_count(markdown: str, heading: str) -> int:
+    section = markdown.split(f"## {heading}", maxsplit=1)[1]
+    section = section.split("\n## ", maxsplit=1)[0]
+    table_lines = [line.strip() for line in section.splitlines() if line.strip().startswith("|")]
+    assert len(table_lines) >= 3, (heading, section[:500])
+    return len(table_lines) - 2

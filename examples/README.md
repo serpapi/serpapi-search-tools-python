@@ -18,7 +18,7 @@ to `.env`, or export values in your shell. You always need `SERPAPI_API_KEY` or
 
 | Script | Scenario | Extra | Search tools demonstrated |
 | --- | --- | --- | --- |
-| `direct_search.py` | First direct call | none | Web and news |
+| `direct_search.py` | Compare default Markdown with explicit JSON | none | Web and news |
 | `direct_travel.py` | Structured travel calls | none | Hotels, flights, and travel explore |
 | `direct_multi_search.py` | Multi-vertical research | none | Web, news, maps, and shopping |
 | `direct_marketplace_comparison.py` | Normalize marketplace results | none | Google Shopping, Amazon, Walmart, and eBay |
@@ -61,4 +61,4 @@ The examples default to `gpt-5.4-mini`, `claude-sonnet-5`,
 `gemini-flash-lite-latest`, and `grok-4.5`. Override the corresponding model
 environment variable when needed.
 
-The two multi-tool OpenAI Agents scenarios use `_logging_client.py` to log safe request metadata and response structure. `result_limit` controls how many items are kept in each result list. Compact mode omits supporting response sections.
+The two multi-tool OpenAI Agents scenarios use `_logging_client.py` to log safe request metadata and response format. Agent examples use compact Markdown by default. Direct examples that inspect named response fields request JSON explicitly. `result_limit` controls how many rows or items are kept in each result section, and compact mode omits supporting sections.

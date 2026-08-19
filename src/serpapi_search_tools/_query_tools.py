@@ -8,6 +8,7 @@ from serpapi_search_tools._adapters import as_provider_tool
 from serpapi_search_tools._shared import (
     ProviderName,
     SearchClient,
+    SearchResultFormat,
     SearchResultMode,
     SearchRuntime,
     ToolDefinition,
@@ -77,6 +78,7 @@ def _runtime(
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
     mode: SearchResultMode | str,
+    response_format: SearchResultFormat | str,
     result_limit: int | None,
 ) -> SearchRuntime:
     return SearchRuntime(
@@ -85,6 +87,7 @@ def _runtime(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
     )
 
@@ -273,6 +276,7 @@ def web_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 10,
     name: str = "web_search",
 ) -> Any:
@@ -289,9 +293,9 @@ def web_search(
         when it is allowed.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -306,7 +310,7 @@ def web_search(
 
     definition = _multi_engine_query_definition(
         name=name,
-        description="Search general web pages and return focused SerpApi results as JSON.",
+        description="Search general web pages and return focused SerpApi results.",
         catalog=WebSearchEngine,
         query_params=WEB_QUERY_PARAM_BY_ENGINE,
         allowed_engines=allowed_engines,
@@ -325,6 +329,7 @@ def web_search(
             default_params=default_params,
             timeout=timeout,
             mode=mode,
+            response_format=response_format,
             result_limit=result_limit,
         ),
         include_examples=include_examples,
@@ -346,6 +351,7 @@ def shopping_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 60,
     name: str = "shopping_search",
 ) -> Any:
@@ -361,9 +367,9 @@ def shopping_search(
         Marketplace used when the model omits ``engine``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -378,9 +384,7 @@ def shopping_search(
 
     definition = _multi_engine_query_definition(
         name=name,
-        description=(
-            "Search products, prices, and merchants and return the SerpApi response as JSON."
-        ),
+        description="Search products, prices, and merchants with SerpApi.",
         catalog=ShoppingSearchEngine,
         query_params=SHOPPING_QUERY_PARAM_BY_ENGINE,
         allowed_engines=allowed_engines,
@@ -398,6 +402,7 @@ def shopping_search(
             default_params=default_params,
             timeout=timeout,
             mode=mode,
+            response_format=response_format,
             result_limit=result_limit,
         ),
         include_examples=include_examples,
@@ -417,6 +422,7 @@ def _fixed_query_factory(
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
     mode: SearchResultMode | str,
+    response_format: SearchResultFormat | str,
     result_limit: int | None,
     name: str,
     validator: Any = None,
@@ -432,6 +438,7 @@ def _fixed_query_factory(
             default_params=default_params,
             timeout=timeout,
             mode=mode,
+            response_format=response_format,
             result_limit=result_limit,
         ),
         include_examples=include_examples,
@@ -498,6 +505,7 @@ def news_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 20,
     name: str = "news_search",
 ) -> Any:
@@ -509,9 +517,9 @@ def news_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -535,6 +543,7 @@ def news_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
         name=name,
         validator=_validate_news_query_mode,
@@ -550,6 +559,7 @@ def images_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 50,
     name: str = "images_search",
 ) -> Any:
@@ -561,9 +571,9 @@ def images_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -587,6 +597,7 @@ def images_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
         name=name,
         validator=_validate_images_query_mode,
@@ -602,6 +613,7 @@ def videos_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 10,
     name: str = "videos_search",
 ) -> Any:
@@ -613,9 +625,9 @@ def videos_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -639,6 +651,7 @@ def videos_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
         name=name,
     )
@@ -653,6 +666,7 @@ def maps_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 10,
     name: str = "maps_search",
 ) -> Any:
@@ -668,9 +682,9 @@ def maps_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -689,6 +703,7 @@ def maps_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
     )
 

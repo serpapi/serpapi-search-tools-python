@@ -32,6 +32,7 @@ SUPPORTED_AGENT_PROVIDERS: tuple[str, ...] = (
     "crewai",
     "autogen",
     "microsoft-agent-framework",
+    "semantic-kernel",
     "haystack",
     "llamaindex",
     "google-adk",
@@ -47,6 +48,7 @@ PROVIDER_IMPORTS = {
     "crewai": "crewai",
     "autogen": "autogen_agentchat.agents",
     "microsoft-agent-framework": "agent_framework",
+    "semantic-kernel": "semantic_kernel",
     "haystack": "haystack.components.agents",
     "llamaindex": "llama_index.core.agent.workflow",
     "google-adk": "google.adk.agents",
@@ -157,6 +159,16 @@ def run_agent_provider(
         )
     if provider == "microsoft-agent-framework":
         return _run_microsoft_agent_framework(
+            base_url=base_url,
+            api_key=api_key,
+            model=model,
+            prompt=prompt,
+            tool_names=tool_names,
+            client=client,
+            serpapi_api_key=serpapi_api_key,
+        )
+    if provider == "semantic-kernel":
+        return _run_semantic_kernel(
             base_url=base_url,
             api_key=api_key,
             model=model,
@@ -530,6 +542,50 @@ def _run_microsoft_agent_framework(
         ),
     )
     return asyncio.run(agent.run(prompt))
+
+
+def _run_semantic_kernel(
+    *,
+    base_url: str,
+    api_key: str,
+    model: str,
+    prompt: str,
+    tool_names: Iterable[str],
+    client: Any | None,
+    serpapi_api_key: str | None,
+) -> Any:
+    semantic_kernel = import_optional("semantic_kernel")
+    semantic_ai = import_optional("semantic_kernel.connectors.ai")
+    semantic_openai = import_optional("semantic_kernel.connectors.ai.open_ai")
+    semantic_functions = import_optional("semantic_kernel.functions")
+    openai = import_optional("openai")
+
+    async def run_kernel() -> Any:
+        kernel = semantic_kernel.Kernel()
+        kernel.add_service(
+            semantic_openai.OpenAIChatCompletion(
+                ai_model_id=model,
+                async_client=openai.AsyncOpenAI(api_key=api_key, base_url=base_url),
+            )
+        )
+        kernel.add_functions(
+            "serpapi",
+            _tools(
+                "semantic-kernel",
+                tool_names=tool_names,
+                client=client,
+                serpapi_api_key=serpapi_api_key,
+            ),
+        )
+        settings = semantic_openai.OpenAIChatPromptExecutionSettings(
+            function_choice_behavior=semantic_ai.FunctionChoiceBehavior.Auto(),
+        )
+        return await kernel.invoke_prompt(
+            prompt,
+            arguments=semantic_functions.KernelArguments(settings=settings),
+        )
+
+    return asyncio.run(run_kernel())
 
 
 def _run_haystack(

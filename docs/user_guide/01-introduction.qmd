@@ -61,16 +61,14 @@ SDKs are installed, pass `provider=` to choose one explicitly.
 For scripts, tests, or a framework that is not listed, request a callable:
 
 ```python
-import json
-
 from serpapi_search_tools import web_search
 
 search = web_search(provider="function")
-response = json.loads(search(query="Python packaging"))
-print(response.get("organic_results", []))
+response = search(query="Python packaging")
+print(response)
 ```
 
-Every tool returns compact JSON text by default, including its main result sections and useful web answer sections. `result_limit` controls how many items are kept in each result list in compact and full modes. Set `mode=SearchResultMode.FULL` and `result_limit=None` when application code needs every response section, field, and returned result.
+Every tool returns compact Markdown by default, including its main result sections and useful web answer sections. `result_limit` controls how many rows are kept in each result table in compact and full modes. Application code that needs structured fields can opt into `SearchResultFormat.JSON`. Set `mode=SearchResultMode.FULL` and `result_limit=None` when application code needs every response section, field, and returned result.
 
 ## Next steps
 

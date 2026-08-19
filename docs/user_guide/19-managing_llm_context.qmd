@@ -5,14 +5,17 @@ guide-section: Advanced Usage
 
 # Manage search response size
 
-Search responses can contain many results and supporting sections. Use `mode` and `result_limit` to control what the tool returns to the model.
+Search responses can contain many results and supporting sections. Use `response_format`, `mode`, and `result_limit` to control what the tool returns to the model.
 
-Two constructor options work together:
+Three constructor options work together:
 
 | Option | What it controls | Default |
 | --- | --- | --- |
+| `response_format` | Whether the response is Markdown or JSON | `SearchResultFormat.MARKDOWN` |
 | `mode` | Which response sections and fields are kept | `SearchResultMode.COMPACT` |
 | `result_limit` | Maximum items kept in each result list | Tool-specific |
+
+Markdown is the default because headings, tables, and links are concise and directly readable by a model. Choose `SearchResultFormat.JSON` when application code needs structured fields. The same compact/full and result-limit controls apply to both formats.
 
 ## Start with compact mode
 
@@ -40,7 +43,7 @@ full_search = web_search(
 )
 ```
 
-Both tools keep at most five items in each supported result list. The full tool also keeps the response sections and fields omitted by compact mode.
+Both tools keep at most five items in each supported result list or Markdown table. The full tool also keeps the response sections and fields omitted by compact mode.
 
 The option is application configuration. It is not visible to the model and does not change the number of results requested from SerpApi.
 
@@ -49,13 +52,15 @@ The option is application configuration. It is not visible to the model and does
 The limit applies independently when a response contains more than one result list:
 
 - Google Flights keeps up to the limit from both `best_flights` and
-  `other_flights`.
+  `other_flights`, or from both corresponding Markdown tables.
 - YouTube keeps up to the limit from videos, shorts, channels, playlists,
   movies, and categories.
 - Google Light applies it to organic results, related questions, related
   searches, and top stories.
 
 Nested data such as flight legs, layovers, hotel amenities, and product offers is not shortened.
+
+An exact Google Maps place is a single object rather than a result list. It is retained in both compact formats and is not row-limited.
 
 ## Default result limits
 

@@ -9,6 +9,8 @@ Start with the SDK you already use. Every recipe turns an official framework
 pattern into a complete, source-backed workflow and saves a Markdown artifact
 you can inspect, edit, or share.
 
+The cookbook uses compact Markdown responses from each SerpApi tool. The agents pass search results directly to models and do not parse JSON fields.
+
 ## Choose a cookbook
 
 | SDK | Outcome | Search capabilities |

@@ -11,9 +11,7 @@ description: Apply a plan-and-execute loop to live competitor research.
 
 ## What you'll build
 
-A Semantic Kernel `ChatCompletionAgent` that states a research plan, resolves
-each open question with search plugins, checks the evidence quality, and writes
-a competitor brief with visible gaps.
+A Semantic Kernel prompt that states a research plan, resolves each open question with automatic calls to search plugins, checks the evidence quality, and writes a competitor brief with visible gaps.
 
 **Default brief:** Compare three US residential solar-financing platforms using
 company and product facts plus recent developments. Include source URLs and
@@ -30,13 +28,14 @@ unresolved evidence gaps.
 
 ## Core agent setup
 
-This excerpt shows how the SerpApi functions become one Semantic Kernel
-plugin. The complete script also configures the chat service, consumes the
-agent response stream, and saves the competitor brief.
+This excerpt shows how the SerpApi functions become one Semantic Kernel plugin. The complete script also configures the chat service, invokes the prompt, and saves the competitor brief.
 
 ```python
 kernel = Kernel()
-plugin = kernel.add_functions(
+kernel.add_service(
+    OpenAIChatCompletion(ai_model_id=MODEL, api_key=api_key),
+)
+kernel.add_functions(
     "serpapi",
     [
         web_search(
@@ -46,12 +45,12 @@ plugin = kernel.add_functions(
         news_search(provider="semantic-kernel"),
     ],
 )
-agent = ChatCompletionAgent(
-    name="competitor_research_agent",
-    instructions="Plan, search each open question, and inspect evidence quality.",
-    service=OpenAIChatCompletion(ai_model_id=MODEL, api_key=api_key),
-    plugins=[plugin],
+settings = OpenAIChatPromptExecutionSettings(
     function_choice_behavior=FunctionChoiceBehavior.Auto(),
+)
+response = await kernel.invoke_prompt(
+    prompt,
+    arguments=KernelArguments(settings=settings),
 )
 ```
 
@@ -70,9 +69,7 @@ uv run --isolated --no-project --with 'serpapi-search-tools[semantic-kernel]' --
 Optional controls: `OPENAI_MODEL`, `COOKBOOK_PROMPT`, and
 `COOKBOOK_OUTPUT_DIR`.
 
-**Native plugin shape:** The two search functions are registered with the
-Kernel as one plugin, while automatic function choice lets the agent select
-the right evidence surface.
+**Native plugin shape:** The two search functions are registered with the Kernel as one plugin. Automatic function choice lets the kernel select the right evidence surface.
 
 ## Inspect the result
 
