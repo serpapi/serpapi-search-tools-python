@@ -1,0 +1,97 @@
+name: Latest AI SDK compatibility
+
+on:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  latest-sdk:
+    name: ${{ matrix.provider }} newest stable release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - provider: agno
+            distribution: agno
+          - provider: autogen
+            distribution: autogen-agentchat
+          - provider: claude-agent-sdk
+            distribution: claude-agent-sdk
+          - provider: crewai
+            distribution: crewai
+          - provider: google-adk
+            distribution: google-adk
+          - provider: haystack
+            distribution: haystack-ai
+          - provider: langchain
+            distribution: langchain
+          - provider: langgraph
+            distribution: langgraph
+          - provider: llamaindex
+            distribution: llama-index-core
+          - provider: microsoft-agent-framework
+            distribution: agent-framework-openai
+          - provider: openai-agents
+            distribution: openai-agents
+          - provider: pydantic-ai
+            distribution: pydantic-ai
+          - provider: semantic-kernel
+            distribution: semantic-kernel
+          - provider: smolagents
+            distribution: smolagents
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - run: uv sync --dev --locked
+      - name: Create the isolated SDK environment
+        run: uv run tox -r -n -e latest-${{ matrix.provider }}
+      - name: Install the newest PyPI release
+        env:
+          SDK_DISTRIBUTION: ${{ matrix.distribution }}
+          TOX_ENVIRONMENT: latest-${{ matrix.provider }}
+        run: |
+          latest_version="$(
+            curl --fail --silent --show-error \
+              "https://pypi.org/pypi/$SDK_DISTRIBUTION/json" \
+              | ".tox/$TOX_ENVIRONMENT/bin/python" -c \
+                'import json, sys; print(json.load(sys.stdin)["info"]["version"])'
+          )"
+          uv pip install --upgrade \
+            --python ".tox/$TOX_ENVIRONMENT/bin/python" \
+            "$SDK_DISTRIBUTION==$latest_version"
+          installed_version="$(
+            ".tox/$TOX_ENVIRONMENT/bin/python" -c \
+              'import importlib.metadata as m, sys; print(m.version(sys.argv[1]))' \
+              "$SDK_DISTRIBUTION"
+          )"
+          echo "$SDK_DISTRIBUTION: $installed_version"
+          test "$installed_version" = "$latest_version"
+      - name: Test the newest stable SDK release
+        run: >-
+          uv run tox --skip-env-install
+          -e latest-${{ matrix.provider }}
+      - name: Report resolved package versions
+        if: always()
+        env:
+          TOX_ENVIRONMENT: latest-${{ matrix.provider }}
+        run: |
+          if test -x ".tox/$TOX_ENVIRONMENT/bin/python"; then
+            uv pip freeze --python ".tox/$TOX_ENVIRONMENT/bin/python"
+          else
+            echo "tox environment was not created"
+          fi

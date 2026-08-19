@@ -45,6 +45,18 @@ CI runs the base suite on Python 3.10 through 3.14 and installs each framework
 extra separately. This catches dependency conflicts that a shared development
 environment can hide.
 
+## Newest SDK release canary
+
+The regular integration environments install SDK versions from the supported ranges declared in `pyproject.toml`. The `latest-*` environments install the base wheel without an SDK extra or SDK version constraint. The scheduled workflow then asks PyPI for the newest stable release and installs that exact version, even when it is outside the package's current upper bound. A failure is an early warning to add support; it does not expand the package's declared support range.
+
+GitHub Actions runs this canary every Monday at 05:23 UTC and on manual dispatch. Each matrix job prints its resolved package versions after the test. PyPI pre-releases are excluded unless they become part of pip's normal stable resolution.
+
+Run one canary locally:
+
+```bash
+uv run tox -r -e latest-openai-agents
+```
+
 ## Fake OpenAI-compatible integration tests
 
 These tests start a local FastAPI server. They exercise real framework agent
