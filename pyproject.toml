@@ -1,6 +1,6 @@
 [project]
 name = "serpapi-search-tools"
-version = "0.2.0"
+version = "1.0.0"
 description = "Add live SerpApi search to Python agents and agent SDKs."
 readme = "README.md"
 requires-python = ">=3.10"
