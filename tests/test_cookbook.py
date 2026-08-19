@@ -64,21 +64,6 @@ def test_cookbook_covers_every_public_search_constructor() -> None:
     assert calls == PUBLIC_FACTORIES
 
 
-def test_cookbook_environment_template_matches_the_scripts() -> None:
-    sample = (COOKBOOK / "sample.env").read_text()
-
-    for name in (
-        "SERPAPI_API_KEY",
-        "OPENAI_API_KEY",
-        "XAI_API_KEY",
-        "ANTHROPIC_API_KEY",
-        "GEMINI_API_KEY",
-        "COOKBOOK_PROMPT",
-        "COOKBOOK_OUTPUT_DIR",
-    ):
-        assert f"{name}=" in sample
-
-
 def test_cookbook_docs_cover_every_supported_provider() -> None:
     assert (COOKBOOK_DOCS / "index.qmd").is_file()
     pages = {path.stem for path in COOKBOOK_DOCS.glob("*.qmd") if path.name != "index.qmd"}

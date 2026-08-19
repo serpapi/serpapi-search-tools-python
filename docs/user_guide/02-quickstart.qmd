@@ -101,8 +101,8 @@ python search_agent.py
    OpenAI `FunctionTool`.
 2. The agent decided whether it needed the tool and supplied a text query plus
    a supported web engine.
-3. The package validated the arguments, called SerpApi, and returned the
-   structured search response to the agent as JSON text.
+3. The package validated the arguments, called SerpApi, and returned compact
+   Markdown search results to the agent.
 4. The model used those results to write the final response.
 
 The default web engine is `google_light`, which is a good fast starting point

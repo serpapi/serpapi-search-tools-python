@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
 ]
-dependencies = ["serpapi>=1.0.0,<2"]
+dependencies = ["mistune>=3.1.0,<4", "serpapi>=1.0.0,<2"]
 
 [project.urls]
 Documentation = "https://serpapi.github.io/serpapi-search-tools-python/"
@@ -86,8 +86,8 @@ dev = [
     "uvicorn>=0.34.0,<1",
 ]
 docs = [
-    "great-docs>=0.14.0,<0.15; python_version >= '3.11'",
-    "griffe>=0.35.0,<1; python_version >= '3.11'",
+    "great-docs>=0.15.0,<0.16; python_version >= '3.11'",
+    "griffe>=2.1.0,<2.2; python_version >= '3.11'",
 ]
 openai-compat = [
     "langchain-openai>=1.1.9,<2",

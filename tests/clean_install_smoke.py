@@ -9,7 +9,7 @@ from typing import Any
 import serpapi
 import serpapi.models
 
-from serpapi_search_tools import flights_search, web_search
+from serpapi_search_tools import SearchResultFormat, flights_search, web_search
 
 AGENT_SDK_DISTRIBUTIONS = (
     "agno",
@@ -30,12 +30,13 @@ AGENT_SDK_DISTRIBUTIONS = (
 
 
 class _Response:
-    text = ""
-
-    def __init__(self, result: dict[str, Any]) -> None:
+    def __init__(self, result: dict[str, Any] | str) -> None:
         self._result = result
+        self.text = result if isinstance(result, str) else ""
 
     def json(self) -> dict[str, Any]:
+        if isinstance(self._result, str):
+            raise ValueError("response is Markdown")
         return self._result
 
 
@@ -51,6 +52,7 @@ def _fake_request(
     assert method == "GET"
     assert path == "/search"
     assert params in (
+        {"engine": "google_light", "q": "coffee", "output": "md"},
         {"engine": "google_light", "q": "coffee"},
         {
             "engine": "google_flights",
@@ -66,6 +68,18 @@ def _fake_request(
         },
     )
     assert kwargs == {}
+    if params.get("output") == "md":
+        return _Response(
+            "---\nsearch_metadata:\n  status: Success\n---\n\n"
+            "## Organic Results\n\n"
+            "| Position | Title | Link |\n"
+            "| --- | --- | --- |\n"
+            "| 1 | Coffee | https://example.com/coffee |\n\n"
+            "## Related Searches\n\n"
+            "| Query |\n"
+            "| --- |\n"
+            "| tea |\n"
+        )
     if params["engine"] == "google_flights":
         return _Response(
             {
@@ -104,7 +118,19 @@ def main() -> None:
     )
     assert callable(tool), "provider='auto' must fall back to a plain callable"
 
-    encoded = tool(query="coffee")
+    markdown = tool(query="coffee")
+
+    assert markdown.startswith("## Organic Results")
+    assert "| 1 | Coffee | https://example.com/coffee |" in markdown
+    assert "## Related Searches" in markdown
+    assert "search_metadata" not in markdown
+
+    json_tool = web_search(
+        allowed_engines=["google_light"],
+        api_key="not-a-real-key",
+        response_format=SearchResultFormat.JSON,
+    )
+    encoded = json_tool(query="coffee")
     decoded = json.loads(encoded)
 
     assert type(decoded) is dict
@@ -117,7 +143,11 @@ def main() -> None:
     assert "\x1b[" not in encoded
     assert "\n" not in encoded
 
-    flight = flights_search(provider="function", api_key="not-a-real-key")
+    flight = flights_search(
+        provider="function",
+        api_key="not-a-real-key",
+        response_format=SearchResultFormat.JSON,
+    )
     flight_encoded = flight(
         departure_id="LAX",
         arrival_id="AUS",

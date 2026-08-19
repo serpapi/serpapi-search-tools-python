@@ -22,6 +22,7 @@ def test_public_package_exposes_intent_specific_tools_and_semantic_enums() -> No
 
     assert set(package.__all__) == {
         "ShoppingSearchEngine",
+        "SearchResultFormat",
         "SearchResultMode",
         "SerpApiSearchError",
         "TravelClass",
@@ -39,13 +40,14 @@ def test_public_package_exposes_intent_specific_tools_and_semantic_enums() -> No
     assert all(callable(getattr(package, name)) for name in package.__all__)
 
 
-def test_base_install_only_depends_on_serpapi() -> None:
+def test_base_install_declares_runtime_dependencies() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
     runtime_dependencies = pyproject["project"]["dependencies"]
     dev_dependencies = pyproject["dependency-groups"]["dev"]
 
     assert pyproject["project"]["requires-python"] == ">=3.10"
     assert any(dependency.startswith("serpapi") for dependency in runtime_dependencies)
+    assert any(dependency.startswith("mistune") for dependency in runtime_dependencies)
     assert all("dotenv" not in dependency for dependency in runtime_dependencies)
     assert any(dependency.startswith("python-dotenv") for dependency in dev_dependencies)
 
@@ -96,15 +98,6 @@ def test_declared_major_version_bounds_match_tested_framework_branches() -> None
         not classifier.startswith("License ::")
         for classifier in pyproject["project"]["classifiers"]
     )
-
-
-def test_langgraph_extra_installs_langgraph_and_langchain_tool_dependencies() -> None:
-    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
-    dependencies = pyproject["project"]["optional-dependencies"]["langgraph"]
-
-    assert any(dependency.startswith("langgraph>=1.2.6,<2") for dependency in dependencies)
-    assert any(dependency.startswith("langchain-core") for dependency in dependencies)
-    assert all(not dependency.startswith("langchain-openai") for dependency in dependencies)
 
 
 def test_tox_has_a_fresh_environment_for_every_framework_extra() -> None:

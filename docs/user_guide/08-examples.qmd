@@ -39,7 +39,7 @@ uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv 
 uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_cached_search.py
 ```
 
-The direct scripts parse the compact JSON response and print bounded summaries.
+`direct_search.py` compares the default Markdown response with explicit JSON. The other direct scripts opt into JSON when they normalize fields into bounded summaries. Agent examples use the default compact Markdown response.
 
 ## Structured travel defaults
 

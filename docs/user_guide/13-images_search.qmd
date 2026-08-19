@@ -43,6 +43,7 @@ image query.
 | `provider` | `"auto"` | Detect the installed agent SDK |
 | `default_params` | `None` | Fix safe search, locale, or other supported image filters |
 | `mode` | `compact` | Return the main image result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `response_format` | `markdown` | Return Markdown by default, or use `SearchResultFormat.JSON` for structured fields |
 | `result_limit` | `50` | Maximum `images_results` retained in either mode; use `None` for all returned images |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |

@@ -8,6 +8,7 @@ from serpapi_search_tools._adapters import as_provider_tool
 from serpapi_search_tools._shared import (
     ProviderName,
     SearchClient,
+    SearchResultFormat,
     SearchResultMode,
     SearchRuntime,
     ToolDefinition,
@@ -43,6 +44,7 @@ def _runtime(
     default_params: Mapping[str, Any] | None,
     timeout: float | None,
     mode: SearchResultMode | str,
+    response_format: SearchResultFormat | str,
     result_limit: int | None,
 ) -> SearchRuntime:
     return SearchRuntime(
@@ -51,6 +53,7 @@ def _runtime(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
     )
 
@@ -164,6 +167,7 @@ def hotels_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 20,
     name: str = "hotels_search",
 ) -> Any:
@@ -178,9 +182,9 @@ def hotels_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -199,6 +203,7 @@ def hotels_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
     )
 
@@ -303,6 +308,7 @@ def flights_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 10,
     name: str = "flights_search",
 ) -> Any:
@@ -318,9 +324,9 @@ def flights_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -339,6 +345,7 @@ def flights_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
     )
 
@@ -462,6 +469,7 @@ def travel_explore_search(
     default_params: Mapping[str, Any] | None = None,
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
+    response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
     result_limit: int | None = 50,
     name: str = "travel_explore_search",
 ) -> Any:
@@ -477,9 +485,9 @@ def travel_explore_search(
         Agent SDK adapter name, ``"auto"``, or ``"function"``.
     include_examples
         Add a short call example to the model-facing description.
-    api_key, client, default_params, timeout, mode
+    api_key, client, default_params, timeout, mode, response_format
         Runtime authentication, custom client, application filters, timeout, and
-        compact or full response selection.
+        response mode and serialization selection.
     result_limit
         Maximum items kept in each result list in both response modes; use
         ``None`` to keep all returned results.
@@ -498,6 +506,7 @@ def travel_explore_search(
         default_params=default_params,
         timeout=timeout,
         mode=mode,
+        response_format=response_format,
         result_limit=result_limit,
     )
 

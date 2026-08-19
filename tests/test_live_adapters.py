@@ -7,7 +7,7 @@ from typing import Any
 
 import pytest
 
-from serpapi_search_tools import web_search
+from serpapi_search_tools import SearchResultFormat, web_search
 
 pytestmark = pytest.mark.live
 
@@ -30,6 +30,7 @@ def test_native_sdk_adapter_executes_a_real_google_light_search() -> None:
         provider=PROVIDER,
         allowed_engines=["google_light"],
         default_params={"hl": "en", "gl": "us"},
+        response_format=SearchResultFormat.JSON,
         result_limit=3,
     )
 

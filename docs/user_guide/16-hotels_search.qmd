@@ -60,6 +60,7 @@ An agent invocation has a structured shape:
 | `provider` | `"auto"` | Detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix currency, locale, country, or supported property filters |
 | `mode` | `compact` | Return the main property result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `response_format` | `markdown` | Return Markdown by default, or use `SearchResultFormat.JSON` for structured fields |
 | `result_limit` | `20` | Maximum `properties` retained in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |

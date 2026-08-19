@@ -50,6 +50,7 @@ Google Shopping, `k` for Amazon, `query` for Walmart, and `_nkw` for eBay.
 | `default_engine` | `google_shopping` when allowed | Select the marketplace used when `engine` is omitted |
 | `default_params` | `None` | Fix engine-specific marketplace filters or pagination |
 | `mode` | `compact` | Return the main product result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `response_format` | `markdown` | Return Markdown by default, or use `SearchResultFormat.JSON` for structured fields |
 | `result_limit` | `60` | Maximum primary product results retained in either mode |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |

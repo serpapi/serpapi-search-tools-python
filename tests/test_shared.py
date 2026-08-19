@@ -12,6 +12,7 @@ import pytest
 import serpapi_search_tools._shared as shared
 from serpapi_search_tools._shared import (
     PROVIDER_ALIASES,
+    SearchResultFormat,
     SearchResultMode,
     SearchRuntime,
     detect_provider,
@@ -41,6 +42,7 @@ def test_runtime_merges_parameters_in_documented_precedence_order() -> None:
         client=client,
         default_params={"hl": "en", "gl": "gb", "location": "Austin"},
         mode=SearchResultMode.FULL,
+        response_format=SearchResultFormat.JSON,
     )
 
     encoded = runtime.execute(
@@ -66,6 +68,7 @@ def test_runtime_copies_default_params_at_construction() -> None:
         client=FakeClient(),
         default_params=defaults,
         mode=SearchResultMode.FULL,
+        response_format=SearchResultFormat.JSON,
     )
     defaults["hl"] = "fr"
 
@@ -242,7 +245,11 @@ def test_builtin_client_uses_modern_sdk_and_passes_timeout(
     serpapi_module.Client = Client
     monkeypatch.setitem(sys.modules, "serpapi", serpapi_module)
 
-    SearchRuntime(api_key="passed", timeout=2.5).execute(
+    SearchRuntime(
+        api_key="passed",
+        timeout=2.5,
+        response_format=SearchResultFormat.JSON,
+    ).execute(
         engine="google_light",
         typed_params={"q": "coffee"},
     )
@@ -363,7 +370,7 @@ def test_builtin_client_is_reused_across_searches(
 
     serpapi_module.Client = Client
     monkeypatch.setitem(sys.modules, "serpapi", serpapi_module)
-    runtime = SearchRuntime(api_key="passed")
+    runtime = SearchRuntime(api_key="passed", response_format=SearchResultFormat.JSON)
 
     for query in ("coffee", "tea"):
         runtime.execute(
@@ -415,7 +422,7 @@ def test_builtin_client_uses_one_reusable_session_per_worker_thread(
 
     serpapi_module.Client = Client
     monkeypatch.setitem(sys.modules, "serpapi", serpapi_module)
-    runtime = SearchRuntime(api_key="passed")
+    runtime = SearchRuntime(api_key="passed", response_format=SearchResultFormat.JSON)
     start = threading.Barrier(2)
 
     def search(query: str) -> None:
@@ -459,9 +466,11 @@ def test_mapping_subclass_is_encoded_as_plain_minified_json() -> None:
         def search(self, params: dict[str, object]) -> UserDict[str, object]:
             return UserDict({"params": params, "results": [{"title": "Coffee"}]})
 
-    encoded = SearchRuntime(client=MappingClient(), mode=SearchResultMode.FULL).execute(
-        engine="google", typed_params={"q": "coffee"}
-    )
+    encoded = SearchRuntime(
+        client=MappingClient(),
+        mode=SearchResultMode.FULL,
+        response_format=SearchResultFormat.JSON,
+    ).execute(engine="google", typed_params={"q": "coffee"})
 
     assert json.loads(encoded)["results"] == [{"title": "Coffee"}]
     assert "\n" not in encoded
@@ -485,7 +494,7 @@ def test_compact_mode_keeps_web_answers_and_bounds_organic_results() -> None:
                 "serpapi_pagination": {"next": "https://example.test/next"},
             }
 
-    encoded = SearchRuntime(client=WebClient()).execute(
+    encoded = SearchRuntime(client=WebClient(), response_format=SearchResultFormat.JSON).execute(
         engine="google",
         typed_params={"q": "coffee"},
     )
@@ -517,7 +526,7 @@ def test_compact_mode_keeps_web_answers_and_bounds_organic_results() -> None:
         ("yahoo", {"answer_box", "knowledge_graph", "organic_results"}),
         ("duckduckgo", {"knowledge_graph", "organic_results"}),
         ("google_news", {"news_results"}),
-        ("google_maps", {"local_results"}),
+        ("google_maps", {"local_results", "place_results"}),
         ("google_images", {"images_results"}),
         ("google_shopping", {"shopping_results"}),
         ("amazon", {"organic_results"}),
@@ -551,6 +560,7 @@ def test_compact_mode_selects_primary_result_families(
         "organic_results",
         "news_results",
         "local_results",
+        "place_results",
         "images_results",
         "shopping_results",
         "video_results",
@@ -584,13 +594,14 @@ def test_compact_mode_selects_primary_result_families(
                         "knowledge_graph",
                         "ai_overview",
                         "copilot_answer",
+                        "place_results",
                     }
                     else [{"value": key}]
                 )
             return result
 
     result = json.loads(
-        SearchRuntime(client=ResultClient()).execute(
+        SearchRuntime(client=ResultClient(), response_format=SearchResultFormat.JSON).execute(
             engine=engine,
             typed_params={"q": "coffee"},
         )
@@ -610,7 +621,7 @@ def test_google_light_compact_mode_uses_only_supported_result_families() -> None
             }
 
     result = json.loads(
-        SearchRuntime(client=GoogleLightClient()).execute(
+        SearchRuntime(client=GoogleLightClient(), response_format=SearchResultFormat.JSON).execute(
             engine="google_light",
             typed_params={"q": "coffee"},
         )
@@ -630,7 +641,11 @@ def test_result_limit_applies_independently_to_each_result_family() -> None:
             }
 
     result = json.loads(
-        SearchRuntime(client=FlightsClient(), result_limit=3).execute(
+        SearchRuntime(
+            client=FlightsClient(),
+            response_format=SearchResultFormat.JSON,
+            result_limit=3,
+        ).execute(
             engine="google_flights",
             typed_params={"departure_id": "LAX", "arrival_id": "AUS"},
         )
@@ -767,7 +782,7 @@ def test_compact_mode_projects_large_vertical_result_objects(
             return {result_key: [item]}
 
     result = json.loads(
-        SearchRuntime(client=ProjectionClient()).execute(
+        SearchRuntime(client=ProjectionClient(), response_format=SearchResultFormat.JSON).execute(
             engine=engine,
             typed_params={"q": "coffee"},
         )
@@ -792,7 +807,7 @@ def test_compact_mode_returns_bounded_status_when_no_result_family_is_present() 
             }
 
     result = json.loads(
-        SearchRuntime(client=EmptyResultClient()).execute(
+        SearchRuntime(client=EmptyResultClient(), response_format=SearchResultFormat.JSON).execute(
             engine="google_light",
             typed_params={"q": "coffee"},
         )
@@ -817,7 +832,7 @@ def test_compact_mode_preserves_returned_api_errors() -> None:
                 "error": "A bounded error message.",
             }
 
-    encoded = SearchRuntime(client=ErrorClient()).execute(
+    encoded = SearchRuntime(client=ErrorClient(), response_format=SearchResultFormat.JSON).execute(
         engine="google_light",
         typed_params={"q": "coffee"},
     )
@@ -848,6 +863,7 @@ def test_full_mode_limits_results_but_preserves_every_other_section(
     encoded = SearchRuntime(
         client=FullClient(),
         mode=mode,
+        response_format=SearchResultFormat.JSON,
         result_limit=1,
     ).execute(engine="google_light", typed_params={"q": "coffee"})
 

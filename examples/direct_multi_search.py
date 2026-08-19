@@ -9,7 +9,13 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from serpapi_search_tools import maps_search, news_search, shopping_search, web_search
+from serpapi_search_tools import (
+    SearchResultFormat,
+    maps_search,
+    news_search,
+    shopping_search,
+    web_search,
+)
 
 load_dotenv()
 
@@ -23,20 +29,24 @@ def main() -> None:
         provider="function",
         allowed_engines=["google_light"],
         default_params={"hl": "en", "gl": "us"},
+        response_format=SearchResultFormat.JSON,
         result_limit=3,
     )
     news = news_search(
         provider="function",
         default_params={"hl": "en", "gl": "us"},
+        response_format=SearchResultFormat.JSON,
     )
     maps = maps_search(
         provider="function",
         default_params={"hl": "en", "gl": "us"},
+        response_format=SearchResultFormat.JSON,
     )
     shopping = shopping_search(
         provider="function",
         allowed_engines=["google_shopping"],
         default_params={"hl": "en", "gl": "us"},
+        response_format=SearchResultFormat.JSON,
         result_limit=3,
     )
 

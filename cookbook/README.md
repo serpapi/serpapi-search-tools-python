@@ -4,6 +4,8 @@ Choose the SDK you use and run a complete agent with live SerpApi search.
 Every entry includes setup instructions, an editable prompt, a runnable agent,
 and a Markdown report you can inspect.
 
+Every cookbook agent receives compact Markdown from its SerpApi tools. The scripts rely on the package default and do not parse structured response fields.
+
 | SDK | Agent | SerpApi capabilities |
 | --- | --- | --- |
 | [LangChain](langchain/) | Deep market research brief | Web and news |

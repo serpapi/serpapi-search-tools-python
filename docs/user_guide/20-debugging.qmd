@@ -14,7 +14,7 @@ behavior.
 ```python
 import json
 
-from serpapi_search_tools import SearchResultMode, web_search
+from serpapi_search_tools import SearchResultFormat, SearchResultMode, web_search
 
 search = web_search(
     provider="function",
@@ -22,6 +22,7 @@ search = web_search(
     default_params={"hl": "en", "gl": "us"},
     result_limit=None,
     mode=SearchResultMode.FULL,
+    response_format=SearchResultFormat.JSON,
 )
 response = json.loads(search(query="Python packaging tutorials"))
 
@@ -41,7 +42,7 @@ Compact mode returns these common result sections:
 | --- | --- |
 | `web_search` | `organic_results` |
 | `news_search` | `news_results` |
-| `maps_search` | `local_results` |
+| `maps_search` | `local_results` or `place_results` for an exact place |
 | `images_search` | `images_results` |
 | `shopping_search` | `shopping_results` or engine-specific product results |
 | `videos_search` | `video_results`, `shorts_results`, `channel_results`, `playlist_results`, `movie_results`, or `category_results` |

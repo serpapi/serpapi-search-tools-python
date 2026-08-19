@@ -10,11 +10,14 @@
 
   function isProjectHomepage() {
     var path = window.location.pathname;
-    if (path.endsWith("/")) return true;
-    if (!path.endsWith("/index.html")) return false;
-    return !/(?:\/docs\/cookbook|\/user-guide|\/docs\/sdk-examples|\/reference)\/index\.html$/.test(
-      path,
-    );
+    if (
+      /(?:\/docs\/cookbook|\/user-guide|\/docs\/sdk-examples|\/reference)(?:\/|$)/.test(
+        path,
+      )
+    ) {
+      return false;
+    }
+    return path.endsWith("/") || path.endsWith("/index.html");
   }
 
   function currentArea() {
@@ -22,7 +25,10 @@
     if (path.indexOf("/docs/cookbook/") !== -1) return "cookbook";
     if (path.indexOf("/docs/sdk-examples/") !== -1) return "examples";
     if (path.indexOf("/reference/") !== -1) return "reference";
-    return "guide";
+    if (isProjectHomepage() || path.indexOf("/user-guide/") !== -1) {
+      return "guide";
+    }
+    return null;
   }
 
   function addUserGuideNavbarLink() {

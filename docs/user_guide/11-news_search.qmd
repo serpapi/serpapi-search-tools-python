@@ -47,6 +47,7 @@ field or SerpApi's native `q` name.
 | `provider` | `"auto"` | Auto-detect one installed SDK or select one explicitly |
 | `default_params` | `None` | Fix locale, country, or supported query filters |
 | `mode` | `compact` | Return the main news result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `response_format` | `markdown` | Return Markdown by default, or use `SearchResultFormat.JSON` for structured fields |
 | `result_limit` | `20` | Maximum `news_results` retained in either mode |
 | `api_key` | `None` | Override `SERPAPI_API_KEY` / `SERPAPI_KEY` |
 | `timeout` | `None` | Set the built-in client timeout |

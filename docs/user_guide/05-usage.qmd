@@ -6,15 +6,14 @@ guide-section: Start Here
 ## Call a tool directly
 
 ```python
-import json
-
 from serpapi_search_tools import web_search
 
 search = web_search(provider="function")
-response = json.loads(search(query="Python packaging"))
+response = search(query="Python packaging")
+print(response)
 ```
 
-The returned callable has a narrow signature and returns compact JSON text.
+The returned callable has a narrow signature and returns compact Markdown by default. Pass `response_format=SearchResultFormat.JSON` when code needs to parse named fields.
 
 ## Add a specialized capability
 

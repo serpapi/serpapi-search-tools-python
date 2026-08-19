@@ -52,7 +52,8 @@ field.
 | `provider` | `"auto"` | Detect one installed SDK or choose an SDK explicitly |
 | `default_params` | `None` | Fix Google Maps locale or supported search filters |
 | `mode` | `compact` | Return the main local result section; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
-| `result_limit` | `10` | Maximum `local_results` retained in either mode |
+| `response_format` | `markdown` | Return Markdown by default, or use `SearchResultFormat.JSON` for structured fields |
+| `result_limit` | `10` | Maximum `local_results` retained in either mode; an exact `place_results` object is retained whole |
 | `api_key` | `None` | Override environment key lookup |
 | `timeout` | `None` | Set the built-in client timeout |
 | `client` | `None` | Add deterministic tests, caching, or request logging |
@@ -79,7 +80,7 @@ this search-mode tool.
 
 ## What comes back
 
-Both modes return up to `result_limit` `local_results` (10 by default). Place entries may include a title, address, rating, review count, category, phone, website, hours, coordinates, thumbnail, and identifiers. Compact mode omits supporting sections. Use `result_limit=None` to keep every returned place. Availability varies by place and query.
+Both modes return up to `result_limit` `local_results` (10 by default). An exact-place response uses a single `place_results` object, which compact mode retains whole rather than treating it as a list. Place entries may include a title, address, rating, review count, category, phone, website, hours, coordinates, thumbnail, and identifiers. Compact mode omits supporting sections. Use `result_limit=None` to keep every returned place. Availability varies by place and query.
 
 ## Common mistakes
 

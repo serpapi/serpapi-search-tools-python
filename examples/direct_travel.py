@@ -8,7 +8,12 @@ from datetime import date, timedelta
 
 from dotenv import load_dotenv
 
-from serpapi_search_tools import flights_search, hotels_search, travel_explore_search
+from serpapi_search_tools import (
+    SearchResultFormat,
+    flights_search,
+    hotels_search,
+    travel_explore_search,
+)
 
 load_dotenv()
 
@@ -17,9 +22,9 @@ def main() -> None:
     outbound = date.today() + timedelta(days=60)
     returning = outbound + timedelta(days=4)
 
-    hotels = hotels_search(provider="function")
-    flights = flights_search(provider="function")
-    explore = travel_explore_search(provider="function")
+    hotels = hotels_search(provider="function", response_format=SearchResultFormat.JSON)
+    flights = flights_search(provider="function", response_format=SearchResultFormat.JSON)
+    explore = travel_explore_search(provider="function", response_format=SearchResultFormat.JSON)
 
     hotel_result = hotels(
         query="hotels in Austin",

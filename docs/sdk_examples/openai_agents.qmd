@@ -52,8 +52,8 @@ async def main():
 asyncio.run(main())
 ```
 
-The agent decides when to call the tool, receives the SerpApi JSON, and writes a
-final answer.
+The agent decides when to call the tool, receives compact SerpApi Markdown, and
+writes a final answer.
 
 ## Try it
 

@@ -51,6 +51,7 @@ Google, Google Light, Bing, and DuckDuckGo use `q`; Yahoo uses `p`.
 | `default_engine` | `google_light` when allowed | Choose the engine used when the model omits `engine` |
 | `default_params` | `None` | Fix engine parameters such as locale, filters, or pagination in application code |
 | `mode` | `compact` | Return the main web result sections; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results |
+| `response_format` | `markdown` | Return Markdown by default, or use `SearchResultFormat.JSON` for structured fields |
 | `result_limit` | `10` | Maximum items kept in each web result list in either mode |
 | `api_key` | `None` | Override the environment-based SerpApi key |
 | `timeout` | `None` | Set the built-in client's request timeout |

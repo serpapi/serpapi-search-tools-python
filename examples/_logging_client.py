@@ -14,10 +14,24 @@ class LoggingClient:
     def __init__(self, api_key: str) -> None:
         self._client = serpapi.Client(api_key=api_key)
 
-    def search(self, params: dict[str, Any]) -> Mapping[str, Any]:
+    def search(self, params: dict[str, Any]) -> Mapping[str, Any] | str:
         safe_params = {key: value for key, value in params.items() if key != "api_key"}
         print("SerpApi request:", json.dumps(safe_params, sort_keys=True, default=str))
-        result = dict(self._client.search(params))
+        response = self._client.search(params)
+        if isinstance(response, str):
+            print(
+                "SerpApi response:",
+                json.dumps(
+                    {
+                        "engine": safe_params.get("engine"),
+                        "format": "markdown",
+                        "characters": len(response),
+                    },
+                    sort_keys=True,
+                ),
+            )
+            return response
+        result = dict(response)
         metadata = result.get("search_metadata", {})
         print(
             "SerpApi response:",

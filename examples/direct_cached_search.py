@@ -11,7 +11,7 @@ from typing import Any
 import serpapi
 from dotenv import load_dotenv
 
-from serpapi_search_tools import web_search
+from serpapi_search_tools import SearchResultFormat, web_search
 
 load_dotenv()
 
@@ -49,6 +49,7 @@ def main() -> None:
         client=client,
         allowed_engines=["google_light"],
         default_params={"hl": "en"},
+        response_format=SearchResultFormat.JSON,
         result_limit=3,
     )
 
