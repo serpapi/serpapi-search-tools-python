@@ -33,6 +33,9 @@ class _Response:
     def __init__(self, result: dict[str, Any] | str) -> None:
         self._result = result
         self.text = result if isinstance(result, str) else ""
+        self.headers = {
+            "Content-Type": ("text/markdown" if isinstance(result, str) else "application/json")
+        }
 
     def json(self) -> dict[str, Any]:
         if isinstance(self._result, str):
