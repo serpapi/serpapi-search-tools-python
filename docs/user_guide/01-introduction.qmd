@@ -24,7 +24,7 @@ correct mistakes early and avoids unnecessary failed searches.
 
 - **SerpApi** retrieves current search results and returns structured data.
 - **`serpapi-search-tools`** turns each search capability into a ready-to-use
-  Python or agent-SDK tool.
+  agent-SDK tool.
 - **Your agent SDK and model** decide when to call a tool and how to use the
   returned results in the final response.
 
@@ -52,23 +52,17 @@ application grows.
 See [Choose a search tool](search_tools.html) for all nine capabilities and
 their required inputs.
 
-## Use an agent SDK or plain Python
+## Use an agent SDK
 
 When one supported agent SDK is installed, the package detects it and returns
 tools that can be added to that SDK's normal tool list. If several supported
 SDKs are installed, pass `provider=` to choose one explicitly.
 
-For scripts, tests, or a framework that is not listed, request a callable:
-
-```python
-from serpapi_search_tools import web_search
-
-search = web_search(provider="function")
-response = search(query="Python packaging")
-print(response)
-```
-
-Every tool returns compact Markdown by default, including its main result sections and useful web answer sections. `result_limit` controls how many rows are kept in each result table in compact and full modes. Application code that needs structured fields can opt into `SearchResultFormat.JSON`. Set `mode=SearchResultMode.FULL` and `result_limit=None` when application code needs every response section, field, and returned result.
+Every tool returns compact Markdown by default, including its main result
+sections and useful web answer sections. `result_limit` controls how many rows
+are kept in each result table. Choose `SearchResultFormat.JSON` when your agent
+workflow needs structured fields. Set `mode=SearchResultMode.FULL` and
+`result_limit=None` when you need every response section, field, and result.
 
 ## Next steps
 

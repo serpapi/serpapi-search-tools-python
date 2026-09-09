@@ -48,7 +48,3 @@ from serpapi_search_tools import web_search
 
 tool = web_search(provider="openai-agents")
 ```
-
-If your SDK is not listed, request a normal Python callable and follow
-[Use another agent SDK](../../user-guide/configuration.html#support-another-agent-sdk)
-for the next steps.

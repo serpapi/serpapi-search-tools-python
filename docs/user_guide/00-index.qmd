@@ -7,8 +7,8 @@ guide-section: Start Here
 
 `serpapi-search-tools` gives Python agents current web and specialized search
 through [SerpApi](https://serpapi.com). Add only the capabilities your agent
-needs—such as web, news, maps, shopping, hotels, or flights—and use them with
-your existing agent SDK or as normal Python functions.
+needs, such as web, news, maps, shopping, hotels, or flights, and use them with
+your existing agent SDK.
 
 ## Supported agent SDKs
 
@@ -18,9 +18,6 @@ Haystack, Semantic Kernel, Agno, smolagents, and Google ADK. When one supported
 SDK family is installed, the package detects it automatically. See
 [Agent SDKs](user-guide/frameworks.html) for version details and a complete
 example for each SDK.
-
-You can also use every search tool without an agent SDK by choosing
-`provider="function"`.
 
 ## Install
 
@@ -66,7 +63,7 @@ print(result.final_output)
 
 With only OpenAI Agents SDK installed, `web_search()` and `news_search()` are
 detected and created in the right format automatically. If your environment
-contains several supported SDKs, select one explicitly—for example,
+contains several supported SDKs, select one explicitly. For example, use
 `web_search(provider="openai-agents")`.
 
 ## Choose the right search capability

@@ -5,34 +5,28 @@ guide-section: Advanced Usage
 
 # Debug search responses
 
-When an agent gives an unexpected result, call the same tool as a plain Python
-function first. This separates SerpApi request problems from model and SDK
-behavior.
+When an agent gives an unexpected result, inspect the tool invocation in your
+SDK's trace or logs. Compare the arguments chosen by the model with the tool's
+documented inputs, then inspect the SerpApi response.
 
 ## Inspect a request and response
 
 ```python
-import json
-
 from serpapi_search_tools import SearchResultFormat, SearchResultMode, web_search
 
-search = web_search(
-    provider="function",
+debug_search = web_search(
     allowed_engines=["google_light"],
     default_params={"hl": "en", "gl": "us"},
     result_limit=None,
     mode=SearchResultMode.FULL,
     response_format=SearchResultFormat.JSON,
+    name="debug_web_search",
 )
-response = json.loads(search(query="Python packaging tutorials"))
-
-print(response.get("search_parameters"))
-for result in response.get("organic_results", []):
-    print(result.get("title"), result.get("link"))
 ```
 
-Plain callables and SDK tools use the same search logic. If the direct call
-succeeds, inspect the arguments produced by the agent next.
+Temporarily add this tool to your agent and rerun the same prompt. Full JSON
+keeps `search_parameters`, `search_metadata`, and all returned result fields,
+which makes the request and response easier to compare in the trace.
 
 ## Know the result section
 
@@ -50,30 +44,26 @@ Compact mode returns these common result sections:
 | `flights_search` | `best_flights`, `other_flights` |
 | `travel_explore_search` | `destinations` |
 
-Print `response.keys()` and `response.get("error")` when the expected section
-is absent. To inspect `search_metadata` and `search_parameters`, create the
-debug callable with `mode=SearchResultMode.FULL` as shown above.
+If the expected section is absent, inspect the top-level keys and any `error`
+field in the traced response. Use `mode=SearchResultMode.FULL` to retain
+`search_metadata` and `search_parameters` while debugging.
 
 ## Inspect travel request construction
 
-Travel tools do not accept a free-text `q` substitute. Their structured fields
-are sent directly to SerpApi:
+Travel tools do not accept a free-text `q` substitute. Give the agent the
+required trip details in the prompt, then inspect the named arguments in its
+tool invocation:
 
 ```python
 from serpapi_search_tools import flights_search
 
-search = flights_search(provider="function")
-raw = search(
-    departure_id="LAX",
-    arrival_id="AUS",
-    outbound_date="2030-08-01",
-    return_date="2030-08-05",
-    adults=2,
-)
+tools = [flights_search()]
+prompt = "Find round-trip flights from LAX to AUS, August 1–5, 2030, for two adults."
 ```
 
-The package infers SerpApi's trip `type` from the presence of `return_date` and
-maps semantic cabin names such as `business` to the numeric API value.
+The invocation should contain `departure_id`, `arrival_id`, `outbound_date`,
+`return_date`, and `adults`. The package infers the trip type from
+`return_date` and accepts readable cabin names such as `business`.
 
 ## Common failures
 
@@ -90,30 +80,21 @@ maps semantic cabin names such as `business` to the numeric API value.
   age from 1 through 17 for each child; use `1` for a child under one year old.
 - **Incompatible defaults:** remove mutually exclusive engine parameters named
   by the validation error.
-- **Direct call works but the agent fails:** compare the SDK's tool name and
-  the arguments emitted by the agent with the fields documented for that tool.
-- **Direct call also fails:** keep the model out of the test until the SerpApi
-  request and response are correct.
+- **The agent chooses the wrong tool:** give configured tools distinct names
+  and descriptions, then confirm which tool the SDK trace records.
+- **The request looks correct but search fails:** inspect the full response for
+  a SerpApi error, then verify the engine-specific parameters against the
+  official API reference linked from the tool page.
 
 ## Catch provider and transport failures
 
-Invalid local inputs raise `ValueError` before a SerpApi request. Failures returned
-by the built-in SerpApi client raise `SerpApiSearchError`:
-
-```python
-from serpapi_search_tools import SerpApiSearchError, web_search
-
-search = web_search(provider="function")
-try:
-    encoded = search(query="Python packaging")
-except ValueError as exc:
-    print(f"Fix the tool arguments: {exc}")
-except SerpApiSearchError as exc:
-    print(f"SerpApi could not complete the request: {exc}")
-```
+Invalid tool inputs raise `ValueError` before a SerpApi request. Failures from
+the built-in SerpApi client raise `SerpApiSearchError`. Agent SDKs surface or
+handle tool errors differently, so use your SDK's normal tool-error and tracing
+features to inspect them.
 
 The error message replaces any API key found in the upstream request URL with
 `[REDACTED]`, making it safer to retain ordinary application and CI logs.
 
-Return to [Usage and composition](usage.html) after the direct call works, or
-open the complete example under [Choose an agent SDK](frameworks.html).
+Return to [Usage and composition](usage.html), or open the complete example
+for your SDK under [Choose an agent SDK](frameworks.html).

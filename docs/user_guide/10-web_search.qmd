@@ -29,15 +29,14 @@ tool = web_search()
 agent_tools = [tool]
 ```
 
-With one supported SDK installed, `tool` is native to that SDK. For a direct
-Python callable, use `web_search(provider="function")`.
+With one supported SDK installed, `tool` is native to that SDK.
 
 ## Inputs the agent can provide
 
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
 | `query` | string | yes | The words or question to search for |
-| `engine` | enum | no | Search source; omit for the configured default. `google_light` is fast, `google` returns richer Google result types, and the other values select that named web source |
+| `engine` | enum | no | Search source: `google_light`, `google`, `bing`, `yahoo`, or `duckduckgo`; omit for the configured default |
 
 The package maps the friendly `query` field to each engine's native parameter:
 Google, Google Light, Bing, and DuckDuckGo use `q`; Yahoo uses `p`.
@@ -46,7 +45,7 @@ Google, Google Light, Bing, and DuckDuckGo use `q`; Yahoo uses `p`.
 
 | Constructor option | Default | Use it for |
 | --- | --- | --- |
-| `provider` | `"auto"` | Detect the installed SDK; use `"function"` for a callable or an explicit SDK name in multi-SDK environments |
+| `provider` | `"auto"` | Detect the installed SDK, or select an explicit SDK in multi-SDK environments |
 | `allowed_engines` | all five engines | Restrict the enum visible to the model |
 | `default_engine` | `google_light` when allowed | Choose the engine used when the model omits `engine` |
 | `default_params` | `None` | Fix engine parameters such as locale, filters, or pagination in application code |

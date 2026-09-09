@@ -54,8 +54,8 @@ Replace `openai-agents` with the extra in the table below.
 | Google ADK | `google-adk` | `google-adk >=2.3,<3` | [Google ADK](../docs/sdk-examples/google_adk.html) |
 | Semantic Kernel | `semantic-kernel` | `semantic-kernel >=1.36,<2` | [Semantic Kernel](../docs/sdk-examples/semantic_kernel.html) |
 
-You only need dependencies for the SDKs you use. The base install remains small
-and also supports direct Python calls.
+You only need dependencies for the SDKs you use, so the base install remains
+small.
 
 ## Automatic detection is the normal path
 
@@ -79,12 +79,6 @@ tool = web_search(provider="openai-agents")
 
 Use the same explicit provider for every tool in one agent.
 LangGraph and LangChain count as one adapter family.
-
-## No supported SDK installed
-
-Automatic detection falls back to a normal callable. You can request that form
-directly with `provider="function"` for scripts, tests, or an unlisted agent
-framework. See [Support another agent SDK](configuration.html#support-another-agent-sdk).
 
 ## Install only what your agent uses
 

@@ -237,18 +237,14 @@ Every constructor accepts:
 
 Use `default_params` for documented SerpApi settings that should stay under your application's control, such as locale, currency, safe search, or pagination. Use `result_limit` to control how many results the tool returns. The agent continues to supply only the inputs described by its search tool.
 
-Tools return Markdown by default. Markdown keeps links and tables readable without JSON syntax overhead. Application code that needs structured fields can opt into JSON:
+Tools return Markdown by default, which keeps links and tables readable. Choose JSON when your agent workflow needs structured fields:
 
 ```python
-import json
-
 from serpapi_search_tools import SearchResultFormat, web_search
 
-search = web_search(
-    provider="function",
+structured_web_search = web_search(
     response_format=SearchResultFormat.JSON,
 )
-result = json.loads(search(query="Python packaging"))
 ```
 
 ```python

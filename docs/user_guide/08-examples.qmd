@@ -49,15 +49,12 @@ Applications can configure localization and currency when each tool is created:
 from serpapi_search_tools import flights_search, hotels_search, travel_explore_search
 
 hotels = hotels_search(
-    provider="function",
     default_params={"currency": "USD", "gl": "us"},
 )
 flights = flights_search(
-    provider="function",
     default_params={"currency": "USD", "hl": "en"},
 )
 explore = travel_explore_search(
-    provider="function",
     default_params={"currency": "USD", "gl": "us"},
 )
 ```

@@ -292,25 +292,6 @@ def test_live_unicode_query_round_trips() -> None:
     assert result["organic_results"]
 
 
-def test_live_exact_maps_place_is_preserved_in_both_compact_formats() -> None:
-    json_encoded = maps_search(
-        provider="function",
-        response_format=SearchResultFormat.JSON,
-        result_limit=1,
-    )(query="Eiffel Tower")
-    json_result = _decode_success(json_encoded, "maps-exact-place")
-
-    assert set(json_result) == {"place_results"}
-    assert isinstance(json_result["place_results"], dict)
-    assert json_result["place_results"]["title"] == "Eiffel Tower"
-
-    markdown = maps_search(provider="function", result_limit=1)(query="Eiffel Tower")
-
-    assert markdown.startswith("## Place Results")
-    assert "Eiffel Tower" in markdown
-    assert "search_metadata" not in markdown
-
-
 @pytest.mark.parametrize("case", LIVE_PARAMETER_CASES, ids=lambda case: case.id)
 def test_each_public_tool_returns_nonempty_compact_results_live(
     case: LiveParameterCase,

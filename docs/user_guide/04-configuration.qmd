@@ -40,7 +40,7 @@ All nine constructors accept these options:
 
 | Option | Default | When to use it |
 | --- | --- | --- |
-| `provider` | `"auto"` | Usually omit it. Select an SDK explicitly when multiple supported SDKs are installed, or use `"function"` for a callable. |
+| `provider` | `"auto"` | Usually omit it. Select an SDK explicitly when multiple supported SDKs are installed. |
 | `api_key` | `None` | Pass a SerpApi key from a secret manager instead of using an environment variable. |
 | `client` | `None` | Replace the built-in client for tests, caching, logging, retries, or response reduction. |
 | `default_params` | `None` | Set supported SerpApi options such as locale, currency, filters, or pagination in application code. |
@@ -84,12 +84,7 @@ tools = [
 ]
 ```
 
-LangGraph and LangChain count as one adapter family because both use the
-LangChain structured-tool adapter.
-
-If no supported SDK is installed, automatic detection returns a normal Python
-callable. `provider="function"` requests that callable explicitly and is useful
-for scripts, tests, and custom integrations.
+LangGraph and LangChain count as one adapter family.
 
 ## Options that differ by tool
 
@@ -107,32 +102,28 @@ The search inputs and useful SerpApi parameters depend on the capability:
 | [`flights_search`](flights_search.html) | Typed route/passenger fields plus currency, airline, bag, stop, and time filters |
 | [`travel_explore_search`](travel_explore_search.html) | Typed destination constraints plus discovery filters |
 
-Read the dedicated page before adding engine-specific `default_params`.
+Each dedicated page lists its agent-visible enum values and links to the
+official SerpApi reference for supported `default_params`.
 
 ## Choose Markdown or JSON
 
-Markdown is the default response format. It gives agents readable headings, links, and tables without JSON syntax overhead:
+Markdown is the default response format. It gives agents readable headings,
+links, and tables:
 
 ```python
 from serpapi_search_tools import web_search
 
-search = web_search(provider="function")
-print(search(query="Python packaging"))
+search = web_search()
 ```
 
-Use JSON when application code needs named fields:
+Choose JSON when your agent workflow needs named fields:
 
 ```python
-import json
-
 from serpapi_search_tools import SearchResultFormat, web_search
 
 search = web_search(
-    provider="function",
     response_format=SearchResultFormat.JSON,
 )
-response = json.loads(search(query="Python packaging"))
-print(response.get("organic_results", []))
 ```
 
 `response_format` is fixed when the tool is created. It is not exposed to the model.
@@ -184,7 +175,6 @@ Use full mode when application code needs supporting response sections or additi
 from serpapi_search_tools import SearchResultMode, web_search
 
 debug_search = web_search(
-    provider="function",
     mode=SearchResultMode.FULL,
     result_limit=10,
 )
@@ -280,8 +270,6 @@ Pass `client=` for deterministic tests, caching, logging, retries, or a company
 HTTP wrapper. The object needs one synchronous `search(params)` method:
 
 ```python
-import json
-
 from serpapi_search_tools import SearchResultFormat, SearchResultMode, hotels_search
 
 
@@ -295,44 +283,16 @@ class RecordingClient:
 
 
 client = RecordingClient()
-search = hotels_search(
-    provider="function",
+tool = hotels_search(
     client=client,
     mode=SearchResultMode.FULL,
     response_format=SearchResultFormat.JSON,
 )
-result = json.loads(
-    search(
-        query="hotels in Kyoto",
-        check_in_date="2030-08-01",
-        check_out_date="2030-08-04",
-    )
-)
-print(result["params"])
 ```
 
 When a custom client is supplied, the package does not create the built-in
-client or read a SerpApi key.
-
-## Use another agent SDK {#support-another-agent-sdk}
-
-Request a normal callable and wrap it with the SDK's documented custom-tool API:
-
-```python
-from serpapi_search_tools import flights_search
-
-search_flights = flights_search(provider="function")
-
-tool = CustomTool(
-    name=search_flights.__name__,
-    description=search_flights.__doc__,
-    function=search_flights,
-)
-```
-
-The callable carries a typed Python signature. Follow your SDK's custom-tool
-guide and use the inputs documented on the matching search-tool page. If the
-SDK asks for JSON Schema, define those same fields explicitly.
+client or read a SerpApi key. Calls made by the agent use the supplied client's
+`search(params)` method.
 
 For complete combinations built from these options, continue with
 [Recipes](recipes.html) or [Runnable examples](examples.html).

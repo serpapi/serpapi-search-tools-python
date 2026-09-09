@@ -3,17 +3,17 @@ title: Usage and composition
 guide-section: Start Here
 ---
 
-## Call a tool directly
+## Create a tool for your agent
 
 ```python
 from serpapi_search_tools import web_search
 
-search = web_search(provider="function")
-response = search(query="Python packaging")
-print(response)
+tools = [web_search()]
 ```
 
-The returned callable has a narrow signature and returns compact Markdown by default. Pass `response_format=SearchResultFormat.JSON` when code needs to parse named fields.
+With one supported SDK installed, the constructor returns a tool for that SDK.
+It returns compact Markdown by default. Choose
+`response_format=SearchResultFormat.JSON` when your workflow needs named fields.
 
 ## Add a specialized capability
 
@@ -51,21 +51,17 @@ shopping = shopping_search(
 The generated schema enum contains only the allowed values. Fixed-engine tools
 have no `engine` field.
 
-## Structured travel calls
+## Add structured travel search
 
 ```python
 from serpapi_search_tools import flights_search
 
-flights = flights_search(provider="function")
-response = flights(
-    departure_id="LAX",
-    arrival_id="AUS",
-    outbound_date="2030-08-01",
-)
+tools = [flights_search()]
 ```
 
-The route and date are passed as clear, named fields. You do not need to build
-a text query for a flight search.
+The tool schema asks the model for named fields such as `departure_id`,
+`arrival_id`, and `outbound_date`. You do not need to build a text query for a
+flight search.
 
 See [Choose a search tool](search_tools.html), [Recipes](recipes.html), and
 [Configuration](configuration.html) next.
