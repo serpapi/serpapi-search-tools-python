@@ -71,6 +71,9 @@ contains several supported SDKs, select one explicitly. For example, use
 | Your agent needs | Start with |
 | --- | --- |
 | General websites and background research | [`web_search`](user-guide/web_search.html) |
+| Read the content of one page | [`web_extract`](user-guide/web_extract.html) |
+| Discover URLs on a website | [`web_map`](user-guide/web_map.html) |
+| Read several linked pages on a website | [`web_crawl`](user-guide/web_crawl.html) |
 | Current reporting | [`news_search`](user-guide/news_search.html) |
 | Places and local businesses | [`maps_search`](user-guide/maps_search.html) |
 | Images and source pages | [`images_search`](user-guide/images_search.html) |

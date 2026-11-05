@@ -1,0 +1,50 @@
+---
+title: Web extract
+guide-section: Search tools
+---
+
+# Read a page with `web_extract`
+
+`web_extract` reads one public HTTP or HTTPS URL through the SerpApi Extract API. Use it to read a page found by `web_search`.
+
+```python
+from serpapi_search_tools import web_extract
+
+extract = web_extract(provider="function")
+markdown = extract(url="https://example.com")
+print(markdown)
+```
+
+The agent supplies only `url`. The tool uses `engine="extract"` and `mode="scrape"`. It does not execute JavaScript. Use [`web_map`](web_map.html) to discover URLs or [`web_crawl`](web_crawl.html) to read linked pages.
+
+## Response modes
+
+Markdown output preserves the API response, including whitespace, headings, and links. For ordinary pages it contains the page content. If a Google or Bing search URL redirects to its dedicated engine, it can contain search results and metadata instead.
+
+| Configuration | Returned value |
+| --- | --- |
+| Default, or any Markdown configuration | The API's `output=md` response unchanged |
+| `response_format="json"` | A JSON string containing only `{"markdown":"..."}` |
+| `mode="full", response_format="json"` | The complete JSON response |
+
+Compact JSON raises `SerpApiSearchError` if the response has a missing or empty `markdown` field. Use full JSON to read the available metadata, structured page fields, or a redirected engine's response. To omit Markdown from full JSON, set `default_params={"include_markdown": False}`.
+
+## Configure extraction
+
+```python
+from serpapi_search_tools import web_extract
+
+extract = web_extract(
+    provider="function",
+    timeout=90,
+    default_params={
+        "include_tags": "main,article",
+        "exclude_tags": "nav,footer,.ads",
+        "timeout": 30000,
+    },
+)
+```
+
+The constructor's `timeout` controls the SDK request in seconds. `default_params["timeout"]` controls the Extract API's page fetch in milliseconds. Other settings include `device`, `prefetch_delay`, and `no_cache`.
+
+See [Common configuration](configuration.html) for provider and client options and the [Extract API reference](https://serpapi.com/extract-api) for supported page filters.

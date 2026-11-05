@@ -1,10 +1,11 @@
 # Runnable examples
 
-Start with the direct examples. They need no agent SDK extra. These commands use
-the published package and add `python-dotenv` so the scripts can load `.env`:
+Run these commands from the repository root. Each direct example uses an isolated environment with `python-dotenv` to load `.env`.
 
 ```bash
 uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_search.py
+uv run --isolated --no-project --with . --with python-dotenv examples/direct_extract.py map https://www.python.org/about/
+uv run --isolated --no-project --with . --with python-dotenv examples/direct_extract.py crawl https://www.python.org/about/
 uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_travel.py
 uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_multi_search.py
 uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_marketplace_comparison.py
@@ -19,6 +20,7 @@ to `.env`, or export values in your shell. You always need `SERPAPI_API_KEY` or
 | Script | Scenario | Extra | Search tools demonstrated |
 | --- | --- | --- | --- |
 | `direct_search.py` | Compare default Markdown with explicit JSON | none | Web and news |
+| `direct_extract.py` | Read one page, discover URLs, or crawl up to two pages | none | Web extract, map, and crawl |
 | `direct_travel.py` | Structured travel calls | none | Hotels, flights, and travel explore |
 | `direct_multi_search.py` | Multi-vertical research | none | Web, news, maps, and shopping |
 | `direct_marketplace_comparison.py` | Normalize marketplace results | none | Google Shopping, Amazon, Walmart, and eBay |

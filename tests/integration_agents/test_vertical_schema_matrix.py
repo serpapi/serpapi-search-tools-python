@@ -15,6 +15,9 @@ from serpapi_search_tools import (
     shopping_search,
     travel_explore_search,
     videos_search,
+    web_crawl,
+    web_extract,
+    web_map,
     web_search,
 )
 
@@ -44,6 +47,9 @@ class NoSearchClient:
 
 
 SCHEMA_CASES: list[tuple[Callable[..., Any], set[str], set[str]]] = [
+    (web_extract, {"url"}, {"url"}),
+    (web_map, {"url"}, {"url"}),
+    (web_crawl, {"url"}, {"url"}),
     (web_search, {"query", "engine"}, {"query"}),
     (news_search, {"query"}, {"query"}),
     (maps_search, {"query", "location", "zoom", "nearby"}, {"query"}),

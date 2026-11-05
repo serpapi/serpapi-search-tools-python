@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
 ]
-dependencies = ["mistune>=3.1.0,<4", "serpapi>=1.0.0,<2"]
+dependencies = ["mistune>=3.1.0,<4", "serpapi>=1.2.0,<2"]
 
 [project.urls]
 Documentation = "https://serpapi.github.io/serpapi-search-tools-python/"

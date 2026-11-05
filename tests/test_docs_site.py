@@ -33,6 +33,9 @@ def _supported_sdk_example_pages() -> tuple[str, ...]:
 SUPPORTED_SDK_EXAMPLE_PAGES = _supported_sdk_example_pages()
 
 TOOL_DOCS = {
+    "web_map": ("web_map.qmd", {"https://serpapi.com/extract-api"}),
+    "web_crawl": ("web_crawl.qmd", {"https://serpapi.com/extract-api"}),
+    "web_extract": ("web_extract.qmd", {"https://serpapi.com/extract-api"}),
     "web_search": (
         "web_search.qmd",
         {
@@ -87,7 +90,7 @@ def test_great_docs_source_directories_exist() -> None:
 def test_every_public_tool_has_a_complete_dedicated_page_and_navigation_entry() -> None:
     import serpapi_search_tools
 
-    public_tools = {name for name in serpapi_search_tools.__all__ if name.endswith("_search")}
+    public_tools = set(serpapi_search_tools._SUPPORTED_ENGINES_BY_TOOL)
     assert set(TOOL_DOCS) == public_tools
 
     for tool_name, (filename, engine_urls) in TOOL_DOCS.items():

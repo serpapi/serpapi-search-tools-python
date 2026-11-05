@@ -79,7 +79,7 @@ jobs:
       - name: Run live search suite with the exact TestPyPI wheel
         run: |
           uv pip install --python .testpypi-venv/bin/python "pytest>=8.4,<9"
-          .testpypi-venv/bin/python -m pytest -q -m live tests/test_live.py
+          .testpypi-venv/bin/python -m pytest -q -m live tests/test_live.py tests/test_live_extract.py
 
   framework-tests:
     name: Verify ${{ matrix.provider }} adapter

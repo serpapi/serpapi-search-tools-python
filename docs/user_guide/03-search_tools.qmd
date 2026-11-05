@@ -12,6 +12,9 @@ provide the required information.
 | If your agent needs to... | Use | SerpApi engine(s) | Required inputs |
 | --- | --- | --- | --- |
 | Research general websites | [`web_search`](web_search.html) | `google`, `google_light`, `bing`, `yahoo`, `duckduckgo` | `query` |
+| Discover URLs on a website | [`web_map`](web_map.html) | `extract` (map) | `url` |
+| Read multiple pages on a website | [`web_crawl`](web_crawl.html) | `extract` (crawl) | `url` |
+| Read a public page | [`web_extract`](web_extract.html) | `extract` | `url` |
 | Find current reporting | [`news_search`](news_search.html) | `google_news` | `query` |
 | Discover places or businesses | [`maps_search`](maps_search.html) | `google_maps` | `query` |
 | Find image URLs and metadata | [`images_search`](images_search.html) | `google_images` | `query` |
@@ -24,6 +27,7 @@ provide the required information.
 ## A simple decision rule
 
 - Start with [`web_search`](web_search.html) for broad research.
+- Use [`web_extract`](web_extract.html) to read the content of a page found by web search.
 - Add [`news_search`](news_search.html) when freshness and news sources matter.
 - Use [`maps_search`](maps_search.html), [`images_search`](images_search.html),
   [`shopping_search`](shopping_search.html), or

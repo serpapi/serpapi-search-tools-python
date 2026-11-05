@@ -146,6 +146,9 @@ Browse the [runnable examples](https://github.com/serpapi/serpapi-search-tools-p
 | Constructor             | SerpApi engine(s)                                       | Required search inputs                        |
 |-------------------------|---------------------------------------------------------|-----------------------------------------------|
 | `web_search`            | `google`, `google_light`, `bing`, `yahoo`, `duckduckgo` | `query`                                       |
+| `web_map`               | `extract` (map site URLs)                               | `url`                                         |
+| `web_crawl`             | `extract` (read linked pages)                           | `url`                                         |
+| `web_extract`           | `extract`                                               | `url`                                         |
 | `news_search`           | `google_news`                                           | `query`                                       |
 | `maps_search`           | `google_maps`                                           | `query`                                       |
 | `images_search`         | `google_images`                                         | `query`                                       |
@@ -167,6 +170,27 @@ tool = web_search(
 ```
 
 SerpApi supports multiple general web search engines, including Google Light, Google, Bing, Yahoo, and DuckDuckGo. Google Light is the default because it provides fast, general-purpose web results. Use `allowed_engines` to choose which engines are available and `default_engine` to select the initial one.
+
+### Read pages, discover URLs, or crawl a site
+
+Give your agent the tools it needs. Each takes one public HTTP or HTTPS URL and returns Markdown by default.
+
+| Tool | Default Markdown | Compact JSON (`response_format="json"`) |
+| --- | --- | --- |
+| [`web_extract`](https://serpapi.github.io/serpapi-search-tools-python/user-guide/web_extract.html) | The page content | `markdown` |
+| [`web_map`](https://serpapi.github.io/serpapi-search-tools-python/user-guide/web_map.html) | A list of discovered links | `urls` with URL, title, and source when available |
+| [`web_crawl`](https://serpapi.github.io/serpapi-search-tools-python/user-guide/web_crawl.html) | Content grouped by page URL | `pages` with URL, depth, Markdown, and any page error |
+
+```python
+from serpapi_search_tools import web_crawl, web_extract, web_map
+
+read = web_extract(provider="function")
+discover = web_map(provider="function", default_params={"include_sitemap": False})
+crawl = web_crawl(provider="function", default_params={"max_pages": 3, "max_depth": 1})
+print(discover(url="https://www.python.org/about/"))
+```
+
+Set `response_format="json", mode="full"` to keep all fields returned by the API. For Google or Bing search URLs that redirect to a dedicated engine, Markdown includes that engine's results and full JSON preserves its schema. A crawl costs one search credit per successfully extracted page, including the starting page.
 
 ### News, maps, images, and videos
 
@@ -225,17 +249,18 @@ Every constructor accepts:
 | `provider`         | Defaults to `"auto"`; select an SDK explicitly only when multiple supported SDKs share an environment |
 | `include_examples` | Include or omit a short example in the model description                                              |
 | `api_key`          | Explicit SerpApi key                                                                                  |
-| `client`           | Custom object with `search(params)` for caching, interception, or tests                               |
+| `client`           | Custom object with `search(params)` for search tools or `extract(params)` for `web_extract`, `web_map`, and `web_crawl`, for caching, interception, or tests |
 | `default_params`   | Application-controlled SerpApi options                                                                |
 | `timeout`          | Timeout passed to the SerpApi SDK client                                                              |
 | `name`             | Tool name presented to the model                                                                      |
 | `mode`             | Result detail level; compact mode is the default, while full mode keeps supporting sections and all fields on retained results |
 | `response_format`  | Output serialization; Markdown is the default, while `SearchResultFormat.JSON` returns compact or full JSON text |
-| `result_limit`     | Maximum items kept in each result list in either mode; defaults vary by tool; use `None` for all results |
+
+Search tools accept `result_limit` to cap each result list in either mode. Set it to `None` to keep all results. For `web_crawl`, use `default_params={"max_pages": 3}` to bound the number of pages fetched.
 
 `web_search` and `shopping_search` also accept `allowed_engines` and `default_engine`. The tool offers only the engine values you configure.
 
-Use `default_params` for documented SerpApi settings that should stay under your application's control, such as locale, currency, safe search, or pagination. Use `result_limit` to control how many results the tool returns. The agent continues to supply only the inputs described by its search tool.
+Use `default_params` for documented SerpApi settings that should stay under your application's control, such as locale, currency, safe search, or pagination. Use `result_limit` on search tools to control how many results they return. The agent continues to supply only the inputs described by its search tool.
 
 Tools return Markdown by default, which keeps links and tables readable. Choose JSON when your agent workflow needs structured fields:
 

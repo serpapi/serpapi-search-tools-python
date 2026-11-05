@@ -1,0 +1,19 @@
+---
+title: Web map
+guide-section: Search tools
+---
+
+# Discover site URLs with `web_map`
+
+Use `web_map` to find pages linked by a website or listed in its sitemaps. Give the agent this tool when it needs to choose which URLs to read. Use [`web_extract`](web_extract.html) to read a chosen URL.
+
+```python
+from serpapi_search_tools import web_map
+
+discover = web_map(provider="function", default_params={"include_sitemap": False})
+print(discover(url="https://www.python.org/about/"))
+```
+
+The agent supplies one absolute HTTP or HTTPS URL. The application can set `include_sitemap` (default `True`) and `include_subdomains` (default `False`) in `default_params`.
+
+By default the tool returns the API's Markdown list of links. With `response_format="json"`, compact mode returns a JSON string with a `urls` list containing each link's `url`, `title`, and `source` when present. Select `mode="full"` for the complete JSON response, including metadata. See the [Extract API reference](https://serpapi.com/extract-api).

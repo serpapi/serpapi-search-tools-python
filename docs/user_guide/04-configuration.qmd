@@ -36,7 +36,7 @@ retains control of service-level settings.
 
 ## Common constructor options
 
-All nine constructors accept these options:
+All constructors accept these options:
 
 | Option | Default | When to use it |
 | --- | --- | --- |
@@ -47,9 +47,10 @@ All nine constructors accept these options:
 | `timeout` | `None` | Set a request timeout on the built-in SerpApi client. |
 | `mode` | `SearchResultMode.COMPACT` | Return the main result data; use `SearchResultMode.FULL` to keep supporting sections and all fields on retained results. |
 | `response_format` | `SearchResultFormat.MARKDOWN` | Return readable Markdown by default, or use `SearchResultFormat.JSON` for structured application data. |
-| `result_limit` | tool-specific | Set the maximum number of items kept in each result list in either mode. Use `None` to keep all returned items. |
 | `include_examples` | `True` | Keep or remove the short invocation hint in the tool description. |
 | `name` | constructor name | Give separately configured tools distinct names the model can understand. |
+
+Search tools accept `result_limit` to cap each result list in either mode. Set it to `None` to keep all results. To limit pages fetched by `web_crawl`, set `max_pages` in `default_params`.
 
 ```python
 from serpapi_search_tools import news_search
@@ -93,6 +94,9 @@ The search inputs and useful SerpApi parameters depend on the capability:
 | Tool | Tool-specific configuration |
 | --- | --- |
 | [`web_search`](web_search.html) | `allowed_engines`, `default_engine`, plus per-engine web defaults |
+| [`web_map`](web_map.html) | Sitemap and subdomain discovery in `default_params` |
+| [`web_crawl`](web_crawl.html) | Page and depth limits in `default_params` |
+| [`web_extract`](web_extract.html) | Content selectors and other Extract settings in `default_params` |
 | [`news_search`](news_search.html) | Google News query-mode locale and query filters |
 | [`maps_search`](maps_search.html) | Typed location/zoom/nearby inputs plus Maps defaults |
 | [`images_search`](images_search.html) | Safe search and image filters |
@@ -128,9 +132,11 @@ search = web_search(
 
 `response_format` is fixed when the tool is created. It is not exposed to the model.
 
+For `web_extract`, `web_map`, and `web_crawl`, either mode returns the API's Markdown as received. With `response_format="json"`, compact mode selects the fields listed below. Full mode returns all fields supplied by the API.
+
 ## Choose compact or full results
 
-All tools default to `SearchResultMode.COMPACT`. Compact mode keeps the main result sections and omits metadata, request parameters, pagination, filters, and other supporting sections. Markdown keeps the corresponding result headings and tables. JSON also keeps non-list answer sections such as `answer_box` whole. If a successful JSON response has no supported result section, the tool returns `no_results: true` with available status and search information.
+All tools default to `SearchResultMode.COMPACT`. For search tools, compact mode keeps the main result sections and omits metadata, request parameters, pagination, filters, and other supporting sections. Markdown keeps the corresponding result headings and tables. JSON also keeps non-list answer sections such as `answer_box` whole. If a successful JSON search response has no supported result section, the search tool returns `no_results: true` with available status and search information. With compact JSON, `web_extract` raises `SerpApiSearchError` when the response has missing or empty `markdown`. The three Extract tools return the API body for Markdown, including empty bodies.
 
 | Tool | Default `result_limit` |
 | --- | ---: |
@@ -143,6 +149,9 @@ All tools default to `SearchResultMode.COMPACT`. Compact mode keeps the main res
 
 | Tool | Compact result families |
 | --- | --- |
+| `web_extract` | `markdown` |
+| `web_map` | `urls` |
+| `web_crawl` | `pages` |
 | `web_search` with Google | `answer_box`, `knowledge_graph`, `ai_overview`, `organic_results` |
 | `web_search` with Google Light | `answer_box`, `knowledge_graph`, `organic_results`, `related_questions`, `related_searches`, `top_stories` |
 | `web_search` with Bing | `answer_box`, `knowledge_graph`, `copilot_answer`, `organic_results` |
@@ -180,7 +189,7 @@ debug_search = web_search(
 )
 ```
 
-To keep the complete SerpApi response, including all returned results, set both `mode=SearchResultMode.FULL` and `result_limit=None`.
+For search tools, to keep all response sections and returned results, set both `mode=SearchResultMode.FULL` and `result_limit=None`.
 
 `mode` is a constructor option, not a model input. An agent cannot expand its
 own tool response and unexpectedly consume more context.
@@ -260,14 +269,19 @@ export SERPAPI_API_KEY="your-serpapi-key"
 `SERPAPI_KEY` is also accepted. Generic variables such as `API_KEY` are ignored
 so a model-provider credential cannot be sent to SerpApi accidentally.
 
-The key is resolved when a real search runs. Creating a tool or inspecting its
+The key is resolved when a request runs. Creating a tool or inspecting its
 schema does not contact SerpApi. In production, you can pass `api_key=` using a
 value read from your secret manager.
 
 ## Custom clients
 
 Pass `client=` for deterministic tests, caching, logging, retries, or a company
-HTTP wrapper. The object needs one synchronous `search(params)` method:
+HTTP wrapper. Search tools require a synchronous `search(params)` method;
+`web_extract`, `web_map`, and `web_crawl` require a synchronous `extract(params)` method. A client shared
+between both kinds of tools needs both methods. Each method must return a
+string for Markdown output or a mapping for JSON output.
+
+For example, this client handles JSON search requests:
 
 ```python
 from serpapi_search_tools import SearchResultFormat, SearchResultMode, hotels_search
@@ -292,7 +306,7 @@ tool = hotels_search(
 
 When a custom client is supplied, the package does not create the built-in
 client or read a SerpApi key. Calls made by the agent use the supplied client's
-`search(params)` method.
+`search(params)` or `extract(params)` method, according to the tool.
 
 For complete combinations built from these options, continue with
 [Recipes](recipes.html) or [Runnable examples](examples.html).

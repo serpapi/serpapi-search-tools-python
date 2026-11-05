@@ -35,6 +35,9 @@ def test_public_package_exposes_intent_specific_tools_and_semantic_enums() -> No
         "shopping_search",
         "travel_explore_search",
         "videos_search",
+        "web_crawl",
+        "web_extract",
+        "web_map",
         "web_search",
     }
     assert all(callable(getattr(package, name)) for name in package.__all__)

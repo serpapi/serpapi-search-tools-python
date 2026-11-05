@@ -76,7 +76,7 @@ jobs:
       - name: Run live search suite with the exact release wheel
         run: |
           uv pip install --python .release-venv/bin/python "pytest>=8.4,<9"
-          .release-venv/bin/python -m pytest -q -m live tests/test_live.py
+          .release-venv/bin/python -m pytest -q -m live tests/test_live.py tests/test_live_extract.py
 
   framework-tests:
     name: Verify ${{ matrix.provider }} adapter

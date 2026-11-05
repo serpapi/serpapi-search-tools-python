@@ -49,8 +49,7 @@ Separate tools make their purpose and inputs clear. They also let you configure
 web, news, local, shopping, or travel searches independently as your
 application grows.
 
-See [Choose a search tool](search_tools.html) for all nine capabilities and
-their required inputs.
+See [Choose a search tool](search_tools.html) for every capability and its required inputs.
 
 ## Use an agent SDK
 
@@ -58,11 +57,7 @@ When one supported agent SDK is installed, the package detects it and returns
 tools that can be added to that SDK's normal tool list. If several supported
 SDKs are installed, pass `provider=` to choose one explicitly.
 
-Every tool returns compact Markdown by default, including its main result
-sections and useful web answer sections. `result_limit` controls how many rows
-are kept in each result table. Choose `SearchResultFormat.JSON` when your agent
-workflow needs structured fields. Set `mode=SearchResultMode.FULL` and
-`result_limit=None` when you need every response section, field, and result.
+Every tool returns Markdown by default. Search tools keep their main result sections and useful web answer sections; `result_limit` controls how many rows are kept in each result table. The Extract tools take one URL. Use `web_extract` to read a page, `web_map` to discover links, and `web_crawl` to read linked pages. All three return the Markdown provided by the API. Choose `SearchResultFormat.JSON` when your agent workflow needs structured fields. Set `mode=SearchResultMode.FULL` for the API response, and set `result_limit=None` on search tools to keep all results.
 
 ## Next steps
 
