@@ -302,26 +302,37 @@ class SearchRuntime:
         return json.dumps(plain_result, default=str, separators=(",", ":"))
 
     def _request(self, params: dict[str, Any], *, extract: bool = False) -> Mapping[str, Any] | str:
-        client = self._client()
+        client = self.client
+        api_key = None
+        if client is None:
+            api_key = self.api_key or env_api_key()
+            if not api_key:
+                raise RuntimeError(
+                    "Set SERPAPI_API_KEY or SERPAPI_KEY, or pass api_key=..., before searching."
+                )
+            client = self._builtin_client(api_key)
         try:
-            if extract:
-                return cast(ExtractClient, client).extract(params)
-            return cast(SearchClient, client).search(params)
+            if not extract:
+                return cast(SearchClient, client).search(params)
+            result = cast(ExtractClient, client).extract(params)
         except Exception as exc:
-            if self.client is None:
-                api_key = self.api_key or env_api_key()
+            if api_key is not None:
                 message = _sanitized_provider_error(exc, api_key=api_key)
                 raise SerpApiSearchError(f"SerpApi request failed: {message}") from None
             operation = "extract" if extract else "search"
             raise SerpApiSearchError(f"Custom {operation} client request failed.") from None
 
-    def _client(self) -> SearchClient | ExtractClient:
-        if self.client is not None:
-            return self.client
+        if isinstance(result, Mapping) and (error := result.get("error")):
+            message = "The custom client returned an API error."
+            if api_key is not None:
+                message = _sanitized_provider_error(RuntimeError(str(error)), api_key=api_key)
+            raise SerpApiSearchError(f"SerpApi extraction failed: {message}")
+        return result
 
-        client = getattr(self._builtin_clients, "client", None)
-        if client is not None:
-            return cast(SearchClient, client)
+    def _builtin_client(self, api_key: str) -> SearchClient | ExtractClient:
+        cached = getattr(self._builtin_clients, "entry", None)
+        if cached is not None and cached[0] == api_key:
+            return cached[1]
 
         with self._builtin_client_lock:
             try:
@@ -329,12 +340,6 @@ class SearchRuntime:
             except ImportError as exc:
                 message = "serpapi is required. Install or repair it with `pip install serpapi`."
                 raise ImportError(message) from exc
-
-            api_key = self.api_key or env_api_key()
-            if not api_key:
-                raise RuntimeError(
-                    "Set SERPAPI_API_KEY or SERPAPI_KEY, or pass api_key=..., before searching."
-                )
 
             client_factory = getattr(serpapi, "Client", None)
             if client_factory is None:
@@ -352,7 +357,7 @@ class SearchRuntime:
                 SearchClient,
                 cast(Callable[..., Any], client_factory)(**kwargs),
             )
-            self._builtin_clients.client = client
+            self._builtin_clients.entry = (api_key, client)
             return client
 
 

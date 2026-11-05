@@ -35,7 +35,7 @@ SUPPORTED_SDK_EXAMPLE_PAGES = _supported_sdk_example_pages()
 TOOL_DOCS = {
     "web_map": ("web_map.qmd", {"https://serpapi.com/extract-api"}),
     "web_crawl": ("web_crawl.qmd", {"https://serpapi.com/extract-api"}),
-    "web_extract": ("web_extract.qmd", {"https://serpapi.com/extract-api"}),
+    "web_fetch": ("web_fetch.qmd", {"https://serpapi.com/extract-api"}),
     "web_search": (
         "web_search.qmd",
         {

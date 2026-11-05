@@ -1,17 +1,17 @@
 ---
-title: Web extract
+title: Web fetch
 guide-section: Search tools
 ---
 
-# Read a page with `web_extract`
+# Read a page with `web_fetch`
 
-`web_extract` reads one public HTTP or HTTPS URL through the SerpApi Extract API. Use it to read a page found by `web_search`.
+`web_fetch` reads one public HTTP or HTTPS URL through the SerpApi Extract API. Use it to read a page found by `web_search`.
 
 ```python
-from serpapi_search_tools import web_extract
+from serpapi_search_tools import web_fetch
 
-extract = web_extract(provider="function")
-markdown = extract(url="https://example.com")
+fetch = web_fetch(provider="function")
+markdown = fetch(url="https://example.com")
 print(markdown)
 ```
 
@@ -32,9 +32,9 @@ Compact JSON raises `SerpApiSearchError` if the response has a missing or empty 
 ## Configure extraction
 
 ```python
-from serpapi_search_tools import web_extract
+from serpapi_search_tools import web_fetch
 
-extract = web_extract(
+fetch = web_fetch(
     provider="function",
     timeout=90,
     default_params={

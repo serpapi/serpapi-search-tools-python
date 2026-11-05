@@ -9,7 +9,7 @@ from typing import Any
 import serpapi
 import serpapi.models
 
-from serpapi_search_tools import SearchResultFormat, flights_search, web_extract, web_search
+from serpapi_search_tools import SearchResultFormat, flights_search, web_fetch, web_search
 
 AGENT_SDK_DISTRIBUTIONS = (
     "agno",
@@ -129,7 +129,7 @@ def main() -> None:
     )
     assert callable(tool), "provider='auto' must fall back to a plain callable"
 
-    extract = web_extract(api_key="not-a-real-key")
+    extract = web_fetch(api_key="not-a-real-key")
     assert callable(extract)
     assert extract(url="https://example.com") == "# Page\n\nPage content.\n"
 

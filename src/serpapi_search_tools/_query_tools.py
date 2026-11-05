@@ -52,7 +52,7 @@ SHOPPING_QUERY_PARAM_BY_ENGINE: Mapping[str, str] = {
 }
 
 _VERTICAL_HINTS: Mapping[str, str] = {
-    "extract": "web_extract",
+    "extract": "web_fetch",
     "google_news": "news_search",
     "google_maps": "maps_search",
     "google_images": "images_search",

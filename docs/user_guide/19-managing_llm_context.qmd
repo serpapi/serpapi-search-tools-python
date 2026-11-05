@@ -19,7 +19,7 @@ Markdown is the default because headings, tables, and links are concise and dire
 
 The Extract tools return the API's Markdown in both modes. To reduce what you fetch, use `include_tags` or `exclude_tags` to select page content, `include_sitemap=False` to map only links on the starting page, or `max_pages` and `max_depth` to bound a crawl. Pass these settings in `default_params` on the corresponding tool.
 
-For JSON output, compact mode returns `markdown` for [`web_extract`](web_extract.html), `urls` for [`web_map`](web_map.html), and `pages` for [`web_crawl`](web_crawl.html). Choose `mode="full"` to retain metadata and other fields.
+For JSON output, compact mode returns `markdown` for [`web_fetch`](web_fetch.html), `urls` for [`web_map`](web_map.html), and `pages` for [`web_crawl`](web_crawl.html). Choose `mode="full"` to retain metadata and other fields.
 
 ## Start with compact mode
 

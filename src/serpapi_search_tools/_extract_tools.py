@@ -14,8 +14,6 @@ from serpapi_search_tools._shared import (
     SearchRuntime,
     SerpApiSearchError,
     ToolDefinition,
-    _sanitized_provider_error,
-    env_api_key,
     object_schema,
     require_nonempty,
 )
@@ -58,29 +56,18 @@ class ExtractRuntime(SearchRuntime):
             else:
                 key, fields = _COLLECTIONS[operation]
                 params["json_restrictor"] = f"{key}[].{{{','.join(fields)}}},error"
+                if operation == "map":
+                    params["json_restrictor"] += ",search_parameters.engine,search_metadata.status"
         params["output"] = "md" if markdown else "json"
         result = self._request(params, extract=True)
 
-        if isinstance(result, Mapping):
-            error = result.get("error")
-            if error:
-                raise SerpApiSearchError("SerpApi extraction failed: " + self._error(error))
-            if not markdown:
-                payload = dict(result)
-                if compact_json:
-                    payload = _compact_extract_result(payload, operation)
-                return json.dumps(payload, default=str, ensure_ascii=False, separators=(",", ":"))
+        if not markdown and isinstance(result, Mapping):
+            payload = _compact_extract_result(result, operation) if compact_json else dict(result)
+            return json.dumps(payload, default=str, ensure_ascii=False, separators=(",", ":"))
         if markdown and isinstance(result, str):
             return result
         expected = "str" if markdown else "a mapping"
         raise TypeError(f"Extract client must return {expected} for output={params['output']!r}.")
-
-    def _error(self, error: Any) -> str:
-        if self.client is not None:
-            return "The custom client returned an API error."
-        return _sanitized_provider_error(
-            RuntimeError(str(error)), api_key=self.api_key or env_api_key()
-        )
 
 
 def _compact_extract_result(result: Mapping[str, Any], operation: _Operation) -> dict[str, Any]:
@@ -94,6 +81,13 @@ def _compact_extract_result(result: Mapping[str, Any], operation: _Operation) ->
         return {"markdown": markdown}
 
     key, fields = _COLLECTIONS[operation]
+    if operation == "map" and key not in result:
+        match result:
+            case {
+                "search_parameters": {"engine": "extract"},
+                "search_metadata": {"status": "Success"},
+            }:
+                return {key: []}
     items = result.get(key)
     if not isinstance(items, list):
         raise SerpApiSearchError(
@@ -121,7 +115,7 @@ def _extract_tool(
     response_format: SearchResultFormat | str,
     name: str,
 ) -> Any:
-    tool_name = "web_extract" if operation == "scrape" else f"web_{operation}"
+    tool_name = "web_fetch" if operation == "scrape" else f"web_{operation}"
     if (default_params or {}).get("mode", operation) != operation:
         raise ValueError(f"{tool_name} supports only mode={operation!r} in default_params.")
     if operation == "crawl":
@@ -153,7 +147,7 @@ def _extract_tool(
     return as_provider_tool(ToolDefinition(extract, name, description, schema), provider)
 
 
-def web_extract(
+def web_fetch(
     *,
     provider: ProviderName | str = "auto",
     include_examples: bool = True,
@@ -163,7 +157,7 @@ def web_extract(
     timeout: float | None = None,
     mode: SearchResultMode | str = SearchResultMode.COMPACT,
     response_format: SearchResultFormat | str = SearchResultFormat.MARKDOWN,
-    name: str = "web_extract",
+    name: str = "web_fetch",
 ) -> Any:
     """Create a tool that extracts content from one public web page.
 

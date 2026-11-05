@@ -7,7 +7,7 @@ from types import ModuleType
 
 import pytest
 
-from serpapi_search_tools import SerpApiSearchError, web_crawl, web_extract, web_map, web_search
+from serpapi_search_tools import SerpApiSearchError, web_crawl, web_fetch, web_map, web_search
 
 PAGE_MARKDOWN = (
     "---\ntitle: Page frontmatter\n---\n\n# Café 東京\n\n"
@@ -40,7 +40,7 @@ class ExtractClient:
 
 def test_default_markdown_is_returned_unchanged_without_restriction():
     client = ExtractClient()
-    tool = web_extract(provider="function", client=client)
+    tool = web_fetch(provider="function", client=client)
 
     assert tool(url="https://example.com") == FULL_MARKDOWN
     assert client.calls == [
@@ -58,7 +58,7 @@ def test_default_markdown_is_returned_unchanged_without_restriction():
 @pytest.mark.parametrize("response_format", ["markdown", "json"])
 def test_response_modes_and_formats(mode, response_format):
     client = ExtractClient()
-    tool = web_extract(
+    tool = web_fetch(
         provider="function",
         client=client,
         mode=mode,
@@ -87,7 +87,7 @@ def test_search_only_clients_are_not_used_as_a_fallback():
             return PAYLOAD
 
     with pytest.raises(SerpApiSearchError, match="Custom extract client request failed"):
-        web_extract(provider="function", client=SearchOnlyClient())("https://example.com")
+        web_fetch(provider="function", client=SearchOnlyClient())("https://example.com")
     assert calls == []
 
 
@@ -97,7 +97,7 @@ def test_extract_only_client_does_not_need_search():
             return PAGE_MARKDOWN
 
     assert (
-        web_extract(provider="function", client=ExtractOnlyClient())("https://example.com")
+        web_fetch(provider="function", client=ExtractOnlyClient())("https://example.com")
         == PAGE_MARKDOWN
     )
 
@@ -108,7 +108,7 @@ def test_markdown_preserves_empty_content(result):
         def extract(self, params):
             return result
 
-    assert web_extract(provider="function", client=Client())("https://example.com") == result
+    assert web_fetch(provider="function", client=Client())("https://example.com") == result
 
 
 def test_markdown_without_api_frontmatter_preserves_all_sections():
@@ -119,7 +119,7 @@ def test_markdown_without_api_frontmatter_preserves_all_sections():
             return "\n" + content + "\n\n"
 
     assert (
-        web_extract(provider="function", client=Client())("https://example.com")
+        web_fetch(provider="function", client=Client())("https://example.com")
         == "\n" + content + "\n\n"
     )
 
@@ -137,7 +137,7 @@ def test_redirected_engine_markdown_is_returned_unchanged(mode):
             return result
 
     assert (
-        web_extract(provider="function", client=Client(), mode=mode)(
+        web_fetch(provider="function", client=Client(), mode=mode)(
             "https://www.google.com/search?q=coffee"
         )
         == result
@@ -150,7 +150,7 @@ def test_failed_extract_is_not_retried_as_search_and_hides_custom_credentials():
             raise RuntimeError("request failed: api_key=secret")
 
     with pytest.raises(SerpApiSearchError, match=r"^Custom extract client request failed\.$"):
-        web_extract(provider="function", client=FailingClient())("https://example.com")
+        web_fetch(provider="function", client=FailingClient())("https://example.com")
 
 
 @pytest.mark.parametrize(
@@ -170,7 +170,7 @@ def test_failed_extract_is_not_retried_as_search_and_hides_custom_credentials():
 )
 def test_invalid_urls_fail_before_request(url):
     client = ExtractClient()
-    tool = web_extract(provider="function", client=client)
+    tool = web_fetch(provider="function", client=client)
     with pytest.raises(ValueError, match="url"):
         tool(url)
     assert client.calls == []
@@ -186,7 +186,7 @@ def test_defaults_are_copied_and_only_compact_json_overrides_content_fields(resp
         "json_restrictor": "page_information",
     }
     client = ExtractClient()
-    tool = web_extract(
+    tool = web_fetch(
         provider="function", client=client, default_params=defaults, response_format=response_format
     )
     defaults["include_tags"] = "article"
@@ -204,7 +204,7 @@ def test_defaults_are_copied_and_only_compact_json_overrides_content_fields(resp
 @pytest.mark.parametrize("mode", ["crawl", "map"])
 def test_only_single_page_scraping_is_supported(mode):
     with pytest.raises(ValueError, match="only mode='scrape'"):
-        web_extract(default_params={"mode": mode})
+        web_fetch(default_params={"mode": mode})
 
 
 @pytest.mark.parametrize(
@@ -220,7 +220,7 @@ def test_only_single_page_scraping_is_supported(mode):
 )
 def test_missing_content_or_routed_search_does_not_report_success(payload):
     with pytest.raises(SerpApiSearchError, match=r"no markdown"):
-        web_extract(provider="function", client=ExtractClient(payload), response_format="json")(
+        web_fetch(provider="function", client=ExtractClient(payload), response_format="json")(
             "https://example.com"
         )
 
@@ -234,7 +234,7 @@ def test_api_errors_survive_restriction_and_hide_custom_secrets(mode):
         SerpApiSearchError,
         match=r"^SerpApi extraction failed: The custom client returned an API error\.$",
     ):
-        web_extract(provider="function", client=client, mode=mode, response_format="json")(
+        web_fetch(provider="function", client=client, mode=mode, response_format="json")(
             "https://example.com"
         )
 
@@ -260,7 +260,7 @@ def test_builtin_client_uses_sdk_extract_transport_and_reuses_client(monkeypatch
         return response
 
     monkeypatch.setattr(serpapi.Client, "request", request)
-    tool = web_extract(
+    tool = web_fetch(
         provider="function",
         api_key="test-key",
         timeout=2.5,
@@ -290,16 +290,55 @@ def test_builtin_client_uses_sdk_extract_transport_and_reuses_client(monkeypatch
     assert calls[0][4] == {}
 
 
+@pytest.mark.parametrize("factory", [web_search, web_fetch, web_map, web_crawl])
+def test_builtin_client_rotates_keys_and_redacts_in_flight_errors(monkeypatch, factory):
+    from requests import Request, Response, Session
+
+    keys_sent = []
+
+    def request(self, method, url, params, **kwargs):
+        keys_sent.append(params["api_key"])
+        response = Response()
+        response.url = Request(method, url, params=params).prepare().url
+        if len(keys_sent) == 1:
+            response.status_code = 200
+            response.headers["Content-Type"] = "text/markdown"
+            response._content = b"# Page"
+        else:
+            monkeypatch.setenv("SERPAPI_API_KEY", "third-test-key")
+            response.status_code = 503
+            response._content = b"Unavailable"
+        return response
+
+    monkeypatch.setattr(Session, "request", request)
+    monkeypatch.delenv("SERPAPI_KEY", raising=False)
+    monkeypatch.setenv("SERPAPI_API_KEY", "first-test-key")
+    tool = factory(provider="function")
+    tool("https://example.com")
+    monkeypatch.setenv("SERPAPI_API_KEY", "second-test-key")
+    with pytest.raises(SerpApiSearchError) as failure:
+        tool("https://example.com")
+    assert keys_sent == ["first-test-key", "second-test-key"]
+    assert "api_key=[REDACTED]" in str(failure.value)
+    assert all(key not in str(failure.value) for key in keys_sent)
+
+    monkeypatch.delenv("SERPAPI_API_KEY")
+    with pytest.raises(RuntimeError, match="Set SERPAPI_API_KEY"):
+        tool("https://example.com")
+    assert len(keys_sent) == 2
+
+
 def test_builtin_payload_error_is_sanitized(monkeypatch):
     import serpapi
 
-    monkeypatch.setattr(
-        serpapi.Client,
-        "extract",
-        lambda *args: {"error": "rejected api_key=test-key"},
-    )
+    def reject(client, params):
+        monkeypatch.setenv("SERPAPI_API_KEY", "replacement-test-key")
+        return {"error": f"rejected api_key={client.api_key}"}
+
+    monkeypatch.setenv("SERPAPI_API_KEY", "test-key")
+    monkeypatch.setattr(serpapi.Client, "extract", reject)
     with pytest.raises(SerpApiSearchError, match=r"rejected api_key=\[REDACTED\]"):
-        web_extract(provider="function", api_key="test-key")("https://example.com")
+        web_fetch(provider="function")("https://example.com")
 
 
 def test_openai_adapter_schema_and_async_invocation(monkeypatch):
@@ -311,7 +350,7 @@ def test_openai_adapter_schema_and_async_invocation(monkeypatch):
 
     module.FunctionTool = FunctionTool
     monkeypatch.setitem(sys.modules, "agents", module)
-    tool = web_extract(provider="openai-agents", client=ExtractClient(), name="read_page")
+    tool = web_fetch(provider="openai-agents", client=ExtractClient(), name="read_page")
     assert tool.name == "read_page"
     assert tool.params_json_schema["required"] == ["url"]
     assert set(tool.params_json_schema["properties"]) == {"url"}
@@ -319,11 +358,11 @@ def test_openai_adapter_schema_and_async_invocation(monkeypatch):
 
 
 def test_callable_metadata_and_engine_hint():
-    tool = web_extract(provider="function", include_examples=False)
+    tool = web_fetch(provider="function", include_examples=False)
     assert list(inspect.signature(tool).parameters) == ["url"]
-    assert tool.__name__ == "web_extract"
+    assert tool.__name__ == "web_fetch"
     assert "Example:" not in tool.__doc__
-    with pytest.raises(ValueError, match=r"Use web_extract\(\) instead"):
+    with pytest.raises(ValueError, match=r"Use web_fetch\(\) instead"):
         web_search(allowed_engines=["extract"])
 
 
@@ -336,7 +375,7 @@ def test_callable_metadata_and_engine_hint():
             "urls",
             [{"url": "https://example.com/a", "source": "sitemap", "extra": 1}],
             [{"url": "https://example.com/a", "source": "sitemap"}],
-            "urls[].{url,title,source},error",
+            "urls[].{url,title,source},error,search_parameters.engine,search_metadata.status",
             {"include_sitemap": False},
         ),
         (
@@ -402,6 +441,21 @@ def test_empty_collections_are_valid_and_redirects_remain_available_in_full_json
         compact("https://www.google.com/search?q=coffee")
     full = factory(provider="function", client=client, response_format="json", mode="full")
     assert json.loads(full("https://www.google.com/search?q=coffee")) == client.payload
+
+
+def test_compact_map_distinguishes_empty_success_from_redirect_and_invalid_response():
+    client = ExtractClient(
+        {"search_metadata": {"status": "Success"}, "search_parameters": {"engine": "extract"}}
+    )
+    compact = web_map(provider="function", client=client, response_format="json")
+    assert json.loads(compact("https://example.com")) == {"urls": []}
+    client.payload["search_parameters"]["engine"] = "google"
+    with pytest.raises(SerpApiSearchError, match="redirected engine"):
+        compact("https://www.google.com/search?q=coffee")
+    client.payload["search_parameters"]["engine"] = "extract"
+    client.payload["urls"] = None
+    with pytest.raises(SerpApiSearchError):
+        compact("https://example.com")
 
 
 @pytest.mark.parametrize(

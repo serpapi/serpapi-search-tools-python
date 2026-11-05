@@ -20,7 +20,7 @@ to `.env`, or export values in your shell. You always need `SERPAPI_API_KEY` or
 | Script | Scenario | Extra | Search tools demonstrated |
 | --- | --- | --- | --- |
 | `direct_search.py` | Compare default Markdown with explicit JSON | none | Web and news |
-| `direct_extract.py` | Read one page, discover URLs, or crawl up to two pages | none | Web extract, map, and crawl |
+| `direct_extract.py` | Read one page, discover URLs, or crawl up to two pages | none | Web fetch, map, and crawl |
 | `direct_travel.py` | Structured travel calls | none | Hotels, flights, and travel explore |
 | `direct_multi_search.py` | Multi-vertical research | none | Web, news, maps, and shopping |
 | `direct_marketplace_comparison.py` | Normalize marketplace results | none | Google Shopping, Amazon, Walmart, and eBay |

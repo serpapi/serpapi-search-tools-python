@@ -37,7 +37,7 @@ If you want this package to install a compatible agent SDK too, choose its extra
 pip install "serpapi-search-tools[openai-agents]"
 ```
 
-Extras are available for all supported SDKs listed below.
+Extras are available for all supported SDKs listed below. Install CrewAI and Google ADK in separate virtual environments because they require different versions of OpenTelemetry.
 
 Set a SerpApi key:
 
@@ -148,7 +148,7 @@ Browse the [runnable examples](https://github.com/serpapi/serpapi-search-tools-p
 | `web_search`            | `google`, `google_light`, `bing`, `yahoo`, `duckduckgo` | `query`                                       |
 | `web_map`               | `extract` (map site URLs)                               | `url`                                         |
 | `web_crawl`             | `extract` (read linked pages)                           | `url`                                         |
-| `web_extract`           | `extract`                                               | `url`                                         |
+| `web_fetch`           | `extract`                                               | `url`                                         |
 | `news_search`           | `google_news`                                           | `query`                                       |
 | `maps_search`           | `google_maps`                                           | `query`                                       |
 | `images_search`         | `google_images`                                         | `query`                                       |
@@ -177,14 +177,14 @@ Give your agent the tools it needs. Each takes one public HTTP or HTTPS URL and 
 
 | Tool | Default Markdown | Compact JSON (`response_format="json"`) |
 | --- | --- | --- |
-| [`web_extract`](https://serpapi.github.io/serpapi-search-tools-python/user-guide/web_extract.html) | The page content | `markdown` |
+| [`web_fetch`](https://serpapi.github.io/serpapi-search-tools-python/user-guide/web_fetch.html) | The page content | `markdown` |
 | [`web_map`](https://serpapi.github.io/serpapi-search-tools-python/user-guide/web_map.html) | A list of discovered links | `urls` with URL, title, and source when available |
 | [`web_crawl`](https://serpapi.github.io/serpapi-search-tools-python/user-guide/web_crawl.html) | Content grouped by page URL | `pages` with URL, depth, Markdown, and any page error |
 
 ```python
-from serpapi_search_tools import web_crawl, web_extract, web_map
+from serpapi_search_tools import web_crawl, web_fetch, web_map
 
-read = web_extract(provider="function")
+read = web_fetch(provider="function")
 discover = web_map(provider="function", default_params={"include_sitemap": False})
 crawl = web_crawl(provider="function", default_params={"max_pages": 3, "max_depth": 1})
 print(discover(url="https://www.python.org/about/"))
@@ -249,7 +249,7 @@ Every constructor accepts:
 | `provider`         | Defaults to `"auto"`; select an SDK explicitly only when multiple supported SDKs share an environment |
 | `include_examples` | Include or omit a short example in the model description                                              |
 | `api_key`          | Explicit SerpApi key                                                                                  |
-| `client`           | Custom object with `search(params)` for search tools or `extract(params)` for `web_extract`, `web_map`, and `web_crawl`, for caching, interception, or tests |
+| `client`           | Custom object with `search(params)` for search tools or `extract(params)` for `web_fetch`, `web_map`, and `web_crawl`, for caching, interception, or tests |
 | `default_params`   | Application-controlled SerpApi options                                                                |
 | `timeout`          | Timeout passed to the SerpApi SDK client                                                              |
 | `name`             | Tool name presented to the model                                                                      |

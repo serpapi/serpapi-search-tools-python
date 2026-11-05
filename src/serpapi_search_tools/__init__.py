@@ -1,6 +1,6 @@
 """Intent-specific SerpApi tools for Python agent SDKs."""
 
-from serpapi_search_tools._extract_tools import web_crawl, web_extract, web_map
+from serpapi_search_tools._extract_tools import web_crawl, web_fetch, web_map
 from serpapi_search_tools._query_tools import (
     ShoppingSearchEngine,
     WebSearchEngine,
@@ -24,7 +24,7 @@ from serpapi_search_tools._travel_tools import (
 )
 
 _SUPPORTED_ENGINES_BY_TOOL: dict[str, tuple[str, ...]] = {
-    "web_extract": ("extract",),
+    "web_fetch": ("extract",),
     "web_map": ("extract",),
     "web_crawl": ("extract",),
     "web_search": tuple(engine.value for engine in WebSearchEngine),
@@ -54,7 +54,7 @@ __all__ = [
     "travel_explore_search",
     "videos_search",
     "web_crawl",
-    "web_extract",
+    "web_fetch",
     "web_map",
     "web_search",
 ]

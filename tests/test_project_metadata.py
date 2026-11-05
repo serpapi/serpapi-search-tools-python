@@ -36,7 +36,7 @@ def test_public_package_exposes_intent_specific_tools_and_semantic_enums() -> No
         "travel_explore_search",
         "videos_search",
         "web_crawl",
-        "web_extract",
+        "web_fetch",
         "web_map",
         "web_search",
     }
@@ -78,13 +78,13 @@ def test_declared_major_version_bounds_match_tested_framework_branches() -> None
     openai_compat = pyproject["dependency-groups"]["openai-compat"]
 
     assert "openai>=1.0.0,<3" in optional["frameworks"]
-    assert "pydantic-ai>=1.30.1,<3" in optional["frameworks"]
-    assert optional["pydantic-ai"] == ["pydantic-ai>=1.30.1,<3"]
+    assert "pydantic-ai>=1.107.6,<3" in optional["frameworks"]
+    assert optional["pydantic-ai"] == ["pydantic-ai>=1.107.6,<3"]
     assert "haystack-ai>=2.30.2,<4" in optional["frameworks"]
     assert optional["haystack"] == ["haystack-ai>=2.30.2,<4"]
     assert optional["llamaindex"] == ["llama-index-core>=0.14.22,<0.15"]
     assert openai_compat == [
-        "langchain-openai>=1.1.9,<2",
+        "langchain-openai>=1.1.14,<2",
         "llama-index-llms-openai>=0.6.26,<0.8",
     ]
     assert all(

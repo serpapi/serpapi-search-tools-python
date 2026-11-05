@@ -6,7 +6,7 @@ import os
 import pytest
 import serpapi
 
-from serpapi_search_tools import SerpApiSearchError, web_crawl, web_extract, web_map
+from serpapi_search_tools import SerpApiSearchError, web_crawl, web_fetch, web_map
 
 pytestmark = pytest.mark.live
 
@@ -28,7 +28,7 @@ def extract_endpoint(monkeypatch):
 )
 def test_live_compact_content_matches_native_markdown_body(url, content_marker):
     full = json.loads(
-        web_extract(
+        web_fetch(
             provider="function",
             mode="full",
             response_format="json",
@@ -41,15 +41,15 @@ def test_live_compact_content_matches_native_markdown_body(url, content_marker):
     assert content_marker in markdown
     assert markdown.strip()
 
-    compact = web_extract(provider="function", timeout=90)(url)
-    native_markdown = web_extract(provider="function", mode="full", timeout=90)(url)
+    compact = web_fetch(provider="function", timeout=90)(url)
+    native_markdown = web_fetch(provider="function", mode="full", timeout=90)(url)
     assert compact == native_markdown
     assert compact.strip() == markdown.strip()
     assert content_marker in compact
     assert "search_metadata:" not in compact
 
     compact_json = json.loads(
-        web_extract(
+        web_fetch(
             provider="function",
             response_format="json",
             timeout=90,
@@ -60,7 +60,7 @@ def test_live_compact_content_matches_native_markdown_body(url, content_marker):
 
 @pytest.mark.parametrize("mode", ["compact", "full"])
 def test_live_markdown_content_filters(mode):
-    result = web_extract(
+    result = web_fetch(
         provider="function",
         mode=mode,
         timeout=90,
@@ -71,7 +71,7 @@ def test_live_markdown_content_filters(mode):
 
 
 def test_live_full_json_can_disable_default_markdown():
-    result = web_extract(
+    result = web_fetch(
         provider="function",
         mode="full",
         response_format="json",
@@ -102,7 +102,7 @@ def test_live_json_restrictor_filters_the_raw_sdk_response():
 
 def test_live_json_selector_without_content_raises():
     with pytest.raises(SerpApiSearchError, match="returned no"):
-        web_extract(
+        web_fetch(
             provider="function",
             response_format="json",
             timeout=90,
@@ -126,7 +126,7 @@ def test_live_redirected_engine_responses_are_preserved(url, response_format, mo
         return result
 
     monkeypatch.setattr(serpapi.Client, "extract", record_response)
-    result = web_extract(
+    result = web_fetch(
         provider="function",
         response_format=response_format,
         mode="compact" if response_format == "markdown" else "full",
@@ -146,27 +146,39 @@ def test_live_redirected_engine_responses_are_preserved(url, response_format, mo
 
 def test_live_compact_json_redirect_without_markdown_raises():
     with pytest.raises(SerpApiSearchError, match="dedicated search engine"):
-        web_extract(provider="function", response_format="json", timeout=90)(
+        web_fetch(provider="function", response_format="json", timeout=90)(
             "https://www.google.com/search?q=coffee"
         )
 
 
+def test_live_compact_map_distinguishes_an_empty_site_from_a_search_redirect():
+    discover = web_map(
+        provider="function",
+        response_format="json",
+        default_params={"include_sitemap": False},
+        timeout=90,
+    )
+    assert json.loads(discover("https://example.com/")) == {"urls": []}
+    with pytest.raises(SerpApiSearchError, match="redirected engine"):
+        discover("https://www.google.com/search?q=coffee")
+
+
 def test_live_markdown_preserves_unicode():
-    result = web_extract(provider="function", timeout=90)("https://fr.wikipedia.org/wiki/Caf%C3%A9")
+    result = web_fetch(provider="function", timeout=90)("https://fr.wikipedia.org/wiki/Caf%C3%A9")
     assert "café" in result.lower()
     assert "\ufffd" not in result
 
 
 def test_live_api_rejection_raises_without_leaking_key():
     with pytest.raises(SerpApiSearchError) as failure:
-        web_extract(provider="function", timeout=90)("http://127.0.0.1/")
+        web_fetch(provider="function", timeout=90)("http://127.0.0.1/")
     key = os.getenv("SERPAPI_API_KEY") or os.getenv("SERPAPI_KEY")
     assert key not in str(failure.value)
 
 
 def test_live_invalid_key_raises():
     with pytest.raises(SerpApiSearchError):
-        web_extract(provider="function", api_key="invalid-extract-key", timeout=30)(
+        web_fetch(provider="function", api_key="invalid-extract-key", timeout=30)(
             "https://example.com"
         )
 

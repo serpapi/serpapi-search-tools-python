@@ -7,7 +7,7 @@ import argparse
 
 from dotenv import load_dotenv
 
-from serpapi_search_tools import web_crawl, web_extract, web_map
+from serpapi_search_tools import web_crawl, web_fetch, web_map
 
 load_dotenv()
 
@@ -26,7 +26,7 @@ def main() -> None:
     elif args.operation == "map":
         tool = web_map(provider="function", timeout=90)
     else:
-        tool = web_extract(provider="function", timeout=90)
+        tool = web_fetch(provider="function", timeout=90)
     print(tool(url=args.url))
 
 

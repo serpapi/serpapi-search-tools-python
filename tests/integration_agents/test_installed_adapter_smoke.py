@@ -17,7 +17,7 @@ from serpapi_search_tools import (
     travel_explore_search,
     videos_search,
     web_crawl,
-    web_extract,
+    web_fetch,
     web_map,
     web_search,
 )
@@ -66,7 +66,7 @@ def test_tox_environment_requires_its_selected_framework() -> None:
 def _factories() -> tuple[Any, ...]:
     return (
         web_crawl,
-        web_extract,
+        web_fetch,
         web_map,
         web_search,
         news_search,

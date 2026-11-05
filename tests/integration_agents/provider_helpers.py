@@ -692,8 +692,24 @@ def _run_google_adk(
 
     if importlib.util.find_spec("litellm") is not None:
         adk_lite_llm = import_optional("google.adk.models.lite_llm")
+
+        class OpenAICompatClient(adk_lite_llm.LiteLLMClient):
+            async def acompletion(
+                self, model: str, messages: list[dict[str, Any]], tools: Any, **kwargs: Any
+            ) -> Any:
+                # ADK 2.11 emits Gemma's native tool role even for OpenAI endpoints.
+                if model.startswith("openai/"):
+                    messages = [
+                        {**message, "role": "tool"}
+                        if message.get("role") == "tool_responses"
+                        else message
+                        for message in messages
+                    ]
+                return await super().acompletion(model, messages, tools, **kwargs)
+
         chat_model = adk_lite_llm.LiteLlm(
             model=_google_adk_litellm_model(model),
+            llm_client=OpenAICompatClient(),
             api_base=base_url,
             api_key=api_key,
             temperature=0,
