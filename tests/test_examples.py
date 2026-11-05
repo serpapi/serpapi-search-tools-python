@@ -16,7 +16,7 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples"
 
-PUBLIC_FACTORIES = {name for name in serpapi_search_tools.__all__ if name.endswith("_search")}
+PUBLIC_FACTORIES = set(serpapi_search_tools._SUPPORTED_ENGINES_BY_TOOL)
 FIXED_ENGINE_FACTORIES = {
     name
     for name, engines in serpapi_search_tools._SUPPORTED_ENGINES_BY_TOOL.items()

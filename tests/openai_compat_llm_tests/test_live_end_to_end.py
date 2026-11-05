@@ -24,4 +24,4 @@ def test_openai_compatible_llm_to_agent_to_live_serpapi(
         live_serpapi_client,
     )
 
-    assert live_serpapi_client.calls == [{"engine": "google_light", "q": "SerpApi"}]
+    assert live_serpapi_client.calls == [{"engine": "google_light", "q": "SerpApi", "output": "md"}]

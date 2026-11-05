@@ -41,6 +41,6 @@ def test_openai_compatible_llm_invokes_web_tool_for_every_supported_provider(
         fake_serpapi_client,
     )
 
-    expected = {"engine": "google_light", "q": "coffee"}
+    expected = {"engine": "google_light", "q": "coffee", "output": "md"}
     assert fake_serpapi_client.calls
     assert all(call == expected for call in fake_serpapi_client.calls)

@@ -10,20 +10,22 @@ every supported SDK.
 
 ## Start without an LLM
 
-Use the direct examples to verify credentials and request construction:
+Run the direct examples from the repository root.
 
 ```bash
 uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_search.py
+uv run --isolated --no-project --with . --with python-dotenv examples/direct_extract.py map https://www.python.org/about/
+uv run --isolated --no-project --with . --with python-dotenv examples/direct_extract.py crawl https://www.python.org/about/
 uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_travel.py
 ```
 
-They demonstrate general web, news, hotels, flights, and travel exploration
-without installing an agent framework.
+They demonstrate web search, page extraction, news, hotels, flights, and travel exploration without installing an agent framework.
 
 ## Pick a scenario
 
 | Scenario | Script | Credentials | What to look for |
 | --- | --- | --- | --- |
+| Read, map, or crawl a website | `direct_extract.py` | SerpApi | Page Markdown, a list of links, or content grouped by page URL |
 | Multi-vertical research | `direct_multi_search.py` | SerpApi | Four result families reduced to short title lists |
 | Marketplace comparison | `direct_marketplace_comparison.py` | SerpApi | Product payloads normalized into `title`, `price`, and `link` |
 | Regional configuration | `direct_regioned_search.py` | SerpApi | Two named tools with separate US and German defaults |
@@ -39,7 +41,7 @@ uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv 
 uv run --isolated --no-project --with serpapi-search-tools --with python-dotenv examples/direct_cached_search.py
 ```
 
-`direct_search.py` compares the default Markdown response with explicit JSON. The other direct scripts opt into JSON when they normalize fields into bounded summaries. Agent examples use the default compact Markdown response.
+`direct_search.py` compares the default Markdown response with explicit JSON. `direct_extract.py` accepts `scrape`, `map`, or `crawl` followed by a URL and prints the API's Markdown. Other direct scripts opt into JSON when they normalize fields into bounded summaries. Agent examples use the default compact Markdown response.
 
 ## Structured travel defaults
 

@@ -9,7 +9,7 @@ from typing import Any
 import serpapi
 import serpapi.models
 
-from serpapi_search_tools import SearchResultFormat, flights_search, web_search
+from serpapi_search_tools import SearchResultFormat, flights_search, web_fetch, web_search
 
 AGENT_SDK_DISTRIBUTIONS = (
     "agno",
@@ -58,6 +58,12 @@ def _fake_request(
         {"engine": "google_light", "q": "coffee", "output": "md"},
         {"engine": "google_light", "q": "coffee"},
         {
+            "engine": "extract",
+            "url": "https://example.com",
+            "mode": "scrape",
+            "output": "md",
+        },
+        {
             "engine": "google_flights",
             "departure_id": "LAX",
             "arrival_id": "AUS",
@@ -71,6 +77,8 @@ def _fake_request(
         },
     )
     assert kwargs == {}
+    if params["engine"] == "extract":
+        return _Response("# Page\n\nPage content.\n")
     if params.get("output") == "md":
         return _Response(
             "---\nsearch_metadata:\n  status: Success\n---\n\n"
@@ -120,6 +128,10 @@ def main() -> None:
         api_key="not-a-real-key",
     )
     assert callable(tool), "provider='auto' must fall back to a plain callable"
+
+    extract = web_fetch(api_key="not-a-real-key")
+    assert callable(extract)
+    assert extract(url="https://example.com") == "# Page\n\nPage content.\n"
 
     markdown = tool(query="coffee")
 

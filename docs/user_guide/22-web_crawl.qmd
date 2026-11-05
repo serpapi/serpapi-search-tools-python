@@ -1,0 +1,19 @@
+---
+title: Web crawl
+guide-section: Search tools
+---
+
+# Read linked pages with `web_crawl`
+
+Use `web_crawl` to follow a site's links and read the pages it visits. Each successfully extracted page costs one search credit. Set a page limit in application code when registering the tool.
+
+```python
+from serpapi_search_tools import web_crawl
+
+crawl = web_crawl(provider="function", default_params={"max_pages": 3, "max_depth": 1})
+print(crawl(url="https://www.python.org/about/"))
+```
+
+The agent supplies one absolute HTTP or HTTPS URL. In `default_params`, `max_pages` accepts an integer from 1 to 100, including the starting page (API default 10). `max_depth` accepts 0 to 3 (API default 2). A depth of 0 reads only the starting page. Set `include_subdomains=True` to include other subdomains of the same website.
+
+The default output is the API's Markdown, grouped by page URL. With `response_format="json"`, compact mode returns a JSON string with a `pages` list containing each page's `url`, `depth`, `markdown`, and `error` when present. Choose `mode="full"` to retain all page fields and request metadata. See the [Extract API reference](https://serpapi.com/extract-api).

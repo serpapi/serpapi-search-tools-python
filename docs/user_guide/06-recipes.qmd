@@ -227,7 +227,7 @@ preferences.
 
 ## Keep agent payloads manageable
 
-Every tool returns a compact response by default. Set `result_limit` on the tool constructor to control how many items are kept in each result list. Use a custom `client=` for application-specific logging or caching. Choose `SearchResultMode.FULL` when application code needs supporting response sections or additional result fields.
+Search tools default to compact mode. Set `result_limit` on a search tool to cap each result list. Extract tools return native Markdown by default. Set `max_pages` in a crawl tool's `default_params` to limit how many pages it fetches. Use a custom `client=` for application-specific logging or caching. Choose `SearchResultMode.FULL` when application code needs supporting response sections or additional result fields.
 
 Continue with [Runnable examples](examples.html),
 [Common configuration](configuration.html), or
