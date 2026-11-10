@@ -71,7 +71,7 @@ def test_each_agent_sdk_invokes_a_dedicated_public_tool(
         provider,
         base_url=f"{fake_openai_server.url}/v1",
         api_key="fake-key",
-        model="gpt-4o-mini",
+        model="google/gemma-4-e2b" if provider == "google-adk" else "gpt-4o-mini",
         prompt=prompt_for_tool(model_tool_name, arguments),
         tool_names=[tool_name],
         client=serpapi_client,

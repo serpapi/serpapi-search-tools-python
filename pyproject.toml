@@ -20,9 +20,10 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Typing :: Typed",
 ]
-dependencies = ["mistune>=3.1.0,<4", "serpapi>=1.0.0,<2"]
+dependencies = ["mistune>=3.4.0,<4", "serpapi>=1.2.0,<2"]
 
 [project.urls]
 Documentation = "https://serpapi.github.io/serpapi-search-tools-python/"
@@ -36,23 +37,23 @@ autogen = [
     "autogen-core>=0.7.5,<0.8",
     "autogen-ext[openai]>=0.7.5,<0.8",
 ]
-claude-agent-sdk = ["claude-agent-sdk>=0.2.108,<1"]
-crewai = ["crewai>=1.6.1,<2; python_version < '3.14'"]
+claude-agent-sdk = ["claude-agent-sdk>=0.2.177,<1"]
+crewai = ["crewai>=1.15.35,<2; python_version < '3.14'"]
 frameworks = [
     "agno>=2.6.19,<3",
     "autogen-core>=0.7.5,<0.8",
     "autogen-agentchat>=0.7.5,<0.8",
     "autogen-ext[openai]>=0.7.5,<0.8",
-    "claude-agent-sdk>=0.2.108,<1",
-    "crewai>=1.6.1,<2; python_version < '3.14'",
+    "claude-agent-sdk>=0.2.177,<1",
+    "crewai>=1.15.35,<2; python_version < '3.14'",
     "haystack-ai>=2.30.2,<4",
     "langchain>=1.3.11,<2",
     "langchain-core>=1.4.8,<2",
-    "langgraph>=1.2.6,<2",
+    "langgraph>=1.2.19,<2",
     "llama-index-core>=0.14.22,<0.15",
     "openai>=1.0.0,<3",
-    "pydantic-ai>=1.30.1,<3",
-    "semantic-kernel>=1.36.0,<2",
+    "pydantic-ai>=1.107.6,<3",
+    "semantic-kernel>=1.39.4,<2",
     "smolagents>=1.26.0,<2",
 ]
 google-adk = ["google-adk>=2.3.0,<3"]
@@ -64,20 +65,20 @@ langchain = [
 langgraph = [
     "langchain>=1.3.11,<2",
     "langchain-core>=1.4.8,<2",
-    "langgraph>=1.2.6,<2",
+    "langgraph>=1.2.19,<2",
 ]
 llamaindex = ["llama-index-core>=0.14.22,<0.15"]
 microsoft-agent-framework = ["agent-framework-openai>=1.10.1,<2"]
 openai-agents = ["openai-agents>=0.18.3,<1"]
-pydantic-ai = ["pydantic-ai>=1.30.1,<3"]
-semantic-kernel = ["openai>=1.0.0,<3", "semantic-kernel>=1.36.0,<2"]
+pydantic-ai = ["pydantic-ai>=1.107.6,<3"]
+semantic-kernel = ["openai>=1.0.0,<3", "semantic-kernel>=1.39.4,<2"]
 smolagents = ["openai>=1.0.0,<3", "smolagents>=1.26.0,<2"]
 
 [dependency-groups]
 dev = [
     "fastapi>=0.115.0,<1",
     "httpx>=0.28.0,<1",
-    "pytest>=8.4.0,<9",
+    "pytest>=9.0.3,<10",
     "python-dotenv>=1.0.0,<2",
     "ruff>=0.14.0,<0.15",
     "tomli>=2.0.0,<3; python_version < '3.11'",
@@ -90,7 +91,7 @@ docs = [
     "griffe>=2.1.0,<2.2; python_version >= '3.11'",
 ]
 openai-compat = [
-    "langchain-openai>=1.1.9,<2",
+    "langchain-openai>=1.1.14,<2",
     "llama-index-llms-openai>=0.6.26,<0.8",
 ]
 
@@ -101,6 +102,7 @@ build-backend = "uv_build"
 [tool.pytest.ini_options]
 addopts = '-ra -m "not live and not integration and not openai_compat_llm"'
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = [
     "integration: runs optional framework integration tests against a fake OpenAI-compatible server",
     "live: requires SERPAPI_API_KEY or SERPAPI_KEY and calls SerpApi",
@@ -120,7 +122,12 @@ select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
 "tests/*" = ["B011"]
 
 [tool.uv]
+constraint-dependencies = ["azure-ai-agents>=1.2.0b3", "uv>=0.13.4"]
 conflicts = [
+    [
+        { extra = "crewai" },
+        { extra = "google-adk" },
+    ],
     [
         { extra = "frameworks" },
         { extra = "google-adk" },

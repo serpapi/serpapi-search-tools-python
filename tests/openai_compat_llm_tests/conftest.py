@@ -10,6 +10,8 @@ from typing import Any
 import httpx
 import pytest
 
+from tests.recording_search_client import RecordingSearchClient
+
 HELPER_DIR = Path(__file__).resolve().parents[1] / "integration_agents"
 if str(HELPER_DIR) not in sys.path:
     sys.path.insert(0, str(HELPER_DIR))
@@ -25,34 +27,21 @@ class OpenAICompatLlmSettings:
 
 
 @dataclass
-class RecordingSearchClient:
-    calls: list[dict[str, Any]] = field(default_factory=list)
-
-    def search(self, params: dict[str, Any]) -> Mapping[str, Any]:
-        call = dict(params)
-        self.calls.append(call)
-        return {
-            "search_metadata": {"status": "Success"},
-            "params": call,
-            "organic_results": [{"title": "Fake OpenAI-compatible LLM result"}],
-        }
-
-
-@dataclass
 class RecordingLiveSearchClient:
-    api_key: str
+    api_key: str = field(repr=False)
     calls: list[dict[str, Any]] = field(default_factory=list)
 
-    def search(self, params: dict[str, Any]) -> Mapping[str, Any]:
+    def search(self, params: dict[str, Any]) -> Mapping[str, Any] | str:
         call = dict(params)
         response = httpx.get(
-            "https://serpapi.com/search.json",
+            "https://serpapi.com/search",
             params={**call, "api_key": self.api_key},
             timeout=30,
         )
         response.raise_for_status()
+        result = response.text if call.get("output") == "md" else response.json()
         self.calls.append(call)
-        return response.json()
+        return result
 
 
 @pytest.fixture(scope="session")

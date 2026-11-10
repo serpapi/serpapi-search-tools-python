@@ -41,9 +41,7 @@ Run one framework extra with fresh dependencies:
 uv run tox -e integration-py314-langchain
 ```
 
-CI runs the base suite on Python 3.10 through 3.14 and installs each framework
-extra separately. This catches dependency conflicts that a shared development
-environment can hide.
+CI runs tox itself on Python 3.13 with the locked development dependencies. Tox runs the base suite on Python 3.10 through 3.15 and tests each framework extra in its own environment.
 
 ## Newest SDK release canary
 

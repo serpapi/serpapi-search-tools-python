@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
@@ -51,16 +51,17 @@ jobs:
             tox-environment: py313
           - python-version: "3.14"
             tox-environment: py314
+          - python-version: "3.15"
+            tox-environment: py315
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
 
-      - run: uv sync --dev --locked
-      - run: uv run tox -e ${{ matrix.tox-environment }}
+      - run: uv run --locked --python 3.13 tox -e ${{ matrix.tox-environment }}
 
   framework-tests:
     name: ${{ matrix.provider }} on Python ${{ matrix.python-version }}
@@ -75,15 +76,24 @@ jobs:
           - provider: agno
             python-version: "3.14"
             tox-environment: integration-py314-agno
+          - provider: agno
+            python-version: "3.15"
+            tox-environment: integration-py315-agno
           - provider: langchain
             python-version: "3.10"
             tox-environment: integration-py310-langchain
           - provider: langchain
             python-version: "3.14"
             tox-environment: integration-py314-langchain
+          - provider: langchain
+            python-version: "3.15"
+            tox-environment: integration-py315-langchain
           - provider: langgraph
             python-version: "3.13"
             tox-environment: integration-py313-langgraph
+          - provider: langgraph
+            python-version: "3.15"
+            tox-environment: integration-py315-langgraph
           - provider: crewai
             python-version: "3.10"
             tox-environment: integration-py310-crewai
@@ -96,70 +106,99 @@ jobs:
           - provider: google-adk
             python-version: "3.14"
             tox-environment: integration-py314-google-adk
+          - provider: google-adk
+            python-version: "3.15"
+            tox-environment: integration-py315-google-adk
           - provider: claude-agent-sdk
             python-version: "3.10"
             tox-environment: integration-py310-claude-agent-sdk
           - provider: claude-agent-sdk
             python-version: "3.14"
             tox-environment: integration-py314-claude-agent-sdk
+          - provider: claude-agent-sdk
+            python-version: "3.15"
+            tox-environment: integration-py315-claude-agent-sdk
           - provider: llamaindex
             python-version: "3.10"
             tox-environment: integration-py310-llamaindex
           - provider: llamaindex
             python-version: "3.14"
             tox-environment: integration-py314-llamaindex
+          - provider: llamaindex
+            python-version: "3.15"
+            tox-environment: integration-py315-llamaindex
           - provider: openai-agents
             python-version: "3.10"
             tox-environment: integration-py310-openai-agents
           - provider: openai-agents
             python-version: "3.14"
             tox-environment: integration-py314-openai-agents
+          - provider: openai-agents
+            python-version: "3.15"
+            tox-environment: integration-py315-openai-agents
           - provider: pydantic-ai
             python-version: "3.10"
             tox-environment: integration-py310-pydantic-ai
           - provider: pydantic-ai
             python-version: "3.14"
             tox-environment: integration-py314-pydantic-ai
+          - provider: pydantic-ai
+            python-version: "3.15"
+            tox-environment: integration-py315-pydantic-ai
           - provider: autogen
             python-version: "3.10"
             tox-environment: integration-py310-autogen
           - provider: autogen
             python-version: "3.14"
             tox-environment: integration-py314-autogen
+          - provider: autogen
+            python-version: "3.15"
+            tox-environment: integration-py315-autogen
           - provider: microsoft-agent-framework
             python-version: "3.10"
             tox-environment: integration-py310-microsoft-agent-framework
           - provider: microsoft-agent-framework
             python-version: "3.14"
             tox-environment: integration-py314-microsoft-agent-framework
+          - provider: microsoft-agent-framework
+            python-version: "3.15"
+            tox-environment: integration-py315-microsoft-agent-framework
           - provider: haystack
             python-version: "3.10"
             tox-environment: integration-py310-haystack
           - provider: haystack
             python-version: "3.14"
             tox-environment: integration-py314-haystack
+          - provider: haystack
+            python-version: "3.15"
+            tox-environment: integration-py315-haystack
           - provider: semantic-kernel
             python-version: "3.10"
             tox-environment: integration-py310-semantic-kernel
           - provider: semantic-kernel
             python-version: "3.14"
             tox-environment: integration-py314-semantic-kernel
+          - provider: semantic-kernel
+            python-version: "3.15"
+            tox-environment: integration-py315-semantic-kernel
           - provider: smolagents
             python-version: "3.10"
             tox-environment: integration-py310-smolagents
           - provider: smolagents
             python-version: "3.14"
             tox-environment: integration-py314-smolagents
+          - provider: smolagents
+            python-version: "3.15"
+            tox-environment: integration-py315-smolagents
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
 
-      - run: uv sync --dev --locked
-      - run: uv run tox -e ${{ matrix.tox-environment }}
+      - run: uv run --locked --python 3.13 tox -e ${{ matrix.tox-environment }}
 
   live-serpapi:
     name: Live SerpApi engine smoke tests
@@ -176,7 +215,7 @@ jobs:
       SERPAPI_LIVE_KEY_ARTIFACT: live-response-keys.json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.14"
@@ -188,7 +227,7 @@ jobs:
         run: uv run tox -e live
       - name: Upload weekly response-key inventory
         if: always() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: serpapi-live-response-keys
           path: live-response-keys.json
@@ -252,7 +291,7 @@ jobs:
             tox-environment: integration-py314-smolagents
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}

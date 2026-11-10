@@ -137,7 +137,7 @@ def _pydantic_type_from_schema(
     item_constraints = _pydantic_field_constraints(item_schema)
     item_extra = {"format": item_schema["format"]} if "format" in item_schema else None
     if item_constraints or item_extra or item_schema.get("description"):
-        item_type = Annotated[
+        item_type = cast(Any, Annotated)[
             item_type,
             field_factory(
                 description=item_schema.get("description"),
