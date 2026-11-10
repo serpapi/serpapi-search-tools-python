@@ -163,6 +163,43 @@ def test_live_compact_map_distinguishes_an_empty_site_from_a_search_redirect():
         discover("https://www.google.com/search?q=coffee")
 
 
+def test_live_compact_crawl_preserves_a_page_without_markdown(monkeypatch):
+    extract = serpapi.Client.extract
+    responses = []
+
+    def record_response(self, params, **kwargs):
+        result = extract(self, params, **kwargs)
+        responses.append(result)
+        return result
+
+    monkeypatch.setattr(serpapi.Client, "extract", record_response)
+    crawl = web_crawl(
+        provider="function",
+        response_format="json",
+        default_params={
+            "include_tags": ".serpapi-nonexistent-selector",
+            "max_pages": 1,
+            "max_depth": 0,
+        },
+        timeout=90,
+    )
+    payload = json.loads(crawl("https://example.com/"))
+    assert responses[0]["search_parameters"]["engine"] == "extract"
+    assert responses[0]["search_metadata"]["status"] == "Success"
+    assert payload == {"pages": [{"url": "https://example.com/", "depth": 0}]}
+
+
+def test_live_compact_crawl_still_rejects_a_search_redirect():
+    crawl = web_crawl(
+        provider="function",
+        response_format="json",
+        default_params={"max_pages": 1, "max_depth": 0},
+        timeout=90,
+    )
+    with pytest.raises(SerpApiSearchError, match="redirected engine"):
+        crawl("https://www.google.com/search?q=coffee")
+
+
 def test_live_markdown_preserves_unicode():
     result = web_fetch(provider="function", timeout=90)("https://fr.wikipedia.org/wiki/Caf%C3%A9")
     assert "café" in result.lower()

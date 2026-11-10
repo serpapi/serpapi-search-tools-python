@@ -55,9 +55,10 @@ class ExtractRuntime(SearchRuntime):
                 params["json_restrictor"] = "markdown,error"
             else:
                 key, fields = _COLLECTIONS[operation]
-                params["json_restrictor"] = f"{key}[].{{{','.join(fields)}}},error"
-                if operation == "map":
-                    params["json_restrictor"] += ",search_parameters.engine,search_metadata.status"
+                params["json_restrictor"] = (
+                    f"{key}[].{{{','.join(fields)}}},error,"
+                    "search_parameters.engine,search_metadata.status"
+                )
         params["output"] = "md" if markdown else "json"
         result = self._request(params, extract=True)
 
@@ -81,7 +82,7 @@ def _compact_extract_result(result: Mapping[str, Any], operation: _Operation) ->
         return {"markdown": markdown}
 
     key, fields = _COLLECTIONS[operation]
-    if operation == "map" and key not in result:
+    if key not in result:
         match result:
             case {
                 "search_parameters": {"engine": "extract"},
@@ -92,7 +93,8 @@ def _compact_extract_result(result: Mapping[str, Any], operation: _Operation) ->
     if not isinstance(items, list):
         raise SerpApiSearchError(
             f"Expected a list of {key} from Extract {operation}. "
-            "Use full JSON to inspect a redirected engine response."
+            "Use full JSON to inspect the response. "
+            "It may be malformed or from a redirected engine."
         )
     selected = []
     for item in items:

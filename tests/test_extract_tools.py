@@ -390,7 +390,7 @@ def test_callable_metadata_and_engine_hint():
                 {"url": "https://example.com/a", "markdown": "Café"},
                 {"url": "https://example.com/b", "depth": 1, "error": "Page unavailable"},
             ],
-            "pages[].{url,depth,markdown,error},error",
+            "pages[].{url,depth,markdown,error},error,search_parameters.engine,search_metadata.status",
             {"max_depth": 0, "max_pages": 1},
         ),
     ],
@@ -443,19 +443,59 @@ def test_empty_collections_are_valid_and_redirects_remain_available_in_full_json
     assert json.loads(full("https://www.google.com/search?q=coffee")) == client.payload
 
 
-def test_compact_map_distinguishes_empty_success_from_redirect_and_invalid_response():
+@pytest.mark.parametrize("factory,key", [(web_map, "urls"), (web_crawl, "pages")])
+def test_compact_collections_distinguish_empty_success_from_redirect_and_invalid_response(
+    factory, key
+):
     client = ExtractClient(
         {"search_metadata": {"status": "Success"}, "search_parameters": {"engine": "extract"}}
     )
-    compact = web_map(provider="function", client=client, response_format="json")
-    assert json.loads(compact("https://example.com")) == {"urls": []}
+    compact = factory(provider="function", client=client, response_format="json")
+    assert json.loads(compact("https://example.com")) == {key: []}
+    full = factory(provider="function", client=client, response_format="json", mode="full")
+    assert json.loads(full("https://example.com")) == client.payload
     client.payload["search_parameters"]["engine"] = "google"
     with pytest.raises(SerpApiSearchError, match="redirected engine"):
         compact("https://www.google.com/search?q=coffee")
     client.payload["search_parameters"]["engine"] = "extract"
-    client.payload["urls"] = None
+    client.payload[key] = None
     with pytest.raises(SerpApiSearchError):
         compact("https://example.com")
+
+
+@pytest.mark.parametrize("factory", [web_map, web_crawl])
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {},
+        {"search_metadata": {"status": "Success"}},
+        {"search_parameters": {"engine": "extract"}},
+        {"search_parameters": {"engine": "extract"}, "search_metadata": {"status": "Processing"}},
+        {"search_parameters": {"engine": "extract"}, "search_metadata": {"status": "Error"}},
+        {
+            "search_parameters": {"engine": "extract"},
+            "search_metadata": {"status": "Success"},
+            "error": "Crawl failed",
+        },
+    ],
+)
+def test_missing_collections_require_confirmed_success(factory, payload):
+    tool = factory(provider="function", client=ExtractClient(payload), response_format="json")
+    with pytest.raises(SerpApiSearchError):
+        tool("https://example.com")
+
+
+@pytest.mark.parametrize("factory,key", [(web_map, "urls"), (web_crawl, "pages")])
+@pytest.mark.parametrize("items", [None, {}, "", [None], ["https://example.com"]])
+def test_success_does_not_hide_malformed_collections(factory, key, items):
+    payload = {
+        "search_parameters": {"engine": "extract"},
+        "search_metadata": {"status": "Success"},
+        key: items,
+    }
+    tool = factory(provider="function", client=ExtractClient(payload), response_format="json")
+    with pytest.raises(SerpApiSearchError):
+        tool("https://example.com")
 
 
 @pytest.mark.parametrize(
