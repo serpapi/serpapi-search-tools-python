@@ -31,7 +31,7 @@ Repository = "https://github.com/serpapi/serpapi-search-tools-python"
 Issues = "https://github.com/serpapi/serpapi-search-tools-python/issues"
 
 [project.optional-dependencies]
-agno = ["agno>=2.6.19,<3", "openai>=1.0.0,<3"]
+agno = ["agno>=2.6.19,<4", "openai>=1.0.0,<3"]
 autogen = [
     "autogen-agentchat>=0.7.5,<0.8",
     "autogen-core>=0.7.5,<0.8",
@@ -40,7 +40,7 @@ autogen = [
 claude-agent-sdk = ["claude-agent-sdk>=0.2.177,<1"]
 crewai = ["crewai>=1.15.35,<2; python_version < '3.14'"]
 frameworks = [
-    "agno>=2.6.19,<3",
+    "agno>=2.6.19,<4",
     "autogen-core>=0.7.5,<0.8",
     "autogen-agentchat>=0.7.5,<0.8",
     "autogen-ext[openai]>=0.7.5,<0.8",
