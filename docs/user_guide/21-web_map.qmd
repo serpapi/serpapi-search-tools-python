@@ -5,15 +5,93 @@ guide-section: Search tools
 
 # Discover site URLs with `web_map`
 
-Use `web_map` to find pages linked by a website or listed in its sitemaps. Give the agent this tool when it needs to choose which URLs to read. Use [`web_fetch`](web_fetch.html) to read a chosen URL.
+`web_map` gives an agent URLs discovered from a website's page links and sitemaps.
+
+## When to use it
+
+Use it when the agent knows the website but needs to find relevant pages, such as a company's pricing page or a documentation section. Pair it with [`web_fetch`](web_fetch.html) so the agent can choose which URLs to read.
+
+Choose [`web_search`](web_search.html) to find sources across the web, or [`web_crawl`](web_crawl.html) to follow links and read multiple pages in one call.
+
+## Quick example
 
 ```python
-from serpapi_search_tools import web_map
+from serpapi_search_tools import web_fetch, web_map
 
-discover = web_map(provider="function", default_params={"include_sitemap": False})
-print(discover(url="https://www.python.org/about/"))
+agent_tools = [web_map(), web_fetch()]
 ```
 
-The agent supplies one absolute HTTP or HTTPS URL. The application can set `include_sitemap` (default `True`) and `include_subdomains` (default `False`) in `default_params`.
+With one supported SDK installed, these tools are native to that SDK. Add them to your agent's tool collection. See [Agent SDKs](frameworks.html) for setup and explicit provider selection when multiple SDKs are installed.
 
-By default the tool returns the API's Markdown list of links. With `response_format="json"`, compact mode returns a JSON string with a `urls` list containing each link's `url`, `title`, and `source` when present. A successful map that finds no links returns `{"urls":[]}`. If the URL redirects to a dedicated search engine, use `mode="full"` to read that engine's JSON response. See the [Extract API reference](https://serpapi.com/extract-api).
+An agent can start discovery with:
+
+```json
+{"url": "https://www.python.org/about/"}
+```
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `url` | string | yes | The absolute HTTP or HTTPS URL to start discovering links from |
+
+The agent supplies only `url`. The tool fixes the Extract API operation to `map`; sitemap and subdomain settings stay in application code.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or select an SDK explicitly |
+| `default_params` | `None` | Control sitemap and subdomain discovery |
+| `mode` | `compact` | Select URL fields for JSON output; use `"full"` to retain all JSON fields |
+| `response_format` | `markdown` | Return the API's Markdown link list, or choose `"json"` for structured fields |
+| `timeout` | `None` | Set the SDK request timeout in seconds |
+| `name` | `"web_map"` | Give a configured discovery tool a distinct name |
+
+The tool also accepts `api_key`, `client`, and `include_examples`. See [Common configuration](configuration.html) for authentication and shared options.
+
+## Useful SerpApi parameters
+
+Set discovery options in `default_params`:
+
+| Parameter | API default | Meaning |
+| --- | --- | --- |
+| `include_sitemap` | `True` | Also discover URLs from the website's sitemaps |
+| `include_subdomains` | `False` | Include other subdomains of the same website; otherwise keep links on the same host |
+
+For an agent that should choose from links on the supplied page, turn off sitemap discovery:
+
+```python
+from serpapi_search_tools import web_fetch, web_map
+
+linked_pages = web_map(
+    default_params={"include_sitemap": False},
+    name="linked_pages",
+)
+agent_tools = [linked_pages, web_fetch()]
+```
+
+Set `include_subdomains=True` when relevant pages also live on hosts such as `docs.example.com` or `blog.example.com`.
+
+## What comes back
+
+By default, the tool returns the API's Markdown list of links unchanged. Map results help the agent select pages; use `web_fetch` to read their content.
+
+| Configuration | Returned value |
+| --- | --- |
+| Default, or any Markdown configuration | The API's Markdown link list unchanged |
+| `response_format="json"` | A JSON string with a `urls` list containing `url`, `title`, and `source` when present |
+| `mode="full", response_format="json"` | The complete JSON response, including metadata |
+
+A successful compact JSON map with no links returns `{"urls":[]}`. If a Google or Bing search URL redirects to its dedicated engine, Markdown preserves that engine's response. Use full JSON to read a redirected engine's structured results; compact JSON raises when the expected `urls` list is unavailable.
+
+## Common mistakes
+
+- Expecting page content in map results. Give the agent `web_fetch` as well when it needs to read a page.
+- Assuming every discovered URL has a title. Link fields depend on the source.
+- Leaving sitemap discovery enabled when only links from the supplied page are needed.
+- Passing `max_pages` or `max_depth` to control discovery. Those settings belong to `web_crawl`.
+
+## Official SerpApi documentation
+
+- [Extract API](https://serpapi.com/extract-api)

@@ -1,7 +1,6 @@
 # SerpApi Search Tools
 
 [![PyPI version](https://img.shields.io/pypi/v/serpapi-search-tools.svg?v=1)](https://pypi.org/project/serpapi-search-tools/)
-[![CI](https://github.com/serpapi/serpapi-search-tools-python/actions/workflows/ci.yml/badge.svg)](https://github.com/serpapi/serpapi-search-tools-python/actions/workflows/ci.yml)
 [![Python versions](https://img.shields.io/pypi/pyversions/serpapi-search-tools.svg?v=1)](https://pypi.org/project/serpapi-search-tools/)
 [![License: MIT](https://img.shields.io/pypi/l/serpapi-search-tools.svg?v=1)](https://github.com/serpapi/serpapi-search-tools-python/blob/main/LICENSE)
 
@@ -184,10 +183,11 @@ Give your agent the tools it needs. Each takes one public HTTP or HTTPS URL and 
 ```python
 from serpapi_search_tools import web_crawl, web_fetch, web_map
 
-read = web_fetch(provider="function")
-discover = web_map(provider="function", default_params={"include_sitemap": False})
-crawl = web_crawl(provider="function", default_params={"max_pages": 3, "max_depth": 1})
-print(discover(url="https://www.python.org/about/"))
+tools = [
+    web_fetch(),
+    web_map(),
+    web_crawl(default_params={"max_pages": 3, "max_depth": 1}),
+]
 ```
 
 Set `response_format="json", mode="full"` to keep all fields returned by the API. For Google or Bing search URLs that redirect to a dedicated engine, Markdown includes that engine's results and full JSON preserves its schema. A crawl costs one search credit per successfully extracted page, including the starting page.

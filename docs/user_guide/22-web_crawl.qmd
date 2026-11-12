@@ -5,15 +5,106 @@ guide-section: Search tools
 
 # Read linked pages with `web_crawl`
 
-Use `web_crawl` to follow a site's links and read the pages it visits. Each successfully extracted page costs one search credit. Set a page limit in application code when registering the tool.
+`web_crawl` gives an agent content from multiple linked pages on a website.
+
+## When to use it
+
+Use it to read a documentation section, research a company website, or gather context from several related pages. Each successfully extracted page costs one search credit, including the starting page. Set a page limit in application code when registering the tool.
+
+Choose [`web_fetch`](web_fetch.html) for one known page. Pair [`web_map`](web_map.html) with `web_fetch` when the agent should inspect the available URLs before deciding which pages to read.
+
+## Quick example
 
 ```python
 from serpapi_search_tools import web_crawl
 
-crawl = web_crawl(provider="function", default_params={"max_pages": 3, "max_depth": 1})
-print(crawl(url="https://www.python.org/about/"))
+agent_tools = [
+    web_crawl(default_params={"max_pages": 3, "max_depth": 1}),
+]
 ```
 
-The agent supplies one absolute HTTP or HTTPS URL. In `default_params`, `max_pages` accepts an integer from 1 to 100, including the starting page (API default 10). `max_depth` accepts 0 to 3 (API default 2). A depth of 0 reads only the starting page. Set `include_subdomains=True` to include other subdomains of the same website.
+With one supported SDK installed, the tool is native to that SDK. Add it to your agent's tool collection. See [Agent SDKs](frameworks.html) for setup and explicit provider selection when multiple SDKs are installed.
 
-The default output is the API's Markdown, grouped by page URL. With `response_format="json"`, compact mode returns a JSON string with a `pages` list containing each page's `url`, `depth`, `markdown`, and `error` when present. A successful crawl with no pages returns `{"pages":[]}`. Choose `mode="full"` to retain all page fields and request metadata, or to inspect a response from a dedicated search engine after a redirect. See the [Extract API reference](https://serpapi.com/extract-api).
+An agent can start the crawl with:
+
+```json
+{"url": "https://www.python.org/about/"}
+```
+
+This configuration reads up to three pages, including the starting page, and follows links at most one level deep. The limits apply to each tool call.
+
+## Inputs the agent can provide
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `url` | string | yes | The absolute HTTP or HTTPS URL of the starting page |
+
+The agent supplies only `url`. The tool fixes the Extract API operation to `crawl`; page limits, depth, and content filters stay in application code.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or select an SDK explicitly |
+| `default_params` | `None` | Set crawl limits, subdomain scope, and content selectors |
+| `mode` | `compact` | Select page fields for JSON output; use `"full"` to retain all JSON fields |
+| `response_format` | `markdown` | Return the API's Markdown, or choose `"json"` for structured fields |
+| `timeout` | `None` | Set the SDK request timeout in seconds |
+| `name` | `"web_crawl"` | Give a configured crawler a distinct tool name |
+
+The tool also accepts `api_key`, `client`, and `include_examples`. See [Common configuration](configuration.html) for authentication and shared options.
+
+## Useful SerpApi parameters
+
+Set crawl scope in `default_params`:
+
+| Parameter | API default | Meaning |
+| --- | --- | --- |
+| `max_pages` | `10` | Maximum pages to extract, including the starting page; accepts integers from 1 to 100 |
+| `max_depth` | `2` | Maximum link depth from the starting page; accepts integers from 0 to 3; `0` reads only the starting page |
+| `include_subdomains` | `False` | Include other subdomains of the same website; otherwise stay on the same host |
+
+Content selectors can keep the agent focused on documentation or article text:
+
+```python
+from serpapi_search_tools import web_crawl
+
+read_docs = web_crawl(
+    default_params={
+        "max_pages": 5,
+        "max_depth": 1,
+        "include_tags": "main,article",
+        "exclude_tags": "nav,footer",
+    },
+    name="read_docs",
+)
+agent_tools = [read_docs]
+```
+
+Choose selectors that match the target website. `max_pages` controls fetched pages and cost; these tools do not accept the search tools' `result_limit` option.
+
+## What comes back
+
+The default output is the API's Markdown, grouped by page URL and returned unchanged.
+
+| Configuration | Returned value |
+| --- | --- |
+| Default, or any Markdown configuration | The API's Markdown unchanged |
+| `response_format="json"` | A JSON string with a `pages` list containing `url`, `depth`, `markdown`, and `error` when present |
+| `mode="full", response_format="json"` | The complete JSON response, including all page fields and request metadata |
+
+A successful compact JSON crawl with no pages returns `{"pages":[]}`. Individual pages can contain an `error` instead of Markdown; compact JSON preserves those entries alongside successful pages. A top-level API error still raises `SerpApiSearchError`.
+
+If a Google or Bing search URL redirects to its dedicated engine, Markdown preserves that engine's response. Use full JSON to read a redirected engine's structured results; compact JSON raises when the expected `pages` list is unavailable.
+
+## Common mistakes
+
+- Treating a crawl as one search credit regardless of page count. Each successfully extracted page costs a credit.
+- Leaving the API's default page limit in place when the agent only needs a few pages.
+- Expecting `mode="full"` to increase crawl scope. It changes JSON response detail; `max_pages` and `max_depth` control the crawl.
+- Assuming every visited page returns Markdown. Handle per-page errors and pages without extractable content.
+- Expecting JavaScript to run. The Extract API reads fetched pages without executing JavaScript.
+
+## Official SerpApi documentation
+
+- [Extract API](https://serpapi.com/extract-api)

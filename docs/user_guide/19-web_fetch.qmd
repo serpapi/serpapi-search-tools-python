@@ -5,46 +5,91 @@ guide-section: Search tools
 
 # Read a page with `web_fetch`
 
-`web_fetch` reads one public HTTP or HTTPS URL through the SerpApi Extract API. Use it to read a page found by `web_search`.
+`web_fetch` gives an agent the content of a public webpage through the SerpApi Extract API.
+
+## When to use it
+
+Use it to read articles, documentation, and other pages the agent needs to summarize or cite. Pair it with [`web_search`](web_search.html) to find sources and then read the relevant pages.
+
+Choose [`web_map`](web_map.html) to discover URLs within a website, or [`web_crawl`](web_crawl.html) to read several linked pages in one call.
+
+## Quick example
 
 ```python
-from serpapi_search_tools import web_fetch
+from serpapi_search_tools import web_fetch, web_search
 
-fetch = web_fetch(provider="function")
-markdown = fetch(url="https://example.com")
-print(markdown)
+agent_tools = [web_search(), web_fetch()]
 ```
 
-The agent supplies only `url`. The tool uses `engine="extract"` and `mode="scrape"`. It does not execute JavaScript. Use [`web_map`](web_map.html) to discover URLs or [`web_crawl`](web_crawl.html) to read linked pages.
+With one supported SDK installed, these tools are native to that SDK. Add them to your agent's tool collection. See [Agent SDKs](frameworks.html) for setup and explicit provider selection when multiple SDKs are installed.
 
-## Response modes
+An agent can call `web_fetch` with a URL from its search results:
 
-Markdown output preserves the API response, including whitespace, headings, and links. For ordinary pages it contains the page content. If a Google or Bing search URL redirects to its dedicated engine, it can contain search results and metadata instead.
+```json
+{"url": "https://www.python.org/about/"}
+```
 
-| Configuration | Returned value |
-| --- | --- |
-| Default, or any Markdown configuration | The API's `output=md` response unchanged |
-| `response_format="json"` | A JSON string containing only `{"markdown":"..."}` |
-| `mode="full", response_format="json"` | The complete JSON response |
+## Inputs the agent can provide
 
-Compact JSON raises `SerpApiSearchError` if the response has a missing or empty `markdown` field. Use full JSON to read the available metadata, structured page fields, or a redirected engine's response. To omit Markdown from full JSON, set `default_params={"include_markdown": False}`.
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `url` | string | yes | The absolute HTTP or HTTPS URL of the page to read |
 
-## Configure extraction
+The agent supplies only `url`. The tool fixes the Extract API operation to `scrape`; content filters and response settings stay in application code.
+
+## Configure the tool
+
+| Constructor option | Default | Use it for |
+| --- | --- | --- |
+| `provider` | `"auto"` | Detect one installed SDK or select an SDK explicitly |
+| `default_params` | `None` | Set content selectors and other Extract API settings |
+| `mode` | `compact` | Select page Markdown for JSON output; use `"full"` to retain all JSON fields |
+| `response_format` | `markdown` | Return the API's Markdown, or choose `"json"` for structured fields |
+| `timeout` | `None` | Set the SDK request timeout in seconds |
+| `name` | `"web_fetch"` | Give a configured page reader a distinct tool name |
+
+The tool also accepts `api_key`, `client`, and `include_examples`. See [Common configuration](configuration.html) for authentication and shared options.
+
+## Useful SerpApi parameters
+
+Use CSS selectors to focus on the parts of a page the agent needs:
 
 ```python
 from serpapi_search_tools import web_fetch
 
-fetch = web_fetch(
-    provider="function",
+read_article = web_fetch(
     timeout=90,
     default_params={
         "include_tags": "main,article",
         "exclude_tags": "nav,footer,.ads",
         "timeout": 30000,
     },
+    name="read_article",
 )
+agent_tools = [read_article]
 ```
 
-The constructor's `timeout` controls the SDK request in seconds. `default_params["timeout"]` controls the Extract API's page fetch in milliseconds. Other settings include `device`, `prefetch_delay`, and `no_cache`.
+`include_tags` keeps matching content; `exclude_tags` removes matching elements. Choose selectors that exist on the target pages. The constructor's `timeout` controls the SDK request in seconds, while `default_params["timeout"]` controls the API's page fetch in milliseconds. Other API settings include `device`, `prefetch_delay`, and `no_cache`.
 
-See [Common configuration](configuration.html) for provider and client options and the [Extract API reference](https://serpapi.com/extract-api) for supported page filters.
+## What comes back
+
+Markdown output preserves the API response, including whitespace, headings, and links. For ordinary pages it contains the page content. If a Google or Bing search URL redirects to its dedicated engine, it can contain search results and metadata instead.
+
+| Configuration | Returned value |
+| --- | --- |
+| Default, or any Markdown configuration | The API's Markdown unchanged |
+| `response_format="json"` | A JSON string containing only `{"markdown":"..."}` |
+| `mode="full", response_format="json"` | The complete JSON response |
+
+Compact JSON raises `SerpApiSearchError` if `markdown` is missing or empty. Use full JSON to read metadata, structured page fields, or a redirected engine's response. Set `default_params={"include_markdown": False}` to omit Markdown from full JSON.
+
+## Common mistakes
+
+- Passing a search query or a relative path as `url`. Find a page with `web_search` first, then pass its full URL.
+- Expecting JavaScript to run. The Extract API reads the fetched page without executing JavaScript.
+- Using content selectors that match nothing on the page.
+- Using the constructor's `mode` to change the API operation. Choose `web_map` or `web_crawl` for other operations; `mode` controls JSON response detail.
+
+## Official SerpApi documentation
+
+- [Extract API](https://serpapi.com/extract-api)
